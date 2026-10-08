@@ -1,0 +1,5 @@
+{
+  "user-a": {"username": "user_a", "password_env": "LAB_USER_A_PASSWORD"},
+  "user-b": {"username": "user_b", "password_env": "LAB_USER_B_PASSWORD"},
+  "admin": {"username": "admin", "password_env": "LAB_ADMIN_PASSWORD"}
+}

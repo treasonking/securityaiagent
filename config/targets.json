@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "targets": {
+    "lab-web": {
+      "base_url": "http://10.78.0.30:8080",
+      "allowed_scheme": "http",
+      "allowed_host": "10.78.0.30",
+      "allowed_port": 8080,
+      "account_refs": ["user-a", "user-b", "admin"]
+    }
+  }
+}

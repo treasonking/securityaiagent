@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "access-control",
+  "description": "Compare authenticated own-document access with user-a access to user-b's synthetic private document.",
+  "allowed_tools": ["start_session", "list_own_documents", "fetch_document", "finish_run"],
+  "phase": 1,
+  "phase_2_exclusions": ["nmap_inventory", "playwright_browser"]
+}
