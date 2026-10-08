@@ -15,6 +15,7 @@ class ManagerSettings:
     max_concurrency: int = 1
     model_id: str | None = None
     model_max_calls: int = 8
+    run_timeout_seconds: float = 180.0
 
 
 class RunManager:
@@ -89,15 +90,19 @@ class RunManager:
                         self.repository.save_evidence(Evidence.model_validate(raw_evidence))
                     self.repository.append_event(run_id, event_type, event_payload)
 
-                report = await self.engine.execute(
-                    EngineRequest(run_id=run_id, scenario_id=scenario_id, target_id=target_id),
-                    provider=provider,
-                    client=client,
-                    cancel_event=cancel_event,
-                    emit=emit,
-                )
+                async with asyncio.timeout(self.settings.run_timeout_seconds):
+                    report = await self.engine.execute(
+                        EngineRequest(run_id=run_id, scenario_id=scenario_id, target_id=target_id),
+                        provider=provider,
+                        client=client,
+                        cancel_event=cancel_event,
+                        emit=emit,
+                    )
+                if cancel_event.is_set() or self.repository.is_cancel_requested(run_id):
+                    raise RunCancelled("cancelled before report commit")
+                if not self.repository.complete_run(run_id, report):
+                    raise RunCancelled("cancelled during report commit")
                 self.repository.save_findings(report)
-                self.repository.update_run_status(run_id, RunStatus.COMPLETED, report=report)
                 self.repository.append_event(
                     run_id,
                     "report_ready",
@@ -106,6 +111,24 @@ class RunManager:
         except RunCancelled:
             self.repository.update_run_status(run_id, RunStatus.CANCELLED)
             self.repository.append_event(run_id, "cancelled", {"reason": "user_requested"})
+        except TimeoutError:
+            cancel_event.set()
+            client = self.clients.get(tool_transport)
+            if client is not None:
+                try:
+                    await client.cancel_run(run_id)
+                except Exception:
+                    pass
+            self.repository.update_run_status(
+                run_id,
+                RunStatus.TIMED_OUT,
+                error_message=f"controller run exceeded {self.settings.run_timeout_seconds:g} seconds",
+            )
+            self.repository.append_event(
+                run_id,
+                "timed_out",
+                {"timeout_seconds": self.settings.run_timeout_seconds},
+            )
         except asyncio.CancelledError:
             self.repository.update_run_status(run_id, RunStatus.INTERRUPTED, error_message="controller shutdown")
             raise

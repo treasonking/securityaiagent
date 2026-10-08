@@ -10,6 +10,8 @@ This file records intended configuration; it is not evidence that the user's Vir
 
 worker와 target에는 기본 gateway·외부 DNS·NAT를 두지 않는다. controller의 기본 route는 NAT NIC에만 둔다. 모든 VM에서 IPv4 forwarding을 끄며, IPv6를 쓰지 않으면 NIC와 firewall에서 일관되게 차단한다. bridged networking, port forwarding, shared folders, shared clipboard, drag-and-drop은 사용하지 않는다.
 
+worker의 `MCP_ALLOWED_HOSTS`에는 `10.77.0.20:9000`을 정확히 등록하고 `MCP_ALLOWED_ORIGINS`에는 controller origin `http://10.77.0.10:8000`만 등록한다. controller의 `UI_ALLOWED_HOSTS`, `UI_ALLOWED_ORIGINS`, `CONTROLLER_ALLOWED_CLIENTS`도 실제 Host-only 주소와 Windows Host-only client 주소로 제한한다. 저장소 회귀 테스트는 이 Host 헤더 정책을 검증했지만 실제 VM 연결을 검증한 것은 아니다.
+
 VM 콘솔에서 실제 NIC 이름을 확인한 후 방화벽을 적용한다. 아래 검증 결과를 run evidence로 별도 보존한다.
 
 ```bash

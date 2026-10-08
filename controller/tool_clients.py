@@ -10,6 +10,21 @@ from common.schemas import ToolResult
 from worker.service import ToolService
 
 
+def _direct_mcp_http_client(
+    headers: dict[str, str] | None = None,
+    timeout: httpx.Timeout | None = None,
+    auth: httpx.Auth | None = None,
+) -> httpx.AsyncClient:
+    """Create an internal-only MCP client that never inherits proxy environment variables."""
+    return httpx.AsyncClient(
+        headers=headers,
+        timeout=timeout,
+        auth=auth,
+        follow_redirects=False,
+        trust_env=False,
+    )
+
+
 class ToolClient(Protocol):
     transport_name: str
 
@@ -133,6 +148,7 @@ class MCPWorkerClient:
                 "url": server_url,
                 "headers": {"Authorization": f"Bearer {token}"},
                 "timeout": 10,
+                "httpx_client_factory": _direct_mcp_http_client,
             },
             cache_tools_list=True,
             max_retry_attempts=1,

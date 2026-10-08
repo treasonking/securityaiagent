@@ -27,11 +27,23 @@ class WorkerLimits:
     max_response_bytes: int = 65_536
     requests_per_second: float = 2.0
     max_concurrency: int = 1
+    max_runs: int = 100
+    state_ttl_seconds: float = 600.0
 
     def __post_init__(self) -> None:
-        if self.max_requests <= 0 or self.max_tool_calls <= 0 or self.max_concurrency <= 0:
+        if (
+            self.max_requests <= 0
+            or self.max_tool_calls <= 0
+            or self.max_concurrency <= 0
+            or self.max_runs <= 0
+        ):
             raise ValueError("request, tool, and concurrency limits must be positive")
-        if self.timeout_seconds <= 0 or self.run_timeout_seconds <= 0 or self.max_response_bytes <= 0:
+        if (
+            self.timeout_seconds <= 0
+            or self.run_timeout_seconds <= 0
+            or self.max_response_bytes <= 0
+            or self.state_ttl_seconds <= 0
+        ):
             raise ValueError("timeout and response-size limits must be positive")
         if self.requests_per_second < 0:
             raise ValueError("requests_per_second cannot be negative")
@@ -56,6 +68,9 @@ class _RunState:
     evidence: list[Evidence] = field(default_factory=list)
     last_request_monotonic: float = 0.0
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    cancel_event: asyncio.Event = field(default_factory=asyncio.Event)
+    active_http_tasks: set[asyncio.Task[Any]] = field(default_factory=set)
+    ended_monotonic: float | None = None
 
 
 class ToolService:
@@ -69,12 +84,18 @@ class ToolService:
         limits: WorkerLimits | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
         observation_reader: Callable[[str], dict[str, Any] | None] | None = None,
+        account_ids: dict[str, str] | None = None,
     ) -> None:
         self.policies = policies
         self.accounts = accounts
         self.limits = limits or WorkerLimits()
         self.transport = transport
         self.observation_reader = observation_reader
+        self.account_ids = account_ids or {
+            "user-a": "acct-a",
+            "user-b": "acct-b",
+            "admin": "acct-admin",
+        }
         self._runs: dict[str, _RunState] = {}
         self._runs_lock = asyncio.Lock()
         self._http_semaphore = asyncio.Semaphore(self.limits.max_concurrency)
@@ -83,8 +104,19 @@ class ToolService:
         if not run_id or len(run_id) > 128:
             raise PolicyViolation("invalid run_id")
         async with self._runs_lock:
+            now = time.monotonic()
+            expired = [
+                key
+                for key, item in self._runs.items()
+                if item.ended_monotonic is not None
+                and now - item.ended_monotonic >= self.limits.state_ttl_seconds
+            ]
+            for key in expired:
+                self._runs.pop(key, None)
             state = self._runs.get(run_id)
             if state is None and create:
+                if len(self._runs) >= self.limits.max_runs:
+                    raise PolicyViolation("worker run queue limit exceeded")
                 state = _RunState(run_id=run_id, started_monotonic=time.monotonic())
                 self._runs[run_id] = state
             if state is None:
@@ -98,17 +130,54 @@ class ToolService:
             raise PolicyViolation("run is already finished")
         if time.monotonic() - state.started_monotonic > self.limits.run_timeout_seconds:
             state.cancelled = True
+            state.cancel_event.set()
+            state.ended_monotonic = time.monotonic()
             raise PolicyViolation("run timeout exceeded")
         if state.request_count >= self.limits.max_requests:
             state.cancelled = True
+            state.cancel_event.set()
+            state.ended_monotonic = time.monotonic()
             raise PolicyViolation("HTTP request limit exceeded")
 
     def _count_tool(self, state: _RunState) -> None:
         self._check_run(state)
         if state.tool_count >= self.limits.max_tool_calls:
             state.cancelled = True
+            state.cancel_event.set()
+            state.ended_monotonic = time.monotonic()
             raise PolicyViolation("tool call limit exceeded")
         state.tool_count += 1
+
+    def _run_seconds_remaining(self, state: _RunState) -> float:
+        return self.limits.run_timeout_seconds - (time.monotonic() - state.started_monotonic)
+
+    async def _wait_for_gate(self, state: _RunState, awaitable: Any) -> Any:
+        self._check_run(state)
+        operation = asyncio.ensure_future(awaitable)
+        cancellation = asyncio.create_task(state.cancel_event.wait())
+        try:
+            done, _ = await asyncio.wait(
+                {operation, cancellation},
+                timeout=max(0.0, self._run_seconds_remaining(state)),
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            if not done:
+                state.cancelled = True
+                state.cancel_event.set()
+                state.ended_monotonic = time.monotonic()
+                operation.cancel()
+                await asyncio.gather(operation, return_exceptions=True)
+                raise PolicyViolation("run timeout exceeded")
+            if operation in done:
+                return await operation
+            if cancellation in done and state.cancel_event.is_set():
+                operation.cancel()
+                await asyncio.gather(operation, return_exceptions=True)
+                raise PolicyViolation("run is cancelled")
+            raise PolicyViolation("run wait ended unexpectedly")
+        finally:
+            cancellation.cancel()
+            await asyncio.gather(cancellation, return_exceptions=True)
 
     async def _request(
         self,
@@ -122,18 +191,28 @@ class ToolService:
         json: dict[str, str] | None = None,
     ) -> tuple[httpx.Response, str]:
         normalized = policy.normalize_relative_path(path)
-        async with state.lock:
+        await self._wait_for_gate(state, self._http_semaphore.acquire())
+        try:
+            async with state.lock:
+                self._check_run(state)
+                interval = 1.0 / self.limits.requests_per_second if self.limits.requests_per_second > 0 else 0
+                remaining = interval - (time.monotonic() - state.last_request_monotonic)
+                if remaining > 0:
+                    await self._wait_for_gate(state, asyncio.sleep(remaining))
+                self._check_run(state)
+                request_id = str(uuid.uuid4())
+                state.request_count += 1
+                state.last_request_monotonic = time.monotonic()
             self._check_run(state)
-            interval = 1.0 / self.limits.requests_per_second if self.limits.requests_per_second > 0 else 0
-            remaining = interval - (time.monotonic() - state.last_request_monotonic)
-            if remaining > 0:
-                await asyncio.sleep(remaining)
-            request_id = str(uuid.uuid4())
-            state.request_count += 1
-            state.last_request_monotonic = time.monotonic()
-        headers = {"X-SecurityLab-Run": state.run_id, "X-SecurityLab-Request": request_id}
-        timeout = httpx.Timeout(self.limits.timeout_seconds)
-        async with self._http_semaphore:
+            headers = {"X-SecurityLab-Run": state.run_id, "X-SecurityLab-Request": request_id}
+            timeout_seconds = min(self.limits.timeout_seconds, self._run_seconds_remaining(state))
+            if timeout_seconds <= 0:
+                self._check_run(state)
+                raise PolicyViolation("run timeout exceeded")
+            timeout = httpx.Timeout(timeout_seconds)
+            current_task = asyncio.current_task()
+            if current_task is not None:
+                state.active_http_tasks.add(current_task)
             async with httpx.AsyncClient(
                 base_url=policy.base_url,
                 timeout=timeout,
@@ -142,13 +221,41 @@ class ToolService:
                 transport=self.transport,
                 cookies=cookies,
             ) as client:
-                response = await client.request(method, normalized, headers=headers, json=json)
-        policy.assert_response_url(str(response.url))
-        if 300 <= response.status_code < 400:
-            raise PolicyViolation("redirect responses are never followed")
-        if len(response.content) > self.limits.max_response_bytes:
-            raise PolicyViolation("response exceeds configured byte limit")
-        return response, request_id
+                try:
+                    async with asyncio.timeout(timeout_seconds):
+                        async with client.stream(method, normalized, headers=headers, json=json) as streamed:
+                            policy.assert_response_url(str(streamed.url))
+                            if 300 <= streamed.status_code < 400:
+                                raise PolicyViolation("redirect responses are never followed")
+                            content_length = streamed.headers.get("content-length")
+                            if content_length and int(content_length) > self.limits.max_response_bytes:
+                                raise PolicyViolation("response exceeds configured byte limit")
+                            body = bytearray()
+                            async for chunk in streamed.aiter_bytes():
+                                self._check_run(state)
+                                if len(body) + len(chunk) > self.limits.max_response_bytes:
+                                    raise PolicyViolation("response exceeds configured byte limit")
+                                body.extend(chunk)
+                            response = httpx.Response(
+                                streamed.status_code,
+                                headers=streamed.headers,
+                                content=bytes(body),
+                                request=streamed.request,
+                                extensions=streamed.extensions,
+                            )
+                except TimeoutError as exc:
+                    if self._run_seconds_remaining(state) <= 0:
+                        state.cancelled = True
+                        state.cancel_event.set()
+                        state.ended_monotonic = time.monotonic()
+                        raise PolicyViolation("run timeout exceeded") from exc
+                    raise PolicyViolation("HTTP request timeout exceeded") from exc
+                finally:
+                    if current_task is not None:
+                        state.active_http_tasks.discard(current_task)
+            return response, request_id
+        finally:
+            self._http_semaphore.release()
 
     @staticmethod
     def _error(run_id: str, exc: Exception) -> ToolResult:
@@ -255,8 +362,12 @@ class ToolService:
             observation = self.observation_reader(request_id) if self.observation_reader else None
             correlated = bool(
                 observation
+                and observation.get("run_id") == run_id
                 and observation.get("request_id") == request_id
+                and observation.get("method") == "GET"
+                and observation.get("path") == path
                 and observation.get("status_code") == response.status_code
+                and observation.get("account_id") == self.account_ids.get(session.account_ref)
                 and observation.get("marker") == marker
             )
             evidence = Evidence(
@@ -288,7 +399,9 @@ class ToolService:
             if state.cancelled:
                 raise PolicyViolation("run is cancelled")
             self._count_tool(state)
+            self._check_run(state)
             state.finished = True
+            state.ended_monotonic = time.monotonic()
             state.sessions.clear()
             return ToolResult(
                 ok=True,
@@ -306,8 +419,16 @@ class ToolService:
     async def cancel_run(self, run_id: str) -> ToolResult:
         try:
             state = await self._state(run_id)
+            if state.finished:
+                raise PolicyViolation("run is already finished")
             state.cancelled = True
+            state.cancel_event.set()
+            state.ended_monotonic = time.monotonic()
             state.sessions.clear()
+            current = asyncio.current_task()
+            active = [task for task in state.active_http_tasks if task is not current and not task.done()]
+            for task in active:
+                task.cancel()
             return ToolResult(ok=True, run_id=run_id, data={"cancelled": True})
         except Exception as exc:
             return self._error(run_id, exc)

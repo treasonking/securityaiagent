@@ -132,3 +132,33 @@ def test_tool_call_limit_is_cumulative_for_a_run(tmp_path):
         assert "tool call limit" in rejected.message
 
     asyncio.run(execute())
+
+
+def test_cancellation_at_last_tool_step_cannot_become_completed(tmp_path):
+    async def execute():
+        service, _ = make_service(tmp_path, "fixed")
+        cancel = asyncio.Event()
+
+        class CancelAtFinishClient(DirectToolClient):
+            async def finish_run(self, run_id):
+                result = await super().finish_run(run_id)
+                cancel.set()
+                return result
+
+        async def emit(_event_type, _payload):
+            return None
+
+        with pytest.raises(RunCancelled):
+            await RunEngine(report_writer=ReportWriter(tmp_path / "reports")).execute(
+                EngineRequest(
+                    run_id="run-cancel-last-tool",
+                    scenario_id="access-control",
+                    target_id="lab-web",
+                ),
+                provider=MockModelProvider(),
+                client=CancelAtFinishClient(service),
+                cancel_event=cancel,
+                emit=emit,
+            )
+
+    asyncio.run(execute())

@@ -1,8 +1,19 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
 
 from common.schemas import Evidence, Verdict, VerifiedFinding
+
+
+_EXPECTED = {
+    "safe-own-a": ("user-a", "/documents/doc-a-001", 200, "SYN-A-PRIVATE-001"),
+    "safe-own-b": ("user-b", "/documents/doc-b-001", 200, "SYN-B-PRIVATE-001"),
+    "safe-admin": ("admin", "/documents/doc-admin-001", 200, "SYN-ADMIN-001"),
+    "attack-cross-b": ("user-a", "/documents/doc-b-001", None, None),
+    "edge-missing": ("user-a", "/documents/doc-missing-999", 404, None),
+}
 
 
 @dataclass(frozen=True)
@@ -12,32 +23,67 @@ class VerificationResult:
     warnings: list[str]
 
 
+def evidence_identity_digest(evidence: list[Evidence]) -> str:
+    fields = (
+        "evidence_id",
+        "run_id",
+        "method",
+        "path",
+        "status_code",
+        "account_ref",
+        "request_id",
+        "synthetic_document_marker",
+        "body_hash",
+        "purpose",
+    )
+    canonical = [
+        {field: getattr(item, field) for field in fields}
+        for item in sorted(evidence, key=lambda value: value.evidence_id)
+    ]
+    encoded = json.dumps(
+        canonical, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def verify_access_control(evidence: list[Evidence]) -> VerificationResult:
+    purposes = [item.purpose for item in evidence]
+    if len(purposes) != len(set(purposes)):
+        return VerificationResult(Verdict.INCONCLUSIVE, [], ["duplicate evidence purpose rejected"])
+    request_ids = [item.request_id for item in evidence]
+    if len(request_ids) != len(set(request_ids)):
+        return VerificationResult(Verdict.INCONCLUSIVE, [], ["duplicate request_id rejected"])
+    evidence_ids = [item.evidence_id for item in evidence]
+    if len(evidence_ids) != len(set(evidence_ids)):
+        return VerificationResult(Verdict.INCONCLUSIVE, [], ["duplicate evidence_id rejected"])
+    run_ids = {item.run_id for item in evidence}
+    if len(run_ids) != 1:
+        return VerificationResult(Verdict.INCONCLUSIVE, [], ["mixed or missing run_id rejected"])
+    if set(purposes) != set(_EXPECTED):
+        return VerificationResult(
+            Verdict.INCONCLUSIVE,
+            [],
+            ["evidence set does not exactly match the published scenario"],
+        )
     by_purpose = {item.purpose: item for item in evidence}
     warnings: list[str] = []
-    required_controls = {
-        "safe-own-a": (200, "SYN-A-PRIVATE-001"),
-        "safe-own-b": (200, "SYN-B-PRIVATE-001"),
-        "safe-admin": (200, "SYN-ADMIN-001"),
-    }
-    for purpose, (status, marker) in required_controls.items():
-        item = by_purpose.get(purpose)
-        if item is None or item.status_code != status or item.synthetic_document_marker != marker:
+    for purpose, (account_ref, path, status, marker) in _EXPECTED.items():
+        item = by_purpose[purpose]
+        if item.method != "GET" or item.account_ref != account_ref or item.path != path:
             return VerificationResult(
                 verdict=Verdict.INCONCLUSIVE,
                 findings=[],
-                warnings=[f"required control failed: {purpose}"],
+                warnings=[f"evidence identity mismatch: {purpose}"],
             )
-    edge = by_purpose.get("edge-missing")
-    if edge is None or edge.status_code != 404:
-        warnings.append("EDGE-01 did not return the expected not-found control")
-    attack = by_purpose.get("attack-cross-b")
-    if attack is None:
-        return VerificationResult(
-            verdict=Verdict.INCONCLUSIVE,
-            findings=[],
-            warnings=warnings + ["cross-account evidence is missing"],
-        )
+        if status is not None and (
+            item.status_code != status or item.synthetic_document_marker != marker
+        ):
+            return VerificationResult(
+                verdict=Verdict.INCONCLUSIVE,
+                findings=[],
+                warnings=[f"required scenario observation failed: {purpose}"],
+            )
+    attack = by_purpose["attack-cross-b"]
     decision_evidence = [by_purpose["safe-own-b"], attack]
     if any(item.server_observation != "target_log_correlated" for item in decision_evidence):
         return VerificationResult(

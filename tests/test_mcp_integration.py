@@ -8,6 +8,7 @@ import time
 import httpx
 import pytest
 import uvicorn
+from fastapi.testclient import TestClient
 
 from controller.engine import EngineRequest, RunEngine
 from controller.providers import MockModelProvider
@@ -36,7 +37,7 @@ def _start_server(app, port: int):
     return server, thread
 
 
-def test_agents_sdk_managed_mcp_lists_and_calls_bounded_tools(tmp_path):
+def test_agents_sdk_managed_mcp_lists_and_calls_bounded_tools(tmp_path, monkeypatch):
     service, _ = make_service(tmp_path, "vulnerable")
     app = build_worker_app(
         service,
@@ -46,6 +47,9 @@ def test_agents_sdk_managed_mcp_lists_and_calls_bounded_tools(tmp_path):
     port = _free_port()
     server, thread = _start_server(app, port)
     url = f"http://127.0.0.1:{port}"
+    monkeypatch.setenv("HTTP_PROXY", "socks5://127.0.0.1:1")
+    monkeypatch.setenv("HTTPS_PROXY", "socks5://127.0.0.1:1")
+    monkeypatch.setenv("ALL_PROXY", "socks5://127.0.0.1:1")
 
     async def exercise():
         client = MCPWorkerClient(server_url=f"{url}/mcp", token="mcp-worker-test-token")
@@ -98,7 +102,8 @@ def test_agents_sdk_managed_mcp_lists_and_calls_bounded_tools(tmp_path):
 
     try:
         asyncio.run(exercise())
-        unauthorized = httpx.post(f"{url}/mcp", timeout=3)
+        with httpx.Client(trust_env=False, timeout=3) as direct_client:
+            unauthorized = direct_client.post(f"{url}/mcp")
         assert unauthorized.status_code == 401
     finally:
         server.should_exit = True
@@ -111,3 +116,57 @@ def test_agents_sdk_managed_mcp_lists_and_calls_bounded_tools(tmp_path):
 
     with pytest.raises(Exception):
         asyncio.run(disconnected())
+
+
+def test_mcp_transport_accepts_registered_vm_host_and_rejects_other_hosts(tmp_path):
+    service, _ = make_service(tmp_path, "fixed")
+    app = build_worker_app(
+        service,
+        worker_token="mcp-worker-test-token",
+        allowed_clients={"testclient"},
+        allowed_mcp_hosts={"10.77.0.20:9000", "127.0.0.1:*"},
+        allowed_mcp_origins={"http://10.77.0.10:8000"},
+    )
+    initialize = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": "2025-06-18",
+            "capabilities": {},
+            "clientInfo": {"name": "host-boundary-test", "version": "1"},
+        },
+    }
+    base_headers = {
+        "Authorization": "Bearer mcp-worker-test-token",
+        "Accept": "application/json, text/event-stream",
+        "Content-Type": "application/json",
+    }
+    with TestClient(app) as client:
+        registered = client.post(
+            "/mcp", json=initialize, headers={**base_headers, "Host": "10.77.0.20:9000"}
+        )
+        rejected = client.post(
+            "/mcp", json=initialize, headers={**base_headers, "Host": "10.77.0.99:9000"}
+        )
+        bad_origin = client.post(
+            "/mcp",
+            json=initialize,
+            headers={
+                **base_headers,
+                "Host": "10.77.0.20:9000",
+                "Origin": "http://evil.example",
+            },
+        )
+        unauthenticated = client.post(
+            "/mcp",
+            json=initialize,
+            headers={
+                **{key: value for key, value in base_headers.items() if key != "Authorization"},
+                "Host": "10.77.0.20:9000",
+            },
+        )
+    assert registered.status_code == 200
+    assert rejected.status_code == 421
+    assert bad_origin.status_code == 403
+    assert unauthenticated.status_code == 401

@@ -206,7 +206,13 @@ class Repository:
         report: RunReport | None = None,
     ) -> None:
         started_at = utc_now() if status == RunStatus.RUNNING else None
-        finished_at = utc_now() if status in {RunStatus.COMPLETED, RunStatus.CANCELLED, RunStatus.FAILED} else None
+        finished_at = utc_now() if status in {
+            RunStatus.COMPLETED,
+            RunStatus.CANCELLED,
+            RunStatus.TIMED_OUT,
+            RunStatus.FAILED,
+            RunStatus.INTERRUPTED,
+        } else None
         with self._write_lock, self._connect() as connection:
             connection.execute(
                 """
@@ -234,6 +240,30 @@ class Repository:
             )
             return cursor.rowcount == 1
 
+    def is_cancel_requested(self, run_id: str) -> bool:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT cancel_requested FROM runs WHERE run_id=?", (run_id,)
+            ).fetchone()
+            return bool(row and row["cancel_requested"])
+
+    def complete_run(self, run_id: str, report: RunReport) -> bool:
+        with self._write_lock, self._connect() as connection:
+            cursor = connection.execute(
+                """
+                UPDATE runs SET status=?, finished_at=?, error_message=NULL, report_json=?
+                WHERE run_id=? AND status=? AND cancel_requested=0
+                """,
+                (
+                    RunStatus.COMPLETED,
+                    utc_now(),
+                    report.model_dump_json(),
+                    run_id,
+                    RunStatus.RUNNING,
+                ),
+            )
+            return cursor.rowcount == 1
+
     def get_run(self, run_id: str, owner_id: str) -> dict[str, Any] | None:
         with self._connect() as connection:
             row = connection.execute(
@@ -245,6 +275,41 @@ class Repository:
             result["report"] = json.loads(result.pop("report_json")) if result.get("report_json") else None
             result["cancel_requested"] = bool(result["cancel_requested"])
             return result
+
+    def get_run_internal(self, run_id: str) -> dict[str, Any] | None:
+        with self._connect() as connection:
+            row = connection.execute("SELECT * FROM runs WHERE run_id=?", (run_id,)).fetchone()
+            if row is None:
+                return None
+            result = dict(row)
+            result["report"] = json.loads(result.pop("report_json")) if result.get("report_json") else None
+            result["cancel_requested"] = bool(result["cancel_requested"])
+            return result
+
+    def update_run_report(self, run_id: str, report: RunReport) -> None:
+        with self._write_lock, self._connect() as connection:
+            connection.execute(
+                "UPDATE runs SET report_json=? WHERE run_id=? AND status=?",
+                (report.model_dump_json(), run_id, RunStatus.COMPLETED),
+            )
+
+    def list_runs(self, conversation_id: str, owner_id: str) -> list[dict[str, Any]]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT * FROM runs
+                WHERE conversation_id=? AND owner_id=?
+                ORDER BY created_at DESC, run_id DESC
+                """,
+                (conversation_id, owner_id),
+            ).fetchall()
+            results: list[dict[str, Any]] = []
+            for row in rows:
+                item = dict(row)
+                item["report"] = json.loads(item.pop("report_json")) if item.get("report_json") else None
+                item["cancel_requested"] = bool(item["cancel_requested"])
+                results.append(item)
+            return results
 
     def append_event(self, run_id: str, event_type: str, payload: dict[str, Any]) -> dict[str, Any]:
         safe_payload = sanitize(payload)
@@ -297,8 +362,23 @@ class Repository:
             ).fetchall()
             return [json.loads(row["metadata_json"]) for row in rows]
 
+    def mark_evidence_offline_correlated(self, run_id: str) -> None:
+        with self._write_lock, self._connect() as connection:
+            rows = connection.execute(
+                "SELECT evidence_id, metadata_json FROM evidence_metadata WHERE run_id=?",
+                (run_id,),
+            ).fetchall()
+            for row in rows:
+                item = Evidence.model_validate_json(row["metadata_json"])
+                item.server_observation = "target_log_correlated"
+                connection.execute(
+                    "UPDATE evidence_metadata SET metadata_json=? WHERE evidence_id=?",
+                    (item.model_dump_json(), row["evidence_id"]),
+                )
+
     def save_findings(self, report: RunReport) -> None:
         with self._write_lock, self._connect() as connection:
+            connection.execute("DELETE FROM findings WHERE run_id=?", (report.run_id,))
             for finding in report.verified_findings:
                 connection.execute(
                     "INSERT INTO findings(finding_id, run_id, finding_type, verdict, details_json) VALUES (?, ?, ?, ?, ?)",

@@ -3,13 +3,13 @@
 1. 세 VM의 snapshot과 network/firewall 상태를 콘솔에서 확인한다.
 2. target에서 `python -m target.cli reset`을 실행한다.
 3. target을 `TARGET_MODE=vulnerable`로 시작한다.
-4. worker와 controller를 시작하고 `python -m controller.cli doctor` 결과를 저장한다.
-5. UI에서 `lab-web`, `access-control`, mock, function을 실행한다.
+4. worker와 controller를 VM별 `--env-file`로 시작하고 `python -m controller.cli doctor` 결과와 종료 코드를 저장한다.
+5. UI에서 `APP_ACCESS_TOKEN`으로 로그인한 뒤 `lab-web`, `access-control`, mock, function을 실행한다.
 6. 후보와 verifier 확정 판정, safe controls, cross-account evidence를 펼쳐 보인다.
 7. target 콘솔에서 종료하고 `TARGET_MODE=fixed`로 재시작한 뒤 reset한다.
 8. 동일 입력·scenario·limits로 다시 실행해 `BLOCKED_BY_ACCESS_CONTROL`을 확인한다.
 9. mock+MCP 경로를 별도로 실행해 transport 동등성을 확인한다.
-10. target-local DB로 offline verifier를 실행하고 online 결과와 상관 상태를 비교한다.
+10. target-local DB로 offline verifier를 실행하고 online 결과와 상관 상태를 비교한다. 필요하면 별도 `OFFLINE_VERIFICATION_TOKEN`으로 정제 결과만 controller에 반영해 UI의 `offline-correlated` 상태를 확인한다.
 
 발표 시 다음을 명시한다.
 

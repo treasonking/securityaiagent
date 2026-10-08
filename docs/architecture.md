@@ -2,23 +2,23 @@
 
 ```mermaid
 flowchart LR
-  UI[React static UI] -->|same-origin /api| C[Controller FastAPI]
+  UI[React static UI] -->|access token, session, CSRF, same-origin /api| C[Controller FastAPI]
   C --> DB[(Controller SQLite)]
   C --> P[Mock or OpenAI provider]
   C -->|function API or SDK-managed MCP| W[Worker ToolService]
   W -->|exact HTTP origin| T[Synthetic target]
   T --> TDB[(Target SQLite)]
   V[Offline verifier] -. approved local read .-> TDB
-  V -. sanitized evidence .-> DB
+  V -. bearer-authenticated sanitized result + evidence digest .-> C
 ```
 
 ## Components
 
-- `controller/`: provider boundary, deterministic scenario runner, FastAPI API, local session/CSRF, SQLite repository, SSE job manager, report writer.
-- `worker/`: one shared `ToolService` exposed by authenticated function endpoints and Streamable HTTP MCP. Both transports share policy, limits, cancellation, and evidence redaction.
+- `controller/`: provider boundary, deterministic scenario runner, FastAPI API, initial access authentication, expiring/revocable local session, CSRF/Origin/Host/client controls, SQLite repository, bounded SSE job manager, report writer.
+- `worker/`: one shared `ToolService` exposed by authenticated function endpoints and Host/Origin-bound Streamable HTTP MCP. Both transports share policy, streaming limits, cancellation, and evidence redaction.
 - `target/`: synthetic business site with scrypt-hashed accounts, sessions, per-user documents, vulnerable/fixed authorization branch, and target-local observations.
-- `verifier/`: deterministic oracle. It is not registered as an agent tool.
-- `frontend/`: same-origin React client. It does not receive worker credentials or render raw HTML.
+- `verifier/`: deterministic oracle that checks run/request/method/path/account/status/marker identity. It is not registered as an agent tool.
+- `frontend/`: same-origin React client with provider availability, run restoration, and SSE polling fallback. It does not receive worker/OpenAI credentials or render raw HTML.
 
 ## Run sequence
 

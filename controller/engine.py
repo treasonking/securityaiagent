@@ -41,6 +41,38 @@ class RunEngine:
             raise RunCancelled("run cancellation requested")
 
     @staticmethod
+    async def _await_cancelable(
+        awaitable: Awaitable[object],
+        *,
+        cancel_event: asyncio.Event,
+        on_cancel: Callable[[], Awaitable[object]] | None = None,
+        reason: str,
+    ) -> object:
+        operation = asyncio.ensure_future(awaitable)
+        cancellation = asyncio.create_task(cancel_event.wait())
+        try:
+            done, _ = await asyncio.wait(
+                {operation, cancellation}, return_when=asyncio.FIRST_COMPLETED
+            )
+            if cancel_event.is_set():
+                operation.cancel()
+                await asyncio.gather(operation, return_exceptions=True)
+                if on_cancel is not None:
+                    await asyncio.gather(asyncio.create_task(on_cancel()), return_exceptions=True)
+                raise RunCancelled(reason)
+            if operation not in done:
+                raise RuntimeError("operation wait ended unexpectedly")
+            return await operation
+        except BaseException:
+            if not operation.done():
+                operation.cancel()
+                await asyncio.gather(operation, return_exceptions=True)
+            raise
+        finally:
+            cancellation.cancel()
+            await asyncio.gather(cancellation, return_exceptions=True)
+
+    @staticmethod
     def _required(result: ToolResult, operation: str) -> ToolResult:
         if not result.ok:
             raise ToolExecutionError(f"{operation}: {result.error_code or 'UNKNOWN'}: {result.message or ''}")
@@ -64,20 +96,13 @@ class RunEngine:
         limits_used: dict[str, int | float] = {"http_requests": 0, "tool_calls": 0}
 
         try:
-            provider_task = asyncio.create_task(
-                provider.propose_candidates(scenario_id=request.scenario_id, target_id=request.target_id)
+            provider_result = await self._await_cancelable(
+                provider.propose_candidates(
+                    scenario_id=request.scenario_id, target_id=request.target_id
+                ),
+                cancel_event=cancel_event,
+                reason="run cancellation requested during provider call",
             )
-            cancellation_task = asyncio.create_task(cancel_event.wait())
-            done, _ = await asyncio.wait(
-                {provider_task, cancellation_task}, return_when=asyncio.FIRST_COMPLETED
-            )
-            if cancellation_task in done and cancel_event.is_set():
-                provider_task.cancel()
-                await asyncio.gather(provider_task, return_exceptions=True)
-                raise RunCancelled("run cancellation requested during provider call")
-            cancellation_task.cancel()
-            await asyncio.gather(cancellation_task, return_exceptions=True)
-            provider_result = await provider_task
             candidates = provider_result.candidates
             model_usage = provider_result.usage
         except RunCancelled:
@@ -90,7 +115,14 @@ class RunEngine:
         async def invoke(name: str, call: Callable[[], Awaitable[ToolResult]]) -> ToolResult:
             await self._check_cancel(cancel_event, client, request.run_id)
             await emit("tool_started", {"tool": name})
-            result = await call()
+            result = await self._await_cancelable(
+                call(),
+                cancel_event=cancel_event,
+                on_cancel=lambda: client.cancel_run(request.run_id),
+                reason=f"run cancellation requested during {name}",
+            )
+            assert isinstance(result, ToolResult)
+            await self._check_cancel(cancel_event, client, request.run_id)
             await emit("tool_finished", {"tool": name, "ok": result.ok, "error_code": result.error_code})
             if result.evidence:
                 evidence.append(result.evidence)
@@ -167,6 +199,7 @@ class RunEngine:
                 finish = self._required(
                     await invoke("finish_run", lambda: client.finish_run(request.run_id)), "finish_run"
                 )
+                await self._check_cancel(cancel_event, client, request.run_id)
                 mode_value = finish.data.get("mode")
                 mode = str(mode_value) if mode_value in {"vulnerable", "fixed"} else "unknown"
                 limits_used = {

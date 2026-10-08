@@ -6,6 +6,7 @@ from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import BaseModel, ConfigDict
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
@@ -67,10 +68,14 @@ def build_worker_app(
     *,
     worker_token: str,
     allowed_clients: set[str] | None = None,
+    allowed_mcp_hosts: set[str] | None = None,
+    allowed_mcp_origins: set[str] | None = None,
 ):
     if not worker_token:
         raise RuntimeError("WORKER_TOKEN must be configured")
     allowed = allowed_clients or {"127.0.0.1", "::1", "testclient"}
+    mcp_hosts = allowed_mcp_hosts or {"127.0.0.1:*", "localhost:*", "[::1]:*", "testserver"}
+    mcp_origins = allowed_mcp_origins or set()
     api = FastAPI(title="SecurityLab worker", docs_url=None, redoc_url=None)
 
     async def authenticate(request: Request, authorization: str | None = Header(default=None)) -> None:
@@ -116,6 +121,11 @@ def build_worker_app(
         streamable_http_path="/mcp",
         json_response=True,
         stateless_http=True,
+        transport_security=TransportSecuritySettings(
+            enable_dns_rebinding_protection=True,
+            allowed_hosts=sorted(mcp_hosts),
+            allowed_origins=sorted(mcp_origins),
+        ),
     )
 
     @mcp.tool()
@@ -185,7 +195,32 @@ def create_app_from_env():
         max_response_bytes=int(os.getenv("HTTP_MAX_RESPONSE_BYTES", "65536")),
         requests_per_second=float(os.getenv("HTTP_REQUESTS_PER_SECOND", "2")),
         max_concurrency=int(os.getenv("HTTP_MAX_CONCURRENCY", "1")),
+        max_runs=int(os.getenv("WORKER_MAX_RUNS", "100")),
+        state_ttl_seconds=float(os.getenv("WORKER_STATE_TTL_SECONDS", "600")),
     )
     service = ToolService(policies=policies, accounts=accounts, limits=limits)
-    allowed = {item.strip() for item in os.getenv("WORKER_ALLOWED_CLIENTS", "10.77.0.10,127.0.0.1,::1").split(",")}
-    return build_worker_app(service, worker_token=token, allowed_clients=allowed)
+    allowed = {
+        item.strip()
+        for item in os.getenv("WORKER_ALLOWED_CLIENTS", "10.77.0.10,127.0.0.1,::1").split(",")
+        if item.strip()
+    }
+    mcp_hosts = {
+        item.strip()
+        for item in os.getenv(
+            "MCP_ALLOWED_HOSTS",
+            "10.77.0.20:9000,127.0.0.1:*,localhost:*,[::1]:*",
+        ).split(",")
+        if item.strip()
+    }
+    mcp_origins = {
+        item.strip()
+        for item in os.getenv("MCP_ALLOWED_ORIGINS", "http://10.77.0.10:8000").split(",")
+        if item.strip()
+    }
+    return build_worker_app(
+        service,
+        worker_token=token,
+        allowed_clients=allowed,
+        allowed_mcp_hosts=mcp_hosts,
+        allowed_mcp_origins=mcp_origins,
+    )

@@ -214,7 +214,7 @@ class TargetStore:
     def observation(self, request_id: str) -> dict[str, str | int | None] | None:
         with self._connect() as connection:
             row = connection.execute(
-                "SELECT run_id, request_id, path, status_code, account_id, marker FROM observations WHERE request_id=?",
+                "SELECT run_id, request_id, method, path, status_code, account_id, marker FROM observations WHERE request_id=?",
                 (request_id,),
             ).fetchone()
             return dict(row) if row else None

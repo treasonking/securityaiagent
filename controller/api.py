@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import hmac
 import json
 import os
 from contextlib import asynccontextmanager
@@ -12,15 +13,17 @@ from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, Request, Re
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from common.sanitize import redact_text
-from common.schemas import RunStatus
+from common.schemas import Evidence, OfflineVerificationImport, RunReport, RunStatus, Verdict
 from controller.auth import SessionSigner
 from controller.engine import RunEngine
 from controller.manager import ManagerSettings, RunManager
 from controller.reporting import ReportWriter
 from controller.repository import Repository
 from controller.tool_clients import FunctionWorkerClient, MCPWorkerClient, ToolClient
+from verifier.core import evidence_identity_digest
 
 
 @dataclass(frozen=True)
@@ -28,10 +31,23 @@ class AppSettings:
     database_path: Path
     reports_path: Path
     session_secret: str
+    access_token: str
     allowed_origins: frozenset[str]
+    allowed_hosts: frozenset[str] = frozenset({"127.0.0.1", "localhost"})
+    allowed_clients: frozenset[str] = frozenset({"127.0.0.1", "::1"})
+    session_ttl_seconds: int = 3600
+    secure_cookie: bool = False
     max_concurrency: int = 1
+    run_timeout_seconds: float = 180.0
     model_id: str | None = None
     model_max_calls: int = 8
+    openai_configured: bool = False
+    offline_import_token: str | None = None
+
+
+class SessionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    access_token: str = Field(min_length=1, max_length=512)
 
 
 class ConversationRequest(BaseModel):
@@ -56,7 +72,9 @@ def create_app(
 ) -> FastAPI:
     repo = repository or Repository(settings.database_path)
     repo.interrupt_unfinished_runs()
-    signer = SessionSigner(settings.session_secret)
+    if len(settings.access_token) < 16:
+        raise ValueError("APP_ACCESS_TOKEN must contain at least 16 characters")
+    signer = SessionSigner(settings.session_secret, ttl_seconds=settings.session_ttl_seconds)
     manager = RunManager(
         repository=repo,
         engine=RunEngine(report_writer=ReportWriter(settings.reports_path)),
@@ -65,6 +83,7 @@ def create_app(
             max_concurrency=settings.max_concurrency,
             model_id=settings.model_id,
             model_max_calls=settings.model_max_calls,
+            run_timeout_seconds=settings.run_timeout_seconds,
         ),
     )
 
@@ -74,14 +93,20 @@ def create_app(
         await manager.shutdown()
 
     app = FastAPI(title="SecurityLab controller", docs_url=None, redoc_url=None, lifespan=lifespan)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=sorted(settings.allowed_hosts))
     app.state.repository = repo
     app.state.manager = manager
 
     @app.middleware("http")
     async def origin_guard(request: Request, call_next):
-        if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        client_host = request.client.host if request.client else ""
+        if client_host not in settings.allowed_clients:
+            return Response(status_code=403, content="client address rejected")
+        if request.method not in {"GET", "HEAD", "OPTIONS"} and not request.url.path.startswith(
+            "/api/internal/"
+        ):
             origin = request.headers.get("origin")
-            if origin and origin not in settings.allowed_origins:
+            if origin not in settings.allowed_origins:
                 return Response(status_code=403, content="origin rejected")
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
@@ -108,11 +133,35 @@ def create_app(
             raise HTTPException(status_code=403, detail="CSRF validation failed")
         return owner_id
 
-    @app.get("/api/session")
-    async def session(response: Response, sl_session: str | None = Cookie(default=None)) -> dict[str, str]:
-        token = sl_session if signer.validate(sl_session) else signer.issue()
-        response.set_cookie("sl_session", token, httponly=True, samesite="strict", secure=False, path="/")
+    @app.post("/api/session")
+    async def create_session(payload: SessionRequest, response: Response) -> dict[str, str]:
+        if not hmac.compare_digest(payload.access_token, settings.access_token):
+            raise HTTPException(status_code=401, detail="invalid local access token")
+        token = signer.issue()
+        response.set_cookie(
+            "sl_session",
+            token,
+            httponly=True,
+            samesite="strict",
+            secure=settings.secure_cookie,
+            path="/",
+            max_age=settings.session_ttl_seconds,
+        )
         return {"csrf_token": signer.csrf(token), "mode": "local-single-user"}
+
+    @app.get("/api/session")
+    async def get_session(sl_session: str | None = Cookie(default=None), owner_id: str = Depends(owner)):
+        return {"csrf_token": signer.csrf(sl_session or ""), "mode": "local-single-user", "owner": owner_id}
+
+    @app.delete("/api/session")
+    async def logout(
+        response: Response,
+        sl_session: str | None = Cookie(default=None),
+        _owner_id: str = Depends(write_owner),
+    ) -> dict[str, str]:
+        signer.revoke(sl_session)
+        response.delete_cookie("sl_session", path="/")
+        return {"status": "logged_out"}
 
     @app.get("/api/health")
     async def health() -> dict[str, object]:
@@ -122,6 +171,59 @@ def create_app(
             "transports": sorted(clients),
             "phase_2": {"nmap": "not_implemented", "playwright": "not_implemented"},
         }
+
+    @app.get("/api/config")
+    async def config(_owner_id: str = Depends(owner)) -> dict[str, object]:
+        return {
+            "workflow": "fixed-scenario-verifier-with-llm-candidate-generation",
+            "providers": {
+                "mock": {"configured": True, "verified": True},
+                "openai": {"configured": settings.openai_configured, "verified": False},
+            },
+            "transports": sorted(clients),
+        }
+
+    @app.post("/api/internal/offline-verification")
+    async def import_offline_verification(
+        payload: OfflineVerificationImport,
+        authorization: str | None = Header(default=None),
+    ) -> dict[str, object]:
+        expected = (
+            f"Bearer {settings.offline_import_token}" if settings.offline_import_token else None
+        )
+        if not expected or not authorization or not hmac.compare_digest(expected, authorization):
+            raise HTTPException(status_code=401, detail="offline verifier authentication required")
+        run = repo.get_run_internal(payload.run_id)
+        if run is None or run["status"] != RunStatus.COMPLETED or not run["report"]:
+            raise HTTPException(status_code=409, detail="completed online run is required")
+        evidence_items = [Evidence.model_validate(item) for item in repo.list_evidence(payload.run_id)]
+        if payload.evidence_count != len(evidence_items):
+            raise HTTPException(status_code=409, detail="evidence count mismatch")
+        if payload.evidence_digest != evidence_identity_digest(evidence_items):
+            raise HTTPException(status_code=409, detail="evidence identity digest mismatch")
+        if payload.verdict != Verdict.INCONCLUSIVE and payload.correlated_count != len(evidence_items):
+            raise HTTPException(status_code=409, detail="final verdict requires all evidence to correlate")
+        evidence_ids = {item.evidence_id for item in evidence_items}
+        if any(not set(item.evidence_ids).issubset(evidence_ids) for item in payload.verified_findings):
+            raise HTTPException(status_code=409, detail="finding references unknown evidence")
+        report = RunReport.model_validate(run["report"])
+        report.verdict = payload.verdict
+        report.verified_findings = payload.verified_findings
+        report.warnings = list(dict.fromkeys(report.warnings + payload.warnings))
+        report.environment["target_server_log"] = "offline-correlated"
+        repo.update_run_report(payload.run_id, report)
+        repo.save_findings(report)
+        if payload.correlated_count == len(evidence_items):
+            repo.mark_evidence_offline_correlated(payload.run_id)
+            for item in evidence_items:
+                item.server_observation = "target_log_correlated"
+        ReportWriter(settings.reports_path).write(report, evidence_items)
+        repo.append_event(
+            payload.run_id,
+            "offline_verification_imported",
+            {"verdict": payload.verdict, "correlated_count": payload.correlated_count},
+        )
+        return {"run_id": payload.run_id, "verdict": payload.verdict, "imported": True}
 
     @app.post("/api/conversations")
     async def create_conversation(payload: ConversationRequest, owner_id: str = Depends(write_owner)):
@@ -137,6 +239,12 @@ def create_app(
             raise HTTPException(status_code=404, detail="conversation not found")
         return {"messages": repo.list_messages(conversation_id)}
 
+    @app.get("/api/conversations/{conversation_id}/runs")
+    async def conversation_runs(conversation_id: str, owner_id: str = Depends(owner)):
+        if not repo.conversation_owned(conversation_id, owner_id):
+            raise HTTPException(status_code=404, detail="conversation not found")
+        return {"runs": repo.list_runs(conversation_id, owner_id)}
+
     @app.post("/api/conversations/{conversation_id}/messages")
     async def submit_message(
         conversation_id: str,
@@ -147,6 +255,8 @@ def create_app(
             raise HTTPException(status_code=404, detail="conversation not found")
         if payload.tool_transport not in clients:
             raise HTTPException(status_code=422, detail="requested tool transport is not configured")
+        if payload.provider == "openai" and not settings.openai_configured:
+            raise HTTPException(status_code=422, detail="OpenAI provider is not configured")
         repo.add_message(conversation_id, "user", redact_text(payload.message))
         run_id = repo.create_run(
             conversation_id=conversation_id,
@@ -219,6 +329,7 @@ def create_app(
                 if run and run["status"] in {
                     RunStatus.COMPLETED,
                     RunStatus.CANCELLED,
+                    RunStatus.TIMED_OUT,
                     RunStatus.FAILED,
                     RunStatus.INTERRUPTED,
                 } and not repo.list_events(run_id, cursor):
@@ -233,6 +344,12 @@ def create_app(
             media_type="text/event-stream",
             headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"},
         )
+
+    @app.get("/api/runs/{run_id}/event-log")
+    async def event_log(run_id: str, owner_id: str = Depends(owner)):
+        if repo.get_run(run_id, owner_id) is None:
+            raise HTTPException(status_code=404, detail="run not found")
+        return {"events": repo.list_events(run_id)}
 
     frontend_dist = Path(__file__).resolve().parents[1] / "frontend" / "dist"
     if frontend_dist.exists():
@@ -253,19 +370,42 @@ def create_app_from_env() -> FastAPI:
     secret = os.getenv("APP_SESSION_SECRET", "")
     if len(secret) < 24:
         raise RuntimeError("APP_SESSION_SECRET must contain at least 24 characters")
+    access_token = os.getenv("APP_ACCESS_TOKEN", "")
+    if len(access_token) < 16:
+        raise RuntimeError("APP_ACCESS_TOKEN must contain at least 16 characters")
     function_client = FunctionWorkerClient(base_url=os.getenv("WORKER_URL", "http://10.77.0.20:9000"), token=token)
     mcp_client = MCPWorkerClient(server_url=os.getenv("MCP_WORKER_URL", "http://10.77.0.20:9000/mcp"), token=token)
     settings = AppSettings(
         database_path=resolve_path(os.getenv("DATABASE_PATH", ""), "data/securitylab.sqlite3"),
         reports_path=root / "reports" / "runs",
         session_secret=secret,
+        access_token=access_token,
         allowed_origins=frozenset(
             item.strip()
             for item in os.getenv("UI_ALLOWED_ORIGINS", "http://192.168.56.10:8000").split(",")
             if item.strip()
         ),
+        allowed_hosts=frozenset(
+            item.strip()
+            for item in os.getenv(
+                "UI_ALLOWED_HOSTS", "192.168.56.10,localhost,127.0.0.1"
+            ).split(",")
+            if item.strip()
+        ),
+        allowed_clients=frozenset(
+            item.strip()
+            for item in os.getenv(
+                "CONTROLLER_ALLOWED_CLIENTS", "192.168.56.1,127.0.0.1,::1"
+            ).split(",")
+            if item.strip()
+        ),
+        session_ttl_seconds=int(os.getenv("APP_SESSION_TTL_SECONDS", "3600")),
+        secure_cookie=os.getenv("APP_SECURE_COOKIE", "false").lower() == "true",
         max_concurrency=int(os.getenv("RUN_MAX_CONCURRENCY", "1")),
+        run_timeout_seconds=float(os.getenv("CONTROLLER_RUN_TIMEOUT_SECONDS", "180")),
         model_id=os.getenv("OPENAI_MODEL") or None,
         model_max_calls=int(os.getenv("MODEL_MAX_CALLS", "8")),
+        openai_configured=bool(os.getenv("OPENAI_API_KEY") and os.getenv("OPENAI_MODEL")),
+        offline_import_token=os.getenv("OFFLINE_VERIFICATION_TOKEN") or None,
     )
     return create_app(settings=settings, clients={"function": function_client, "mcp": mcp_client})

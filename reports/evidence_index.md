@@ -1,17 +1,21 @@
 # Evidence index
 
-2026-10-08 로컬 Windows 개발 환경 기준이다. VM 또는 live OpenAI evidence로 해석하지 않는다.
+2026-10-09 로컬 Windows 개발 환경 기준이다. VM, live OpenAI, 실제 브라우저 evidence로 해석하지 않는다.
 
 | Claim | Command / observation | Evidence path | Status | Limitation |
 |---|---|---|---|---|
-| vulnerable/fixed HTTP core and policy paths work | `.\.venv\Scripts\python.exe -m pytest` → `28 passed, 4 warnings` | `tests/test_target.py`, `tests/test_policy.py`, `tests/test_core_flow.py` | Verified locally | target runs in-process ASGI, not target VM |
-| vulnerable and fixed reports reproduce separately | `scripts\run_local_core.py --mode vulnerable/fixed` + offline verifier | local gitignored run dirs; summary in `reports/current_verification.md` | Verified locally | functional fixture, not a general security metric |
-| controller API, SQLite history, SSE, redaction work | same pytest run | `tests/test_controller_api.py`, `tests/test_repository.py` | Verified locally | single process/user only |
-| SDK-managed Streamable HTTP MCP connects and calls shared tools | same pytest run | `tests/test_mcp_integration.py` | Verified on loopback | worker target transport remains in-process; no control-net evidence |
-| React escapes output and uses controller same-origin API | `npm test` → `3 passed` | `frontend/tests/security-contract.test.mjs` | Verified statically | not a browser E2E test |
-| production static UI builds | `npm run build` → success | `frontend/dist/` (gitignored build output) | Verified locally | visual/browser behavior not captured |
+| vulnerable/fixed HTTP core and strict evidence paths work | `.\.venv\Scripts\python.exe -m pytest` → 45 passed; local core + evaluator | `tests/test_core_flow.py`, `tests/test_verifier_hardening.py` | Verified locally | target uses in-process ASGI in core run |
+| registered MCP VM Host is accepted without disabling DNS rebinding protection | Host boundary regression | `tests/test_mcp_integration.py` | Verified by header simulation | actual VM route/socket not tested |
+| internal MCP ignores proxy environment | invalid SOCKS proxy env with successful loopback MCP run | `controller/tool_clients.py`, `tests/test_mcp_integration.py` | Verified locally | loopback only |
+| cancellation stops rate/semaphore waits and active HTTP | focused async regressions | `tests/test_worker_limits.py` | Verified locally | deterministic synthetic transports |
+| controller deadline and queued cancellation are terminal-safe | provider timeout / queued API regressions | `tests/test_controller_api.py` | Verified locally | single process only |
+| response byte limit applies during decoded streaming | 128B cap rejects on third 64B chunk | `tests/test_worker_limits.py` | Verified locally | synthetic uncompressed stream; HTTPX decoded-byte iterator used for compression |
+| forged account/path/run/log evidence is rejected | mutation and offline DB regressions | `tests/test_verifier_hardening.py` | Verified locally | published fixture only |
+| controller requires local access authentication and bounded sessions | API and signer regressions | `tests/test_controller_api.py`, `tests/test_controller_auth.py` | Verified locally | no external identity provider; in-memory revocation requires one process |
+| offline final result can update UI/report without exposing target DB | authenticated import regression | `tests/test_controller_api.py`, `verifier/cli.py` | Verified locally | bearer token distribution is operator-managed |
+| UI has provider selection, run restoration, SSE cleanup/poll fallback | `npm test` → 8 passed, `npm run build` success | `frontend/tests/security-contract.test.mjs` | Verified statically | no real browser E2E or screenshot |
 | OpenAI provider runs with a real model | not run | `controller/providers.py` | Not verified | no API key/model authorization supplied |
-| VM isolation and resource allocation | not run | `docs/network_setup.md` | Not verified | requires user-owned VirtualBox VMs |
-| Nmap / Playwright | intentionally not run | `docs/phase2_nmap_playwright.md` | Not implemented (phase 2) | no tool or dependency in v1 |
+| VM isolation and resource allocation | not run | `docs/network_setup.md` | Not verified | requires user-owned VMs |
+| Nmap / Playwright | intentionally not run | `docs/phase2_nmap_playwright.md` | Not implemented (phase 2) | no tool/dependency in v1 |
 
-Python 경고 4건은 MCP/Agents SDK dependency 내부의 Pydantic forward-reference 경고 1건과 deprecated transport helper 경고 3건이다. 테스트 실패는 아니지만 dependency 업데이트 시 재확인이 필요하다.
+Python warnings are four MCP/Agents SDK dependency warnings: one Pydantic forward-reference warning and three deprecated transport-helper warnings. They do not fail the current tests but must be reassessed when dependencies change.

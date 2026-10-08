@@ -22,6 +22,7 @@ class RunStatus(StrEnum):
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
+    TIMED_OUT = "TIMED_OUT"
     FAILED = "FAILED"
     INTERRUPTED = "INTERRUPTED"
 
@@ -95,3 +96,15 @@ class RunReport(BaseModel):
     warnings: list[str]
     environment: dict[str, str]
     recommendations: list[str]
+
+
+class OfflineVerificationImport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    run_id: str
+    verdict: Verdict
+    verified_findings: list[VerifiedFinding]
+    warnings: list[str]
+    evidence_count: int = Field(ge=0)
+    correlated_count: int = Field(ge=0)
+    evidence_digest: str = Field(pattern=r"^[0-9a-f]{64}$")

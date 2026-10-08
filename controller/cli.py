@@ -38,7 +38,8 @@ async def doctor() -> int:
     except Exception as exc:
         checks["worker_health"] = f"not verified: {type(exc).__name__}"
     print(json.dumps(checks, ensure_ascii=False, indent=2))
-    return 0 if checks["worker_token_configured"] else 2
+    worker_ok = isinstance(checks.get("worker_health"), dict) and checks["worker_health"].get("status") == "ok"
+    return 0 if checks["worker_token_configured"] and worker_ok else 2
 
 
 async def run_scenario(args: argparse.Namespace) -> int:
@@ -60,15 +61,17 @@ async def run_scenario(args: argparse.Namespace) -> int:
         payload = {key: value for key, value in payload.items() if key != "evidence"}
         print(json.dumps({"event": event_type, **payload}, ensure_ascii=False))
 
-    report = await engine.execute(
-        EngineRequest(run_id=run_id, scenario_id=args.scenario, target_id=args.target),
-        provider=provider,
-        client=client,
-        cancel_event=asyncio.Event(),
-        emit=emit,
-    )
+    timeout_seconds = float(os.getenv("CONTROLLER_RUN_TIMEOUT_SECONDS", "180"))
+    async with asyncio.timeout(timeout_seconds):
+        report = await engine.execute(
+            EngineRequest(run_id=run_id, scenario_id=args.scenario, target_id=args.target),
+            provider=provider,
+            client=client,
+            cancel_event=asyncio.Event(),
+            emit=emit,
+        )
     print(report.model_dump_json(indent=2))
-    return 0 if report.status == "COMPLETED" else 1
+    return 0 if report.status == "COMPLETED" and report.verdict != "INCONCLUSIVE" else 1
 
 
 def main() -> None:
