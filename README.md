@@ -13,7 +13,7 @@ SecurityLab AI는 사용자가 소유한 로컬 합성 사이트에서 하나의
 - mock provider 기반 실제 HTTP 검증 흐름과 별도 verifier
 - 선택적 OpenAI Agents SDK provider. 모델 ID는 기본값을 만들지 않으며 키와 ID가 모두 필요
 - controller FastAPI, 초기 접근 토큰 인증, 무작위 만료 세션·SQLite 영속 logout 철회, CSRF/Origin/Host/client allowlist, SQLite WAL 이력, 전체 run timeout, SSE, 취소, 재시작 시 `INTERRUPTED`
-- React + TypeScript + Vite provider 선택·대화/run 복원·비동기 대화/run identity guard·SSE 재연결/폴링 UI와 same-origin 정적 배포
+- React + TypeScript + Vite provider 선택·대화/run 복원·비동기 대화/run identity guard·원자적 terminal snapshot·SSE 재연결/폴링 UI와 same-origin 정적 배포
 - 등록 Host/Origin만 허용하는 worker Streamable HTTP MCP endpoint와 환경 프록시를 사용하지 않는 `MCPServerStreamableHttp` 내부 client
 - run·request·method·path·account·marker·status를 다시 대조하는 오프라인 검증 CLI와 인증된 정제 결과 반영 API
 
@@ -140,6 +140,6 @@ npm test
 npm run build
 ```
 
-테스트는 취약/수정/정상/없는 문서/로그인 오류, URL 정책, worker 인증, 정확히 N회인 HTTP 한도, gzip/deflate 단일 해제와 압축·해제 후 byte cap, rate-limit/semaphore/외부 task/진행 중 취소, controller 전체 timeout·queued 취소·재시작 후 세션 철회, verifier 위조 계정/run/문서/상관 플래그 거부, DB 재시작·redaction·이벤트 순서, UI 비동기 대화/run guard와 작업→SSE→보고서, loopback/등록 VM Host MCP 경계와 환경 프록시 차단을 포함한다. React 테스트는 소스 계약 검사이며 실제 브라우저 E2E 증거가 아니다. VM 방화벽·NIC 격리와 실제 OpenAI 모델 품질도 로컬 테스트에 포함되지 않는다.
+테스트는 취약/수정/정상/없는 문서/로그인 오류, URL 정책, worker 인증, 정확히 N회인 HTTP 한도, gzip/deflate 단일 해제와 압축·해제 후 byte cap, rate-limit/semaphore/외부 task/진행 중 취소, controller 전체 timeout·queued 취소·재시작 후 세션 철회, verifier 위조 계정/run/문서/상관 플래그 거부, DB 재시작·redaction·이벤트 순서, UI 비동기 대화/run guard와 지연 terminal snapshot, 작업→SSE→보고서, loopback/등록 VM Host MCP 경계와 환경 프록시 차단을 포함한다. React 검증은 Node 상태 회귀 테스트와 소스 계약 검사이며 실제 브라우저 E2E 증거가 아니다. VM 방화벽·NIC 격리와 실제 OpenAI 모델 품질도 로컬 테스트에 포함되지 않는다.
 
 자세한 구조와 운영 절차는 `docs/`와 `reports/evidence_index.md`를 본다.

@@ -39,6 +39,8 @@ test("conversation changes restore runs, evidence, and event history", () => {
   assert.match(app, /activeConversationRef\.current !== conversationId/);
   assert.match(app, /activeRunRef\.current !== runId/);
   assert.match(app, /async function refreshCurrentRun\(\)[\s\S]*activeRunRef\.current !== runId/);
+  assert.match(app, /refreshRunState\(\{/);
+  assert.match(app, /commitTerminal: \(\{ state, evidence: nextEvidence, messages: nextMessages \}\)/);
 });
 
 test("SSE lifecycle cleans up and uses polling fallback", () => {

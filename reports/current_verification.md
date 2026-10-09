@@ -5,8 +5,8 @@
 | Area | Command / test | Result |
 |---|---|---|
 | Python core/API/MCP | `.\.venv\Scripts\python.exe -m pytest` | 53 passed, 4 dependency warnings |
-| React security/state contract | `npm test` | 8 passed; source contract tests, not browser E2E |
-| React production build | `npm run build` | success, 17 modules transformed |
+| React security/state regression | `npm test` | 10 passed; two delayed-response state tests plus source contracts, not browser E2E |
+| React production build | `npm run build` | success, 18 modules transformed |
 | vulnerable fixture | `scripts\run_local_core.py --mode vulnerable` | `VULNERABLE`, 11 HTTP requests, 12 tool calls, 5 evidence items |
 | fixed fixture | `scripts\run_local_core.py --mode fixed` | `BLOCKED_BY_ACCESS_CONTROL`, 11 HTTP requests, 12 tool calls, 5 evidence items |
 | offline correlation | `python -m verifier.cli evaluate ...` | vulnerable/fixed 각각 5/5 correlated, 판정 재현 |
@@ -19,7 +19,7 @@
 | verifier identity hardening | wrong account/path/run, duplicate evidence, forged correlation flag | 모두 `INCONCLUSIVE` 또는 import 거부 |
 | local authentication | unauthenticated/wrong token, random session, expiry, revoke/logout, same-secret restart, CSRF, Host/client allowlist | logout 철회가 SQLite 재시작 뒤 유지되고 미철회 세션은 보존됨 |
 | offline result import | bearer-authenticated sanitized result + evidence digest | bad token/digest rejected; accepted result replaces verdict/findings and regenerates correlation warning/recommendations |
-| UI async identity guard | conversation/run refs in restore, SSE refresh, manual refresh | 8 source contract tests pass; delayed browser response E2E는 미실행 |
+| UI terminal snapshot guard | delayed evidence/messages completion and conversation switch | terminal run/evidence/messages are committed together; stale delayed snapshot produces no commit |
 
 The local run IDs were `local-vulnerable-793a1a756dd1` and `local-fixed-be979ec9420e`. Both used 11 HTTP requests, 12 tool calls, and five evidence items. Offline evaluation reproduced `VULNERABLE` and `BLOCKED_BY_ACCESS_CONTROL` with 5/5 correlation. Generated run directories, SQLite files, virtual environments, frontend dependencies, and build output are gitignored runtime artifacts.
 

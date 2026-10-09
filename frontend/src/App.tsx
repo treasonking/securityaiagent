@@ -19,6 +19,7 @@ import {
   type Message,
   type RunState,
 } from "./api";
+import { refreshRunState } from "./run-refresh.js";
 
 const terminal = new Set(["COMPLETED", "CANCELLED", "TIMED_OUT", "FAILED", "INTERRUPTED"]);
 const streamEvents = [
@@ -112,28 +113,27 @@ export default function App() {
     let disposed = false;
 
     async function refreshRun() {
-      const state = await getRun(runId);
-      if (
-        disposed
-        || activeConversationRef.current !== conversationId
-        || activeRunRef.current !== runId
-      ) return;
-      setRun(state);
-      if (terminal.has(state.status)) {
-        const [nextEvidence, nextMessages] = await Promise.all([
-          getEvidence(runId),
-          conversationId ? listMessages(conversationId) : Promise.resolve([]),
-        ]);
-        if (
-          disposed
-          || activeConversationRef.current !== conversationId
-          || activeRunRef.current !== runId
-        ) return;
-        setEvidence(nextEvidence);
-        if (conversationId) setMessages(nextMessages);
-        source.close();
-        if (pollTimer) window.clearInterval(pollTimer);
-      }
+      await refreshRunState({
+        runId,
+        conversationId,
+        getRun,
+        getEvidence,
+        listMessages,
+        isCurrent: () => (
+          !disposed
+          && activeConversationRef.current === conversationId
+          && activeRunRef.current === runId
+        ),
+        isTerminal: (status) => terminal.has(status),
+        commitRun: (state) => setRun(state),
+        commitTerminal: ({ state, evidence: nextEvidence, messages: nextMessages }) => {
+          setRun(state);
+          setEvidence(nextEvidence);
+          setMessages(nextMessages);
+          source.close();
+          if (pollTimer) window.clearInterval(pollTimer);
+        },
+      });
     }
 
     for (const type of streamEvents) {
