@@ -35,7 +35,10 @@ test("provider selection is server-configured and never falls back silently", ()
 test("conversation changes restore runs, evidence, and event history", () => {
   assert.match(api, /listRuns/);
   assert.match(api, /getEventLog/);
-  assert.match(app, /Promise\.all\(\[listMessages\(activeConversation\), listRuns\(activeConversation\)\]\)/);
+  assert.match(app, /Promise\.all\(\[listMessages\(conversationId\), listRuns\(conversationId\)\]\)/);
+  assert.match(app, /activeConversationRef\.current !== conversationId/);
+  assert.match(app, /activeRunRef\.current !== runId/);
+  assert.match(app, /async function refreshCurrentRun\(\)[\s\S]*activeRunRef\.current !== runId/);
 });
 
 test("SSE lifecycle cleans up and uses polling fallback", () => {

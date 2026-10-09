@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   authenticateSession,
   cancelRun,
@@ -40,13 +40,26 @@ export default function App() {
   const [events, setEvents] = useState<string[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
   const [error, setError] = useState("");
+  const activeConversationRef = useRef<string | null>(null);
+  const activeRunRef = useRef<string | null>(null);
   const busy = useMemo(() => Boolean(run && !terminal.has(run.status)), [run]);
+
+  function activateConversation(conversationId: string | null) {
+    activeConversationRef.current = conversationId;
+    activeRunRef.current = null;
+    setActiveConversation(conversationId);
+  }
+
+  function activateRun(nextRun: RunState | null) {
+    activeRunRef.current = nextRun?.run_id ?? null;
+    setRun(nextRun);
+  }
 
   async function loadWorkspace() {
     const [nextConfig, nextConversations] = await Promise.all([getConfig(), listConversations()]);
     setConfig(nextConfig);
     setConversations(nextConversations);
-    setActiveConversation((current) => current ?? nextConversations[0]?.conversation_id ?? null);
+    activateConversation(activeConversationRef.current ?? nextConversations[0]?.conversation_id ?? null);
   }
 
   useEffect(() => {
@@ -61,20 +74,26 @@ export default function App() {
   useEffect(() => {
     if (!authenticated || !activeConversation) return;
     let disposed = false;
-    setRun(null);
+    const conversationId = activeConversation;
+    activeConversationRef.current = conversationId;
+    activateRun(null);
     setEvidence([]);
     setEvents([]);
-    Promise.all([listMessages(activeConversation), listRuns(activeConversation)])
+    Promise.all([listMessages(conversationId), listRuns(conversationId)])
       .then(async ([nextMessages, runs]) => {
-        if (disposed) return;
+        if (disposed || activeConversationRef.current !== conversationId) return;
         setMessages(nextMessages);
         const latest = runs[0] ?? null;
-        setRun(latest);
+        activateRun(latest);
         if (latest) {
           const [nextEvidence, log] = await Promise.all([
             getEvidence(latest.run_id), getEventLog(latest.run_id),
           ]);
-          if (!disposed) {
+          if (
+            !disposed
+            && activeConversationRef.current === conversationId
+            && activeRunRef.current === latest.run_id
+          ) {
             setEvidence(nextEvidence);
             setEvents(log.map((item) => `${item.event_id}:${item.event_type}: ${JSON.stringify(item.payload)}`));
           }
@@ -87,15 +106,31 @@ export default function App() {
   useEffect(() => {
     if (!run || terminal.has(run.status)) return;
     const runId = run.run_id;
+    const conversationId = activeConversation;
     const source = new EventSource(`/api/runs/${encodeURIComponent(runId)}/events`);
     let pollTimer: number | undefined;
+    let disposed = false;
 
     async function refreshRun() {
       const state = await getRun(runId);
-      setRun((current) => current?.run_id === runId ? state : current);
+      if (
+        disposed
+        || activeConversationRef.current !== conversationId
+        || activeRunRef.current !== runId
+      ) return;
+      setRun(state);
       if (terminal.has(state.status)) {
-        setEvidence(await getEvidence(runId));
-        if (activeConversation) setMessages(await listMessages(activeConversation));
+        const [nextEvidence, nextMessages] = await Promise.all([
+          getEvidence(runId),
+          conversationId ? listMessages(conversationId) : Promise.resolve([]),
+        ]);
+        if (
+          disposed
+          || activeConversationRef.current !== conversationId
+          || activeRunRef.current !== runId
+        ) return;
+        setEvidence(nextEvidence);
+        if (conversationId) setMessages(nextMessages);
         source.close();
         if (pollTimer) window.clearInterval(pollTimer);
       }
@@ -104,6 +139,11 @@ export default function App() {
     for (const type of streamEvents) {
       source.addEventListener(type, (event) => {
         if (!(event instanceof MessageEvent)) return;
+        if (
+          disposed
+          || activeConversationRef.current !== conversationId
+          || activeRunRef.current !== runId
+        ) return;
         const key = `${event.lastEventId || "0"}:${type}`;
         setEvents((current) => current.some((item) => item.startsWith(`${key}:`))
           ? current
@@ -121,6 +161,7 @@ export default function App() {
       }
     };
     return () => {
+      disposed = true;
       source.close();
       if (pollTimer) window.clearInterval(pollTimer);
     };
@@ -142,15 +183,15 @@ export default function App() {
     await logoutSession();
     setAuthenticated(false);
     setConversations([]);
-    setActiveConversation(null);
-    setRun(null);
+    activateConversation(null);
+    activateRun(null);
   }
 
   async function newConversation() {
     const created = await createConversation();
     const next = await listConversations();
     setConversations(next);
-    setActiveConversation(created.conversation_id);
+    activateConversation(created.conversation_id);
   }
 
   async function startRun() {
@@ -160,14 +201,18 @@ export default function App() {
       if (!conversationId) {
         const created = await createConversation();
         conversationId = created.conversation_id;
-        setActiveConversation(conversationId);
+        activateConversation(conversationId);
         setConversations(await listConversations());
       }
       const submitted = await submitMessage(conversationId, message, transport, provider);
+      const [state, nextMessages] = await Promise.all([
+        getRun(submitted.run_id), listMessages(conversationId),
+      ]);
+      if (activeConversationRef.current !== conversationId) return;
       setEvents(["0:queued: submitted"]);
       setEvidence([]);
-      setRun(await getRun(submitted.run_id));
-      setMessages(await listMessages(conversationId));
+      activateRun(state);
+      setMessages(nextMessages);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "작업을 시작하지 못했습니다.");
     }
@@ -175,17 +220,28 @@ export default function App() {
 
   async function stopRun() {
     if (!run) return;
-    await cancelRun(run.run_id);
-    setRun(await getRun(run.run_id));
+    const runId = run.run_id;
+    const conversationId = activeConversation;
+    await cancelRun(runId);
+    const state = await getRun(runId);
+    if (
+      activeConversationRef.current === conversationId
+      && activeRunRef.current === runId
+    ) setRun(state);
   }
 
   async function refreshCurrentRun() {
     if (!run) return;
     const runId = run.run_id;
+    const conversationId = activeConversation;
     const [state, nextEvidence, log] = await Promise.all([
       getRun(runId), getEvidence(runId), getEventLog(runId),
     ]);
-    setRun((current) => current?.run_id === runId ? state : current);
+    if (
+      activeConversationRef.current !== conversationId
+      || activeRunRef.current !== runId
+    ) return;
+    setRun(state);
     setEvidence(nextEvidence);
     setEvents(log.map((item) => `${item.event_id}:${item.event_type}: ${JSON.stringify(item.payload)}`));
   }
@@ -225,7 +281,7 @@ export default function App() {
             <button
               className={conversation.conversation_id === activeConversation ? "history active" : "history"}
               key={conversation.conversation_id}
-              onClick={() => setActiveConversation(conversation.conversation_id)}
+              onClick={() => activateConversation(conversation.conversation_id)}
             >
               <strong>{conversation.title}</strong>
               <span>{new Date(conversation.created_at).toLocaleString()}</span>

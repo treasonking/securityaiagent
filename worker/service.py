@@ -133,12 +133,6 @@ class ToolService:
             state.cancel_event.set()
             state.ended_monotonic = time.monotonic()
             raise PolicyViolation("run timeout exceeded")
-        if state.request_count >= self.limits.max_requests:
-            state.cancelled = True
-            state.cancel_event.set()
-            state.ended_monotonic = time.monotonic()
-            raise PolicyViolation("HTTP request limit exceeded")
-
     def _count_tool(self, state: _RunState) -> None:
         self._check_run(state)
         if state.tool_count >= self.limits.max_tool_calls:
@@ -151,10 +145,34 @@ class ToolService:
     def _run_seconds_remaining(self, state: _RunState) -> float:
         return self.limits.run_timeout_seconds - (time.monotonic() - state.started_monotonic)
 
-    async def _wait_for_gate(self, state: _RunState, awaitable: Any) -> Any:
+    async def _wait_for_gate(
+        self,
+        state: _RunState,
+        awaitable: Any,
+        *,
+        on_abandoned_success: Callable[[], None] | None = None,
+    ) -> Any:
         self._check_run(state)
         operation = asyncio.ensure_future(awaitable)
         cancellation = asyncio.create_task(state.cancel_event.wait())
+        transferred = False
+        abandoned = False
+
+        async def abandon_operation() -> None:
+            nonlocal abandoned
+            if transferred or abandoned:
+                return
+            if not operation.done():
+                operation.cancel()
+            await asyncio.gather(operation, return_exceptions=True)
+            if (
+                on_abandoned_success is not None
+                and not operation.cancelled()
+                and operation.exception() is None
+            ):
+                on_abandoned_success()
+            abandoned = True
+
         try:
             done, _ = await asyncio.wait(
                 {operation, cancellation},
@@ -165,16 +183,19 @@ class ToolService:
                 state.cancelled = True
                 state.cancel_event.set()
                 state.ended_monotonic = time.monotonic()
-                operation.cancel()
-                await asyncio.gather(operation, return_exceptions=True)
+                await abandon_operation()
                 raise PolicyViolation("run timeout exceeded")
-            if operation in done:
-                return await operation
             if cancellation in done and state.cancel_event.is_set():
-                operation.cancel()
-                await asyncio.gather(operation, return_exceptions=True)
+                await abandon_operation()
                 raise PolicyViolation("run is cancelled")
+            if operation in done:
+                result = await operation
+                transferred = True
+                return result
             raise PolicyViolation("run wait ended unexpectedly")
+        except BaseException:
+            await abandon_operation()
+            raise
         finally:
             cancellation.cancel()
             await asyncio.gather(cancellation, return_exceptions=True)
@@ -191,7 +212,11 @@ class ToolService:
         json: dict[str, str] | None = None,
     ) -> tuple[httpx.Response, str]:
         normalized = policy.normalize_relative_path(path)
-        await self._wait_for_gate(state, self._http_semaphore.acquire())
+        await self._wait_for_gate(
+            state,
+            self._http_semaphore.acquire(),
+            on_abandoned_success=self._http_semaphore.release,
+        )
         try:
             async with state.lock:
                 self._check_run(state)
@@ -200,6 +225,11 @@ class ToolService:
                 if remaining > 0:
                     await self._wait_for_gate(state, asyncio.sleep(remaining))
                 self._check_run(state)
+                if state.request_count >= self.limits.max_requests:
+                    state.cancelled = True
+                    state.cancel_event.set()
+                    state.ended_monotonic = time.monotonic()
+                    raise PolicyViolation("HTTP request limit exceeded")
                 request_id = str(uuid.uuid4())
                 state.request_count += 1
                 state.last_request_monotonic = time.monotonic()
@@ -236,9 +266,16 @@ class ToolService:
                                 if len(body) + len(chunk) > self.limits.max_response_bytes:
                                     raise PolicyViolation("response exceeds configured byte limit")
                                 body.extend(chunk)
+                            decoded_headers = [
+                                (key, value)
+                                for key, value in streamed.headers.multi_items()
+                                if key.lower()
+                                not in {"content-encoding", "content-length", "transfer-encoding"}
+                            ]
+                            decoded_headers.append(("content-length", str(len(body))))
                             response = httpx.Response(
                                 streamed.status_code,
-                                headers=streamed.headers,
+                                headers=decoded_headers,
                                 content=bytes(body),
                                 request=streamed.request,
                                 extensions=streamed.extensions,

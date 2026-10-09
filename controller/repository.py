@@ -84,10 +84,51 @@ class Repository:
                     metadata_json TEXT NOT NULL,
                     created_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS controller_sessions (
+                    nonce_hash TEXT PRIMARY KEY,
+                    expires_at INTEGER NOT NULL,
+                    revoked_at TEXT,
+                    created_at TEXT NOT NULL
+                );
                 """
             )
             connection.execute(
                 "INSERT OR IGNORE INTO schema_version(version, applied_at) VALUES (?, ?)", (1, utc_now())
+            )
+            connection.execute(
+                "INSERT OR IGNORE INTO schema_version(version, applied_at) VALUES (?, ?)", (2, utc_now())
+            )
+
+    def register_session(self, nonce_hash: str, expires_at: int, now: int) -> None:
+        with self._write_lock, self._connect() as connection:
+            connection.execute("DELETE FROM controller_sessions WHERE expires_at<=?", (now,))
+            connection.execute(
+                """
+                INSERT INTO controller_sessions(nonce_hash, expires_at, revoked_at, created_at)
+                VALUES (?, ?, NULL, ?)
+                """,
+                (nonce_hash, expires_at, utc_now()),
+            )
+
+    def session_is_active(self, nonce_hash: str, expires_at: int, now: int) -> bool:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT 1 FROM controller_sessions
+                WHERE nonce_hash=? AND expires_at=? AND expires_at>? AND revoked_at IS NULL
+                """,
+                (nonce_hash, expires_at, now),
+            ).fetchone()
+            return row is not None
+
+    def revoke_session(self, nonce_hash: str, expires_at: int) -> None:
+        with self._write_lock, self._connect() as connection:
+            connection.execute(
+                """
+                UPDATE controller_sessions SET revoked_at=?
+                WHERE nonce_hash=? AND expires_at=?
+                """,
+                (utc_now(), nonce_hash, expires_at),
             )
 
     def journal_mode(self) -> str:

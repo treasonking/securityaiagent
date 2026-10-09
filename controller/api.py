@@ -23,7 +23,11 @@ from controller.manager import ManagerSettings, RunManager
 from controller.reporting import ReportWriter
 from controller.repository import Repository
 from controller.tool_clients import FunctionWorkerClient, MCPWorkerClient, ToolClient
-from verifier.core import evidence_identity_digest
+from verifier.core import (
+    CORRELATION_REQUIRED_WARNING,
+    evidence_identity_digest,
+    recommendations_for_verdict,
+)
 
 
 @dataclass(frozen=True)
@@ -74,7 +78,11 @@ def create_app(
     repo.interrupt_unfinished_runs()
     if len(settings.access_token) < 16:
         raise ValueError("APP_ACCESS_TOKEN must contain at least 16 characters")
-    signer = SessionSigner(settings.session_secret, ttl_seconds=settings.session_ttl_seconds)
+    signer = SessionSigner(
+        settings.session_secret,
+        ttl_seconds=settings.session_ttl_seconds,
+        store=repo,
+    )
     manager = RunManager(
         repository=repo,
         engine=RunEngine(report_writer=ReportWriter(settings.reports_path)),
@@ -199,9 +207,13 @@ def create_app(
         evidence_items = [Evidence.model_validate(item) for item in repo.list_evidence(payload.run_id)]
         if payload.evidence_count != len(evidence_items):
             raise HTTPException(status_code=409, detail="evidence count mismatch")
+        if payload.correlated_count > len(evidence_items):
+            raise HTTPException(status_code=409, detail="correlated evidence count exceeds evidence count")
         if payload.evidence_digest != evidence_identity_digest(evidence_items):
             raise HTTPException(status_code=409, detail="evidence identity digest mismatch")
-        if payload.verdict != Verdict.INCONCLUSIVE and payload.correlated_count != len(evidence_items):
+        if payload.verdict != Verdict.INCONCLUSIVE and (
+            not evidence_items or payload.correlated_count != len(evidence_items)
+        ):
             raise HTTPException(status_code=409, detail="final verdict requires all evidence to correlate")
         evidence_ids = {item.evidence_id for item in evidence_items}
         if any(not set(item.evidence_ids).issubset(evidence_ids) for item in payload.verified_findings):
@@ -209,11 +221,22 @@ def create_app(
         report = RunReport.model_validate(run["report"])
         report.verdict = payload.verdict
         report.verified_findings = payload.verified_findings
-        report.warnings = list(dict.fromkeys(report.warnings + payload.warnings))
-        report.environment["target_server_log"] = "offline-correlated"
+        combined_warnings = report.warnings + payload.warnings
+        if payload.verdict != Verdict.INCONCLUSIVE:
+            combined_warnings = [
+                warning
+                for warning in combined_warnings
+                if warning != CORRELATION_REQUIRED_WARNING
+            ]
+        report.warnings = list(dict.fromkeys(combined_warnings))
+        report.recommendations = recommendations_for_verdict(payload.verdict)
+        fully_correlated = bool(evidence_items) and payload.correlated_count == len(evidence_items)
+        report.environment["target_server_log"] = (
+            "offline-correlated" if fully_correlated else "offline-partial"
+        )
         repo.update_run_report(payload.run_id, report)
         repo.save_findings(report)
-        if payload.correlated_count == len(evidence_items):
+        if fully_correlated:
             repo.mark_evidence_offline_correlated(payload.run_id)
             for item in evidence_items:
                 item.server_observation = "target_log_correlated"

@@ -9,7 +9,13 @@ from controller.api import AppSettings, create_app
 from controller.repository import Repository
 from controller.tool_clients import DirectToolClient
 from tests.helpers import make_service
-from verifier.core import evidence_identity_digest
+from verifier.core import (
+    CORRELATION_REQUIRED_WARNING,
+    evidence_identity_digest,
+    recommendations_for_verdict,
+    verify_access_control,
+)
+from worker.service import ToolService
 
 
 def _headers(csrf: str, *, origin: str = "http://testserver") -> dict[str, str]:
@@ -275,7 +281,13 @@ def test_queued_run_can_be_cancelled_before_execution(tmp_path, monkeypatch):
 
 
 def test_authenticated_offline_verification_import_updates_report(tmp_path):
-    service, _ = make_service(tmp_path, "vulnerable")
+    correlated_service, _ = make_service(tmp_path, "vulnerable")
+    service = ToolService(
+        policies=correlated_service.policies,
+        accounts=correlated_service.accounts,
+        limits=correlated_service.limits,
+        transport=correlated_service.transport,
+    )
     repository = Repository(tmp_path / "controller.sqlite3")
     app = create_app(
         settings=AppSettings(
@@ -303,11 +315,16 @@ def test_authenticated_offline_verification_import_updates_report(tmp_path):
         ).json()
         state = _wait_for_terminal(client, submitted["run_id"])
         items = [Evidence.model_validate(item) for item in repository.list_evidence(submitted["run_id"])]
+        assert state["report"]["verdict"] == "INCONCLUSIVE"
+        assert CORRELATION_REQUIRED_WARNING in state["report"]["warnings"]
+        for item in items:
+            item.server_observation = "target_log_correlated"
+        verified = verify_access_control(items)
         payload = {
             "run_id": submitted["run_id"],
-            "verdict": state["report"]["verdict"],
-            "verified_findings": state["report"]["verified_findings"],
-            "warnings": ["offline evaluator imported"],
+            "verdict": verified.verdict,
+            "verified_findings": [item.model_dump(mode="json") for item in verified.findings],
+            "warnings": verified.warnings + ["offline evaluator imported"],
             "evidence_count": len(items),
             "correlated_count": len(items),
             "evidence_digest": evidence_identity_digest(items),
@@ -326,7 +343,12 @@ def test_authenticated_offline_verification_import_updates_report(tmp_path):
         )
         assert imported.status_code == 200
         refreshed = client.get(f"/api/runs/{submitted['run_id']}").json()
+        assert refreshed["report"]["verdict"] == "VULNERABLE"
         assert refreshed["report"]["environment"]["target_server_log"] == "offline-correlated"
+        assert CORRELATION_REQUIRED_WARNING not in refreshed["report"]["warnings"]
+        assert refreshed["report"]["recommendations"] == recommendations_for_verdict(
+            verified.verdict
+        )
         refreshed_evidence = client.get(
             f"/api/runs/{submitted['run_id']}/evidence"
         ).json()["evidence"]

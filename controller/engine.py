@@ -5,11 +5,11 @@ import platform
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
-from common.schemas import Evidence, ModelUsage, RunReport, RunStatus, ToolResult, Verdict, utc_now
+from common.schemas import Evidence, ModelUsage, RunReport, RunStatus, ToolResult, utc_now
 from controller.providers import ModelProvider
 from controller.reporting import ReportWriter
 from controller.tool_clients import ToolClient
-from verifier.core import verify_access_control
+from verifier.core import recommendations_for_verdict, verify_access_control
 
 
 EventCallback = Callable[[str, dict[str, object]], Awaitable[None]]
@@ -213,19 +213,7 @@ class RunEngine:
 
         verification = verify_access_control(evidence)
         warnings.extend(verification.warnings)
-        recommendations = {
-            Verdict.VULNERABLE: [
-                "Enforce owner-or-admin authorization on the document detail query.",
-                "Restart the target in fixed mode, reset synthetic state, and rerun the identical scenario.",
-            ],
-            Verdict.BLOCKED_BY_ACCESS_CONTROL: [
-                "Retain the owner-or-admin authorization regression test.",
-                "Correlate the target-local log before using the result as external evidence.",
-            ],
-            Verdict.INCONCLUSIVE: [
-                "Resolve the recorded control or transport failure and rerun without expanding scope."
-            ],
-        }[verification.verdict]
+        recommendations = recommendations_for_verdict(verification.verdict)
         report = RunReport(
             run_id=request.run_id,
             scenario_id=request.scenario_id,

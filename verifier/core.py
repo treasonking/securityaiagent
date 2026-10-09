@@ -15,6 +15,28 @@ _EXPECTED = {
     "edge-missing": ("user-a", "/documents/doc-missing-999", 404, None),
 }
 
+_RECOMMENDATIONS = {
+    Verdict.VULNERABLE: [
+        "Enforce owner-or-admin authorization on the document detail query.",
+        "Restart the target in fixed mode, reset synthetic state, and rerun the identical scenario.",
+    ],
+    Verdict.BLOCKED_BY_ACCESS_CONTROL: [
+        "Retain the owner-or-admin authorization regression test.",
+        "Keep target-local log correlation in the repeatable evidence procedure.",
+    ],
+    Verdict.INCONCLUSIVE: [
+        "Resolve the recorded control, correlation, or transport failure and rerun without expanding scope."
+    ],
+}
+
+CORRELATION_REQUIRED_WARNING = (
+    "target server-log correlation is required before a final access-control verdict"
+)
+
+
+def recommendations_for_verdict(verdict: Verdict) -> list[str]:
+    return list(_RECOMMENDATIONS[verdict])
+
 
 @dataclass(frozen=True)
 class VerificationResult:
@@ -89,7 +111,7 @@ def verify_access_control(evidence: list[Evidence]) -> VerificationResult:
         return VerificationResult(
             verdict=Verdict.INCONCLUSIVE,
             findings=[],
-            warnings=warnings + ["target server-log correlation is required before a final access-control verdict"],
+            warnings=warnings + [CORRELATION_REQUIRED_WARNING],
         )
     if attack.status_code == 200 and attack.synthetic_document_marker == "SYN-B-PRIVATE-001":
         finding = VerifiedFinding(
