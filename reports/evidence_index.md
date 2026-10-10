@@ -1,10 +1,10 @@
 # Evidence index
 
-2026-10-09 로컬 Windows 개발 환경 기준이다. VM, live OpenAI, 실제 브라우저 evidence로 해석하지 않는다.
+2026-10-10 로컬 Windows 개발 환경 기준이다. VM, live OpenAI, 실제 브라우저 evidence로 해석하지 않는다.
 
 | Claim | Command / observation | Evidence path | Status | Limitation |
 |---|---|---|---|---|
-| vulnerable/fixed HTTP core and strict evidence paths work | `.\.venv\Scripts\python.exe -m pytest` → 53 passed; local core + evaluator | `tests/test_core_flow.py`, `tests/test_verifier_hardening.py` | Verified locally | target uses in-process ASGI in core run |
+| vulnerable/fixed HTTP core and strict evidence paths work | isolated Python 3.12 `pytest` → 53 passed; local runs `local-vulnerable-4343327e3ec0` and `local-fixed-712a8c2cbf05`; evaluator 5/5 each | `tests/test_core_flow.py`, `tests/test_verifier_hardening.py`, `reports/current_verification.md` | Verified locally | mock + DirectToolClient + in-process ASGI; not VM function/MCP evidence |
 | registered MCP VM Host is accepted without disabling DNS rebinding protection | Host boundary regression | `tests/test_mcp_integration.py` | Verified by header simulation | actual VM route/socket not tested |
 | internal MCP ignores proxy environment | invalid SOCKS proxy env with successful loopback MCP run | `controller/tool_clients.py`, `tests/test_mcp_integration.py` | Verified locally | loopback only |
 | cancellation stops rate/semaphore waits, externally cancelled acquire operations, and active HTTP | focused async regressions plus post-cancel slot reuse | `tests/test_worker_limits.py` | Verified locally | deterministic synthetic transports; remote disconnect not reproduced |
@@ -15,8 +15,9 @@
 | controller requires local access authentication and restart-stable logout | same-secret/same-DB signer restart rejects revoked token and preserves active token | `tests/test_controller_api.py`, `tests/test_controller_auth.py`, `controller/repository.py` | Verified locally | single-user SQLite registry; no external identity provider or distributed session store |
 | offline final result updates report guidance consistently without exposing target DB | authenticated import changes INCONCLUSIVE to VULNERABLE, removes stale correlation warning, regenerates recommendations | `tests/test_controller_api.py`, `verifier/cli.py` | Verified locally | bearer token holder is a trusted operator; distribution is operator-managed |
 | UI has provider selection, run restoration, atomic terminal snapshots, async conversation/run guards, SSE cleanup/poll fallback | `npm test` → 10 passed, including delayed details and stale conversation responses; `npm run build` success | `frontend/tests/run-refresh.test.mjs`, `frontend/tests/security-contract.test.mjs`, `frontend/src/run-refresh.js`, `frontend/src/App.tsx` | Verified in Node state harness and statically | no real browser E2E or screenshot |
+| vulnerable/fixed × function/MCP works across isolated VMs | not run; role-specific `.env` files and VM execution surface were not available in this checkout | `docs/demo_runbook.md`, `docs/network_setup.md` | Not verified | requires controller, worker, and target VMs plus target-local offline evaluation |
 | OpenAI provider runs with a real model | not run | `controller/providers.py` | Not verified | no API key/model authorization supplied |
 | VM isolation and resource allocation | not run | `docs/network_setup.md` | Not verified | requires user-owned VMs |
 | Nmap / Playwright | intentionally not run | `docs/phase2_nmap_playwright.md` | Not implemented (phase 2) | no tool/dependency in v1 |
 
-Python warnings are four MCP/Agents SDK dependency warnings: one Pydantic forward-reference warning and three deprecated transport-helper warnings. They do not fail the current tests but must be reassessed when dependencies change.
+Python emitted four MCP/Agents SDK dependency warnings: one Pydantic forward-reference warning and three deprecated transport-helper warnings. The 2026-10-10 Windows run also emitted one local `PytestCacheWarning` because an existing `.pytest_cache` directory was not writable. None failed the tests; the dependency warnings must be reassessed when dependencies change.
