@@ -98,10 +98,17 @@ Target VM:
 
 ```bash
 cd ~/securityaiagent
+mkdir -p logs
 set -a
 source .env.target
 set +a
-.venv/bin/python -m uvicorn target.app:app --env-file .env.target --host 10.78.0.30 --port 8080
+.venv/bin/python -m uvicorn target.app:app \
+  --env-file .env.target \
+  --host 10.78.0.30 \
+  --port 8080 \
+  --no-access-log \
+  --log-level warning \
+  >> logs/target-server.log 2>&1
 ```
 
 Worker VM:
@@ -118,7 +125,29 @@ cd ~/securityaiagent
 .venv/bin/python -m uvicorn --factory controller.api:create_app_from_env --env-file .env.controller --host 192.168.56.10 --port 8000 --workers 1
 ```
 
-셸의 기존 환경변수는 dotenv보다 우선할 수 있으므로 provider나 mode를 바꿀 때 현재 프로세스 환경을 확인한다. 재시작 후 UI에서 마지막 결과가 복원되는지는 controller의 동일 `DATABASE_PATH`와 설정을 사용했을 때만 유효한 관찰이다.
+셸의 기존 환경변수는 dotenv보다 우선할 수 있으므로 provider나 mode를 바꿀 때 현재 프로세스 환경을 확인한다. 재시작 후 UI에서 마지막 결과가 복원되는지는 controller의 동일 `DATABASE_PATH`와 설정을 사용했을 때만 유효한 관찰이다. 일반 종료·재시작에서는 `target.cli reset`을 실행하지 않는다.
+
+`--no-access-log`와 warning-level redirection은 target 터미널의 stdout 출력을 줄이는 운영 완화다. SQLite observations와 verifier evidence를 끄지 않으며, VM 멈춤의 근본 원인 해결이나 장시간 안정성 증거가 아니다. `logs/target-server.log`는 target-local 진단 파일로 유지하고 원문을 Git·모델·controller·공개 보고서에 넣지 않는다. 운영자는 target 안에서 파일 존재와 크기, 디스크 여유, 보존 기간을 확인한 뒤 필요한 최소 정보만 정제한다.
+
+현재 문서화된 DB 역할은 다음과 같다.
+
+| Purpose | Target-local path |
+|---|---|
+| fixed mock/live observations | `data/vm-target-fixed.sqlite3` |
+| live vulnerable observations | `data/vm-target-live-vulnerable.sqlite3` |
+| initial mock vulnerable observations | `data/vm-target.sqlite3` |
+| requested mock vulnerable archive | `data/vm-target-vulnerable.sqlite3` |
+
+경로를 바꾸거나 snapshot을 복원한 뒤에는 실행 전에 `TARGET_DATABASE_PATH`와 `git rev-parse HEAD`를 각 VM에서 기록한다. controller, worker, target이 같은 commit이라고 추정하지 않는다.
+
+## Missing-observation and responsiveness checks
+
+화면이 느리거나 응답하지 않으면 추가 run으로 안정성을 주장하지 말고 현재 프로세스를 정상 종료한 뒤 reset 없이 위의 출력 완화 명령으로 target을 재시작한다. worker와 target health를 확인하고, 해당 run ID가 현재 `TARGET_DATABASE_PATH`의 observations에 실제 존재하는지 target 안에서 확인한 다음에만 offline 평가한다.
+
+- UI에 evidence가 있어도 target DB에 해당 run observations가 없으면 offline 0/5 또는 `INCONCLUSIVE`를 성공으로 바꾸지 않는다.
+- 재시작 뒤 observations가 사라졌다면 재시작을 정상 삭제 원인으로 단정하지 않는다. DB 경로, 초기화, snapshot, 저장 실패를 별도로 조사한다.
+- worker slowdown과 target freeze는 CPU·메모리·프로세스·디스크·kernel 자료 없이 같은 원인으로 묶지 않는다.
+- 운영 로그 원문 대신 run ID, DB 경로, observation count, health 결과와 정제된 오류 코드만 검증 기록에 남긴다.
 
 ## 2026-10-14 reported VM example
 
@@ -132,15 +161,19 @@ Live provider는 고정 workflow를 바꾸지 않고 후보 가설만 제안한�
 
 첨부 가이드에 기록된 첫 live run `run_8d464c88140f447d9fd7a794136545d4`는 수정 전 fixed/OpenAI/function 실행이다. API 1회와 토큰 사용량, 후보 `[]`, offline `BLOCKED_BY_ACCESS_CONTROL` 5/5 및 수동 import가 보고됐지만, 수정 전 필터의 입력은 남아 있지 않아 원래 빈 목록과 비허용 이름 제거를 사후 구분할 수 없다. 이전 report를 수정하거나 후보를 재구성하지 않는다.
 
-수정 후 실제 VM 재검증은 controller를 업데이트하고 재시작한 다음 현재 fixed target DB를 reset하지 않은 채 OpenAI/function 1회만 먼저 실행한다.
+첨부된 2026-10-15 가이드는 수정 후 live 대표 4조합이 완료됐다고 기록한다. fixed/function `run_0c128a3c7c0743798c27d2a2830468e5`, fixed/MCP `run_ea64269013f44d5793dadccda43dcc31`, vulnerable/function `run_b58e5aece9d7496396c45205f3dc6046`, vulnerable/MCP `run_4aa1b9b6e7fe4e0487af9ee1eeeb1ea0`이며, 모두 canonical 후보 1개와 offline 5/5 및 UI import가 보고됐다. run별 usage, digest와 파일 확보 상태는 [`current_verification.md`](../reports/current_verification.md)와 [`evidence_index.md`](../reports/evidence_index.md)에 기록한다. Codex는 해당 VM 파일을 직접 검사하지 않았다.
+
+`run_20b9caa5720b4b1dbcb6d9a6a034a009`는 target observation이 없어 offline 0/5였고, `run_4139a4ebe3ed4208ac624e80f447e518`는 offline 결과와 usage가 없어 성공으로 세지 않는다. 마지막 `run_4aa1...`는 이들과 별도의 성공 run이다. 따라서 대표 성공 4조합을 전체 시도 100% 성공으로 표현하지 않는다.
+
+향후 live 재검증은 controller를 업데이트하고 재시작한 다음 현재 mode DB를 reset하지 않은 채 조합별로 한 번씩 실행한다.
 
 1. controller에 `MODEL_PROVIDER=openai`, 명시적 `OPENAI_MODEL`, 로컬 보호된 `OPENAI_API_KEY`가 설정됐는지 확인한다. 키 값을 출력·복사·보고하지 않는다.
-2. UI에서 `lab-web`, `access-control`, OpenAI, function으로 한 번 실행한다.
+2. UI에서 `lab-web`, `access-control`, OpenAI와 기록할 transport를 명시해 한 번 실행한다.
 3. 새 run ID, model ID, status, model usage, 후보 목록, `EMPTY_CANDIDATES` 진단 또는 후보 source, warnings와 evidence 수를 기록한다.
 4. 빈 목록이 다시 나와도 후보를 삽입하지 않고 verifier 절차를 계속한다. API/스키마 오류면 run 실패 상태를 그대로 기록한다.
-5. 기존 fixed DB로 target-local offline 5/5 대조 후 정제 JSON만 수동 import하고 UI의 최종 verdict와 `offline-correlated`를 확인한다.
-6. 첫 run과 새 run을 별도로 기록한다. 호출 횟수 제한을 금액 하드캡으로 표현하지 않는다.
-7. Live MCP 및 vulnerable live 조합은 이 확인 뒤 각각 별도 run으로 수행한다.
+5. 현재 mode에 대응하는 target DB로 offline 대조한 뒤 5/5일 때만 정제 JSON을 수동 import하고 UI의 최종 verdict와 `offline-correlated`를 확인한다.
+6. 이전 run, 실패·미검증 retry와 새 run을 별도로 기록한다. 호출 횟수 제한을 금액 하드캡으로 표현하지 않는다.
+7. 다른 mode/transport 조합은 각각 별도 run으로 수행하고 한 조합의 결과를 다른 조합으로 확장하지 않는다.
 
 ## Claim boundary
 

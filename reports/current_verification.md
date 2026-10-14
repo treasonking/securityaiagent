@@ -1,4 +1,4 @@
-# SecurityLab v1 scenario verification — updated 2026-10-14
+# SecurityLab v1 scenario verification — updated 2026-10-15
 
 ## Verified locally
 
@@ -89,19 +89,53 @@ Reported evidence digest: `bbb9b86ba46c262efdb4736039670b1d9df0e8755df41ec16beda
 
 This record supports API connectivity, usage collection, the fixed scenario workflow, and the separate offline verifier result. It does not demonstrate successful candidate generation or vulnerability-detection quality. The pre-fix implementation did not preserve the model's pre-filter structured output, so the empty stored list cannot establish whether the model returned `[]` or returned a noncanonical name that the application discarded. The previous report is not reconstructed or overwritten.
 
-The candidate contract has since been hardened locally: only `cross_account_document_access` is schema-valid, the scenario and hypothesis boundary are explicit, intentional emptiness produces the sanitized `EMPTY_CANDIDATES` diagnostic without adding a candidate, and API/schema failures remain failures. These changes were tested with a network-free stub Runner. No post-change OpenAI or VM run was executed by Codex; the required fixed/OpenAI/function rerun remains pending on the user's controller.
+The candidate contract was then hardened locally: only `cross_account_document_access` is schema-valid, the scenario and hypothesis boundary are explicit, intentional emptiness produces the sanitized `EMPTY_CANDIDATES` diagnostic without adding a candidate, and API/schema failures remain failures. These changes were tested with a network-free stub Runner.
+
+## User-reported post-fix live OpenAI matrix — 2026-10-14 to 2026-10-15
+
+The attached 2026-10-15 guide records four representative successful runs after the candidate-contract change. It states that each run used provider `openai`, model `gpt-5.4-mini`, status `COMPLETED`, one SDK-reported call, and one canonical `cross_account_document_access` candidate with source `openai_provider`. Every final offline result reportedly had five evidence items, 5/5 target-local correlation, an empty warnings array, and a manually imported UI state of `offline-correlated`.
+
+| Target mode | Transport | Run ID | Input / output / total tokens | Final offline verdict |
+|---|---|---|---|---|
+| fixed | function | `run_0c128a3c7c0743798c27d2a2830468e5` | 237 / 54 / 291 | `BLOCKED_BY_ACCESS_CONTROL` |
+| fixed | MCP | `run_ea64269013f44d5793dadccda43dcc31` | 237 / 64 / 301 | `BLOCKED_BY_ACCESS_CONTROL` |
+| vulnerable | function | `run_b58e5aece9d7496396c45205f3dc6046` | 237 / 62 / 299 | `VULNERABLE` |
+| vulnerable | MCP | `run_4aa1b9b6e7fe4e0487af9ee1eeeb1ea0` | 237 / 61 / 298 | `VULNERABLE` |
+
+For these four representative successes, the SDK report totals are four calls, 948 input tokens, 241 output tokens, and 1,189 total tokens. This sum excludes the pre-fix run and unsuccessful or unverified retries. It is not a bill, a monetary cap, or a count of provider-internal HTTP retries.
+
+These results support the integrated path from the bounded live candidate contract through the fixed tool workflow, target-local offline verifier, and UI import. They do not show that the model independently distinguished vulnerable from fixed mode: the model did not receive target mode, HTTP responses, raw logs/DB, expected answers, or verifier fixtures, and the verifier—not the model—produced the final verdict.
+
+Codex did not execute or inspect these VM runs. The six new run directories, their JSON artifacts, the VM databases, and UI captures were absent from this Windows checkout. The reviewed candidate-contract commit is `f2407f816c8fe73ce88bd96c1a78293c19d59c0e`, but the exact HEAD executed by each controller, worker, and target VM was not supplied and remains unconfirmed.
+
+### Preserved pre-fix and retry history
+
+| Run ID | Reported observation | Classification |
+|---|---|---|
+| `run_8d464c88140f447d9fd7a794136545d4` | pre-fix fixed/OpenAI/function; candidates `[]`; offline `BLOCKED_BY_ACCESS_CONTROL`, 5/5 | API connectivity and verifier success; empty-candidate cause remains unknown |
+| `run_20b9caa5720b4b1dbcb6d9a6a034a009` | vulnerable/OpenAI/MCP; UI candidate and five evidence items; offline `INCONCLUSIVE`, correlation 0/5; reported digest `0e1380c4d87b8029c56bceddd1f114c772dd47e2dcfcc57b3218305721323855`; no matching run observations in the target DBs checked by the user | not successful; do not count in the live matrix |
+| `run_4139a4ebe3ed4208ac624e80f447e518` | vulnerable/OpenAI/MCP retry; UI candidate and five evidence items; no offline result or usage retained | final verdict unverified; do not count as success |
+| `run_4aa1b9b6e7fe4e0487af9ee1eeeb1ea0` | separate vulnerable/OpenAI/MCP run with target observations, offline `VULNERABLE` 5/5, and UI import | representative successful MCP run |
+
+The user reported shutting down and restarting the target around the `run_20b9...` attempt. A later query found zero total observations in `data/vm-target-live-vulnerable.sqlite3` at that point. Restart alone must not be described as expected log deletion. Initialization, snapshot restoration, a different DB path, or a write/persistence problem remain possible and were not resolved. Previously imported results are retained as historical results, but current possession of their original target observations is not claimed.
+
+### Reported VM responsiveness observation
+
+The user reported that the target VM UI could become unresponsive during MCP activity and recover after closing the server terminal. The worker VM was also reported as slow after the final import but did not freeze. CPU, memory, process, disk, kernel, GPU, terminal-rendering, and long-duration data were not supplied, so the two observations are not assigned a common cause.
+
+Redirecting target server output to `logs/target-server.log`, disabling Uvicorn access-log output, and using warning-level logging was reported to restore usable screen behavior and was followed by the final successful MCP run. This is an operational mitigation, not a root-cause fix or proof of long-term stability. It suppresses stdout access logs only; SQLite observations and verifier evidence remain enabled. The operational log is not a public artifact and its content, size, and retention policy have not been reviewed by Codex.
 
 ## Not verified
 
 - Independent Codex reproduction or file-level inspection of the user-reported VM runs, and the exact commit executed in those VMs
 - Complete NIC/routing/forwarding/firewall rule and counter audit, IPv6 and alternate-protocol paths, external egress, and every negative network path
-- post-change real OpenAI rerun; live candidate output under the new schema; model quality, retries, cost, latency, and provider-side billing
+- independent Codex reproduction/file inspection of the post-fix live matrix; model accuracy, provider retries, cost, latency, and billing
 - automated browser behavior for login, provider selection, refresh, conversation switching, cancellation, SSE reconnect/polling, visual layout, or screenshots; the user reported only manual UI import and restart persistence observations
 - Nmap installation/execution and Playwright browser/egress enforcement
 - TLS/mTLS, multiple controller processes/users, long-duration load, and memory behavior
-- repeated VM runs, detection-rate statistics, tampered-result rejection, and bad-token rejection in the actual VM environment
-- live MCP and live vulnerable-mode combinations
+- repeatability, load/latency metrics, detection-rate statistics, tampered-result rejection, and bad-token rejection in the actual VM environment
+- root cause and long-duration stability of the target freeze and worker slowdown
 
 ## Interpretation limit
 
-These results cover one registered synthetic access-control fixture. They do not measure generalized vulnerability discovery, autonomous penetration testing, production readiness, complete network isolation, model performance, or a 100% detection rate. Mock provider calls are not local or live LLM results. The 2026-10-10 local core record remains separate from the user-reported 2026-10-14 VM record. A socket-separated `COMPLETED` workflow may remain `INCONCLUSIVE` until target-local observations are correlated offline.
+These results cover one registered synthetic access-control fixture. They do not measure generalized vulnerability discovery, autonomous penetration testing, production readiness, complete network isolation, model performance, or a 100% detection rate. Mock provider calls are not local or live LLM results. The four mock and four live representative results may be described as eight final combinations with reported 5/5 offline correlation, but not as eight attempts or a 100% attempt success rate. A socket-separated `COMPLETED` workflow may remain `INCONCLUSIVE` until target-local observations are correlated offline.
