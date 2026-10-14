@@ -1,4 +1,4 @@
-# SecurityLab v1 scenario verification — 2026-10-10
+# SecurityLab v1 scenario verification — updated 2026-10-14
 
 ## Verified locally
 
@@ -38,15 +38,44 @@ Each local run was evaluated immediately, before starting the other mode, with `
 
 The MCP Host result uses a TestClient request whose Host header is the documented VM address. It proves the application allowlist behavior, not connectivity to an actual VM. The loopback MCP integration starts a real Uvicorn socket and uses the Agents SDK `MCPServerStreamableHttp` client, while its synthetic target remains in-process ASGI.
 
+## User-reported three-VM verification — 2026-10-14
+
+The following results are transcribed from the attached verification guide, which states that it was prepared from the user's VM terminal output, offline-verification JSON, and web UI observation. Those underlying terminal captures, JSON files, and UI captures were not attached for direct inspection in this task. Codex did not execute commands in the VMs. The four run directories and VM SQLite files were not present in this Windows checkout, so their file contents and existence were not independently inspected here. The exact commit executed in the VMs is not confirmed; `6e9f4f5` was the reviewed Windows `main` before this documentation update and must not be treated as proof of the VM execution commit.
+
+- Environment reported by the user: VirtualBox controller/worker/target VMs, Ubuntu 26.04.1 LTS, project Python 3.12.15
+- Scope: registered target `lab-web`, published `access-control` scenario, synthetic data, provider `mock`
+- Topology: controller `10.77.0.10` / `192.168.56.10`, worker `10.77.0.20` / `10.78.0.20`, target `10.78.0.30`
+- Each combination was run once. These four runs are functional examples, not repeatability, detection-rate, or model-quality measurements.
+
+| Target mode | Transport | Run ID | Offline verdict | Evidence / correlation | UI result |
+|---|---|---|---|---|---|
+| vulnerable | function | `run_9a446c4d55464f75b834becc747144c0` | `VULNERABLE` | 5 / 5 | imported and observed |
+| vulnerable | MCP | `run_00d1dddd988049a09e64783d8b4d886a` | `VULNERABLE` | 5 / 5 | imported and observed |
+| fixed | function | `run_e859f540f64245e3acc16a2ccb1d9985` | `BLOCKED_BY_ACCESS_CONTROL` | 5 / 5 | imported and observed |
+| fixed | MCP | `run_367d971796d8484db0441d251d1d293c` | `BLOCKED_BY_ACCESS_CONTROL` | 5 / 5 | imported and observed; last result remained visible after restart |
+
+All four offline JSON results were reported with an empty `warnings` array. The online socket-separated runs first remained `INCONCLUSIVE` / `offline-pending`; final verdicts were produced by comparing target-local observations and then manually importing only the sanitized result. This is not an online automatic-correlation result. The vulnerable runs reportedly completed the user-b control request and then exposed user-b's exact synthetic private marker to user-a. The fixed runs reportedly completed the same control request and denied user-a access to that resource.
+
+The user also reported these point-in-time health checks using `curl --noproxy '*' --connect-timeout 3 --max-time 5`:
+
+| Source | Destination | Reported observation | Narrow conclusion |
+|---|---|---|---|
+| controller | `10.77.0.20:9000/health` | `status=ok`, phase 1, Nmap/Playwright `not_implemented` | worker health endpoint responded |
+| worker | `10.78.0.30:8080/health` | `status=ok`, mode `fixed`, data `synthetic-only` | target health endpoint responded |
+| controller | `10.78.0.30:8080/health` | curl error 28 after about 3 seconds | this direct attempt did not receive a response |
+
+The timeout alone does not prove that UFW caused the block or establish complete isolation. Routing, firewall counters, IPv6, alternate protocols, external egress, and service-to-service authentication were not comprehensively verified by these three health requests. Shared clipboard was used to move sanitized evidence, so clipboard isolation is not claimed.
+
 ## Not verified
 
-- VirtualBox/VMware VM creation, actual `10.77.0.20:9000` connectivity, NIC roles, routing, forwarding, firewall rules/counters, and negative network paths
-- vulnerable/fixed × function/MCP across actual VMs; the passing MCP regression is loopback automation, not this four-case VM matrix
+- Independent Codex reproduction or file-level inspection of the user-reported VM runs, and the exact commit executed in those VMs
+- Complete NIC/routing/forwarding/firewall rule and counter audit, IPv6 and alternate-protocol paths, external egress, and every negative network path
 - real OpenAI API call, account model access, output quality, retries, token usage, cost, and latency
-- real browser behavior for login, completed evidence display, provider selection, refresh, conversation switching, cancellation, SSE reconnect/polling, visual layout, or screenshots
+- automated browser behavior for login, provider selection, refresh, conversation switching, cancellation, SSE reconnect/polling, visual layout, or screenshots; the user reported only manual UI import and restart persistence observations
 - Nmap installation/execution and Playwright browser/egress enforcement
 - TLS/mTLS, multiple controller processes/users, long-duration load, and memory behavior
+- repeated VM runs, detection-rate statistics, tampered-result rejection, and bad-token rejection in the actual VM environment
 
 ## Interpretation limit
 
-These results reproduce one synthetic access-control fixture and hardening boundaries around that workflow. They do not measure generalized vulnerability discovery, production-site security, or model performance. Mock provider calls remain zero model calls and are not a local LLM result. The local core result is not VM network evidence. A socket-separated `COMPLETED` workflow may still have an `INCONCLUSIVE` verdict until target-local observations are correlated offline.
+These results cover one registered synthetic access-control fixture. They do not measure generalized vulnerability discovery, autonomous penetration testing, production readiness, complete network isolation, model performance, or a 100% detection rate. Mock provider calls are not local or live LLM results. The 2026-10-10 local core record remains separate from the user-reported 2026-10-14 VM record. A socket-separated `COMPLETED` workflow may remain `INCONCLUSIVE` until target-local observations are correlated offline.
