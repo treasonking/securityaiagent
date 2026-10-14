@@ -56,7 +56,7 @@ class ToolResult(BaseModel):
 
 
 class FindingCandidate(BaseModel):
-    finding_type: str
+    finding_type: Literal["cross_account_document_access"]
     rationale: str
     source: Literal["mock_provider", "openai_provider"]
 

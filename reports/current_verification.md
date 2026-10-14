@@ -4,8 +4,8 @@
 
 | Area | Command / test | Result |
 |---|---|---|
-| Python core/API/MCP | isolated Python 3.12 venv: `python -m pytest` | 53 passed; 4 dependency warnings + 1 local `.pytest_cache` ACL warning |
-| React security/state regression | `npm test` | 10 passed; two delayed-response state tests plus source contracts, not browser E2E |
+| Python core/API/MCP/provider | isolated Python 3.12 venv: `python -m pytest` | 62 passed; 4 dependency warnings + 1 local `.pytest_cache` ACL warning |
+| React security/state regression | `npm test` | 11 passed; two delayed-response state tests plus source contracts, not browser E2E |
 | React production build | `npm run build` | success, 18 modules transformed |
 | vulnerable fixture | `scripts\run_local_core.py --mode vulnerable` | `VULNERABLE`, 11 HTTP requests, 12 tool calls, 5 evidence items |
 | fixed fixture | `scripts\run_local_core.py --mode fixed` | `BLOCKED_BY_ACCESS_CONTROL`, 11 HTTP requests, 12 tool calls, 5 evidence items |
@@ -38,6 +38,17 @@ Each local run was evaluated immediately, before starting the other mode, with `
 
 The MCP Host result uses a TestClient request whose Host header is the documented VM address. It proves the application allowlist behavior, not connectivity to an actual VM. The loopback MCP integration starts a real Uvicorn socket and uses the Agents SDK `MCPServerStreamableHttp` client, while its synthetic target remains in-process ASGI.
 
+## 2026-10-14 candidate-contract execution record
+
+- Base commit before changes: `180fe5e9d74ce59a7c7e6ee1bc0ea8b2e5fbcd05`
+- Environment: Windows, disposable Python 3.12.14 venv installed from `requirements-full.lock`, Node.js 22.18.0, npm 10.9.3
+- Python: `62 passed` with the same five expected warnings
+- Frontend: `npm test` → 11 passed; `npm run build` → success, 18 modules transformed
+- Network use: no OpenAI API call; provider behavior used a local stub Runner
+- Covered provider outcomes: canonical candidate retained with `source=openai_provider`; intentional empty result retained with `EMPTY_CANDIDATES`; duplicate canonical values collapsed; noncanonical and over-limit lists rejected by schema; unregistered scope rejected before Runner; API/schema failures propagated without mock fallback; fixed verifier remained `BLOCKED_BY_ACCESS_CONTROL` with an empty candidate list
+
+The repository `.venv` still points to a removed Python installation, so it was not reported as a successful environment. The same existing `.pytest_cache` ACL issue emitted one warning. No warning failed the suite.
+
 ## User-reported three-VM verification — 2026-10-14
 
 The following results are transcribed from the attached verification guide, which states that it was prepared from the user's VM terminal output, offline-verification JSON, and web UI observation. Those underlying terminal captures, JSON files, and UI captures were not attached for direct inspection in this task. Codex did not execute commands in the VMs. The four run directories and VM SQLite files were not present in this Windows checkout, so their file contents and existence were not independently inspected here. The exact commit executed in the VMs is not confirmed; `6e9f4f5` was the reviewed Windows `main` before this documentation update and must not be treated as proof of the VM execution commit.
@@ -66,15 +77,30 @@ The user also reported these point-in-time health checks using `curl --noproxy '
 
 The timeout alone does not prove that UFW caused the block or establish complete isolation. Routing, firewall counters, IPv6, alternate protocols, external egress, and service-to-service authentication were not comprehensively verified by these three health requests. Shared clipboard was used to move sanitized evidence, so clipboard isolation is not claimed.
 
+## User-reported first live OpenAI run — 2026-10-14
+
+The attached guide records the following pre-fix run. Its underlying `report.json`, evidence, offline JSON, and UI capture were not present in this Windows checkout and were not directly inspected by Codex.
+
+| Run ID | Mode / provider / transport | Model | Usage | Candidates | Offline result | UI |
+|---|---|---|---|---|---|---|
+| `run_8d464c88140f447d9fd7a794136545d4` | fixed / OpenAI / function | `gpt-5.4-mini` | 1 call; 119 input, 73 output, 192 total tokens | empty | `BLOCKED_BY_ACCESS_CONTROL`; evidence 5, correlation 5/5, warnings `[]` | manual import reported as `imported=True` and `offline-correlated` |
+
+Reported evidence digest: `bbb9b86ba46c262efdb4736039670b1d9df0e8755df41ec16bedabf2d0a2027c`.
+
+This record supports API connectivity, usage collection, the fixed scenario workflow, and the separate offline verifier result. It does not demonstrate successful candidate generation or vulnerability-detection quality. The pre-fix implementation did not preserve the model's pre-filter structured output, so the empty stored list cannot establish whether the model returned `[]` or returned a noncanonical name that the application discarded. The previous report is not reconstructed or overwritten.
+
+The candidate contract has since been hardened locally: only `cross_account_document_access` is schema-valid, the scenario and hypothesis boundary are explicit, intentional emptiness produces the sanitized `EMPTY_CANDIDATES` diagnostic without adding a candidate, and API/schema failures remain failures. These changes were tested with a network-free stub Runner. No post-change OpenAI or VM run was executed by Codex; the required fixed/OpenAI/function rerun remains pending on the user's controller.
+
 ## Not verified
 
 - Independent Codex reproduction or file-level inspection of the user-reported VM runs, and the exact commit executed in those VMs
 - Complete NIC/routing/forwarding/firewall rule and counter audit, IPv6 and alternate-protocol paths, external egress, and every negative network path
-- real OpenAI API call, account model access, output quality, retries, token usage, cost, and latency
+- post-change real OpenAI rerun; live candidate output under the new schema; model quality, retries, cost, latency, and provider-side billing
 - automated browser behavior for login, provider selection, refresh, conversation switching, cancellation, SSE reconnect/polling, visual layout, or screenshots; the user reported only manual UI import and restart persistence observations
 - Nmap installation/execution and Playwright browser/egress enforcement
 - TLS/mTLS, multiple controller processes/users, long-duration load, and memory behavior
 - repeated VM runs, detection-rate statistics, tampered-result rejection, and bad-token rejection in the actual VM environment
+- live MCP and live vulnerable-mode combinations
 
 ## Interpretation limit
 

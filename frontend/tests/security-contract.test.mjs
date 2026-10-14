@@ -32,6 +32,12 @@ test("provider selection is server-configured and never falls back silently", ()
   assert.match(api, /provider,/);
 });
 
+test("empty model candidates remain distinct from the verifier verdict", () => {
+  assert.match(app, /finding_candidates\.length === 0/);
+  assert.match(app, /모델 후보 없음 · 접근 통제 판정은 별도 증거 기반입니다\./);
+  assert.match(app, /Verifier · 증거 확정/);
+});
+
 test("conversation changes restore runs, evidence, and event history", () => {
   assert.match(api, /listRuns/);
   assert.match(api, /getEventLog/);

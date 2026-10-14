@@ -4,9 +4,13 @@ import asyncio
 
 import pytest
 
-from common.schemas import Evidence, Verdict
+from common.schemas import Evidence, ModelUsage, Verdict
 from controller.engine import EngineRequest, RunCancelled, RunEngine
-from controller.providers import MockModelProvider
+from controller.providers import (
+    MockModelProvider,
+    ProviderDiagnosticCode,
+    ProviderResult,
+)
 from controller.reporting import ReportWriter
 from controller.tool_clients import DirectToolClient
 from tests.helpers import make_service
@@ -59,6 +63,65 @@ def test_fixed_core_flow_is_blocked_by_access_control(tmp_path):
     report, _ = _run(tmp_path, "fixed")
     assert report.verdict == Verdict.BLOCKED_BY_ACCESS_CONTROL
     assert report.mode == "fixed"
+
+
+def test_empty_live_candidates_are_diagnostic_and_do_not_replace_verifier(tmp_path):
+    class EmptyLiveProvider:
+        mode = "openai"
+        model_id = "test-explicit-model"
+
+        async def propose_candidates(self, **_kwargs):
+            return ProviderResult(
+                candidates=[],
+                usage=ModelUsage(calls=1, input_tokens=11, output_tokens=7, total_tokens=18),
+                diagnostics=(ProviderDiagnosticCode.EMPTY_CANDIDATES,),
+            )
+
+    async def execute():
+        service, _ = make_service(tmp_path, "fixed")
+
+        async def emit(_event_type, _payload):
+            return None
+
+        return await RunEngine(report_writer=ReportWriter(tmp_path / "reports")).execute(
+            EngineRequest(run_id="run-empty-live", scenario_id="access-control", target_id="lab-web"),
+            provider=EmptyLiveProvider(),
+            client=DirectToolClient(service),
+            cancel_event=asyncio.Event(),
+            emit=emit,
+        )
+
+    report = asyncio.run(execute())
+    assert report.finding_candidates == []
+    assert report.verdict == Verdict.BLOCKED_BY_ACCESS_CONTROL
+    assert report.model_usage.calls == 1
+    assert any("EMPTY_CANDIDATES" in item for item in report.warnings)
+
+
+def test_live_provider_failure_is_not_treated_as_empty_candidates(tmp_path):
+    class FailingLiveProvider:
+        mode = "openai"
+        model_id = "test-explicit-model"
+
+        async def propose_candidates(self, **_kwargs):
+            raise ValueError("synthetic schema failure")
+
+    async def execute():
+        service, _ = make_service(tmp_path, "fixed")
+
+        async def emit(_event_type, _payload):
+            return None
+
+        return await RunEngine(report_writer=ReportWriter(tmp_path / "reports")).execute(
+            EngineRequest(run_id="run-live-failure", scenario_id="access-control", target_id="lab-web"),
+            provider=FailingLiveProvider(),
+            client=DirectToolClient(service),
+            cancel_event=asyncio.Event(),
+            emit=emit,
+        )
+
+    with pytest.raises(RuntimeError, match="live model run is not verified: ValueError"):
+        asyncio.run(execute())
 
 
 def test_request_limit_failure_is_inconclusive_without_scope_expansion(tmp_path):

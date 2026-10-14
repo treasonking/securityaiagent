@@ -331,7 +331,7 @@ export default function App() {
                   </div>
                   <p className="subtle">Target log: {run.report.environment.target_server_log}</p>
                   <div className="decision-split">
-                    <section><span>모델 후보 · 미확정</span>{run.report.finding_candidates.map((item) => <p key={item.finding_type}>{item.finding_type}: {item.rationale}</p>)}</section>
+                    <section><span>모델 후보 · 미확정</span>{run.report.finding_candidates.length === 0 ? <p>모델 후보 없음 · 접근 통제 판정은 별도 증거 기반입니다.</p> : run.report.finding_candidates.map((item) => <p key={item.finding_type}>{item.finding_type}: {item.rationale}</p>)}</section>
                     <section><span>Verifier · 증거 확정</span>{run.report.verified_findings.map((item) => <p key={item.finding_type}>{item.verdict}: {item.reason}</p>)}</section>
                   </div>
                 </>

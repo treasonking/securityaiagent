@@ -30,7 +30,7 @@ export type RunReport = {
   provider_mode: string;
   tool_transport: string;
   environment: Record<string, string>;
-  finding_candidates: Array<{ finding_type: string; rationale: string; source: string }>;
+  finding_candidates: Array<{ finding_type: "cross_account_document_access"; rationale: string; source: string }>;
   verified_findings: Array<{ finding_type: string; verdict: string; reason: string }>;
   warnings: string[];
   recommendations: string[];

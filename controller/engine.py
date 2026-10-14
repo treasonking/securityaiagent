@@ -6,7 +6,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 
 from common.schemas import Evidence, ModelUsage, RunReport, RunStatus, ToolResult, utc_now
-from controller.providers import ModelProvider
+from controller.providers import ModelProvider, ProviderDiagnosticCode
 from controller.reporting import ReportWriter
 from controller.tool_clients import ToolClient
 from verifier.core import recommendations_for_verdict, verify_access_control
@@ -105,6 +105,11 @@ class RunEngine:
             )
             candidates = provider_result.candidates
             model_usage = provider_result.usage
+            if ProviderDiagnosticCode.EMPTY_CANDIDATES in provider_result.diagnostics:
+                warnings.append(
+                    "provider diagnostic EMPTY_CANDIDATES: model returned no finding candidates; "
+                    "access-control verdict is determined separately from evidence"
+                )
         except RunCancelled:
             raise
         except Exception as exc:

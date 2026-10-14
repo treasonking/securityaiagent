@@ -124,6 +124,24 @@ cd ~/securityaiagent
 
 사용자가 제공한 기록에서는 `mock` provider로 vulnerable/fixed × function/MCP 네 조합을 각 1회 실행했고 모두 target-local 5/5 대조 후 정제 결과를 수동 import했다. 네 run ID와 digest, 확보 상태는 [`current_verification.md`](../reports/current_verification.md)와 [`evidence_index.md`](../reports/evidence_index.md)에 기록한다. 이 문서 수정은 Codex가 VM에서 해당 시나리오를 재실행했다는 뜻이 아니다.
 
+## Live OpenAI candidate check
+
+Live provider는 고정 workflow를 바꾸지 않고 후보 가설만 제안한다. 허용 후보 이름은 `cross_account_document_access` 하나이며, 후보는 user-b 본인 대조군과 user-a의 user-b 소유 비공개 문서 접근 가능성을 시험할지 나타낸다. 모델은 실제 HTTP 응답, target 로그, target mode, 정답 또는 verifier fixture를 받지 않고 최종 verdict를 결정하지 않는다. 후보가 없어도 고정 시나리오 도구 workflow와 증거 기반 verifier는 계속 실행된다.
+
+의도적인 빈 목록은 성공 후보로 보충하지 않는다. 보고서에는 원본 모델 응답이나 전체 추론 대신 `EMPTY_CANDIDATES` 진단과 “접근 통제 판정은 별도 증거 기반” 안내만 남긴다. 비허용 후보 이름은 구조화 출력 검증 실패이며, API 실패와 함께 정상 빈 결과로 바꾸거나 mock으로 대체하지 않는다.
+
+첨부 가이드에 기록된 첫 live run `run_8d464c88140f447d9fd7a794136545d4`는 수정 전 fixed/OpenAI/function 실행이다. API 1회와 토큰 사용량, 후보 `[]`, offline `BLOCKED_BY_ACCESS_CONTROL` 5/5 및 수동 import가 보고됐지만, 수정 전 필터의 입력은 남아 있지 않아 원래 빈 목록과 비허용 이름 제거를 사후 구분할 수 없다. 이전 report를 수정하거나 후보를 재구성하지 않는다.
+
+수정 후 실제 VM 재검증은 controller를 업데이트하고 재시작한 다음 현재 fixed target DB를 reset하지 않은 채 OpenAI/function 1회만 먼저 실행한다.
+
+1. controller에 `MODEL_PROVIDER=openai`, 명시적 `OPENAI_MODEL`, 로컬 보호된 `OPENAI_API_KEY`가 설정됐는지 확인한다. 키 값을 출력·복사·보고하지 않는다.
+2. UI에서 `lab-web`, `access-control`, OpenAI, function으로 한 번 실행한다.
+3. 새 run ID, model ID, status, model usage, 후보 목록, `EMPTY_CANDIDATES` 진단 또는 후보 source, warnings와 evidence 수를 기록한다.
+4. 빈 목록이 다시 나와도 후보를 삽입하지 않고 verifier 절차를 계속한다. API/스키마 오류면 run 실패 상태를 그대로 기록한다.
+5. 기존 fixed DB로 target-local offline 5/5 대조 후 정제 JSON만 수동 import하고 UI의 최종 verdict와 `offline-correlated`를 확인한다.
+6. 첫 run과 새 run을 별도로 기록한다. 호출 횟수 제한을 금액 하드캡으로 표현하지 않는다.
+7. Live MCP 및 vulnerable live 조합은 이 확인 뒤 각각 별도 run으로 수행한다.
+
 ## Claim boundary
 
 - HTTP 요청은 synthetic target에 전송되지만 local core는 `DirectToolClient`와 in-process `ASGITransport`를 사용한다.
@@ -131,4 +149,5 @@ cd ~/securityaiagent
 - MCP는 도구 규약이고 권한 제어를 대체하지 않는다.
 - 실제 브라우저 UI는 상태 함수/소스 계약 테스트와 구분한다.
 - 사용자 제공 VM 결과와 Codex가 직접 실행·검사한 결과를 구분한다.
+- API 연결 성공, 후보 생성 결과, verifier 판정과 모델 품질을 서로 구분한다.
 - Nmap/Playwright, VM 격리, live OpenAI 결과는 실행 증거가 없으면 완료로 말하지 않는다.
