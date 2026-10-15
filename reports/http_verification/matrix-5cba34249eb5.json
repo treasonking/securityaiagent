@@ -1,0 +1,66 @@
+[
+  {
+    "run_id": "http-96ba12ca5c0d4370aeb91b5aee48f0bc",
+    "fixture_mode": "vulnerable",
+    "transport": "function",
+    "verdict": "VULNERABLE",
+    "verification_basis": "http_observation",
+    "evidence_count": 7,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    },
+    "started_at": "2026-10-15T14:12:16.559703+00:00",
+    "finished_at": "2026-10-15T14:12:18.007167+00:00",
+    "independent_log_checks": 7,
+    "python": "3.12.14"
+  },
+  {
+    "run_id": "http-6568a72b0e504b8cb3f6315c1c41b4f8",
+    "fixture_mode": "vulnerable",
+    "transport": "mcp",
+    "verdict": "VULNERABLE",
+    "verification_basis": "http_observation",
+    "evidence_count": 7,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    },
+    "started_at": "2026-10-15T14:12:21.281935+00:00",
+    "finished_at": "2026-10-15T14:12:22.521438+00:00",
+    "independent_log_checks": 7,
+    "python": "3.12.14"
+  },
+  {
+    "run_id": "http-4758cec4bc8d4ebcb5ddf206564b5e65",
+    "fixture_mode": "fixed",
+    "transport": "function",
+    "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "verification_basis": "http_observation",
+    "evidence_count": 7,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    },
+    "started_at": "2026-10-15T14:12:23.888381+00:00",
+    "finished_at": "2026-10-15T14:12:25.335792+00:00",
+    "independent_log_checks": 7,
+    "python": "3.12.14"
+  },
+  {
+    "run_id": "http-6198113e474341d7ba256f5ad1696381",
+    "fixture_mode": "fixed",
+    "transport": "mcp",
+    "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "verification_basis": "http_observation",
+    "evidence_count": 7,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    },
+    "started_at": "2026-10-15T14:12:25.635914+00:00",
+    "finished_at": "2026-10-15T14:12:27.069869+00:00",
+    "independent_log_checks": 7,
+    "python": "3.12.14"
+  }
+]

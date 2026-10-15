@@ -88,3 +88,12 @@ The guide reports reduced target stdout (`--no-access-log`, warning log level, r
 - Full firewall/routing/IPv6/egress isolation, every negative path, or service authentication inferred from health endpoints
 - Repeatability, load, stability, or detection-rate metrics from more than one representative run per combination
 - Root cause of the target freeze, missing observations, or worker slowdown
+
+
+## Codex-verified local HTTP-only evidence — 2026-10-15
+
+- 구현 커밋 `b97baf9`, 기준 main `17d72b8`. [전체 실행 결과/실패 이력](http_verification_results.md), [재현 가이드](../docs/http_verification_runbook.md).
+- 최종 Windows loopback 실제 TCP target + worker, mock vulnerable/fixed × function/MCP 네 조합: [matrix-5cba34249eb5.json](http_verification/matrix-5cba34249eb5.json). 각 run 증거 7개, HTTP 9회, 도구 10회, 기준 `http_observation`; 사후 독립 로그 대조 7/7씩. target DB/log/mode는 HTTP verifier 입력이 아니다.
+- 최종 회귀: Python 110 passed (6 dependency warnings), UI Node/소스 검사 12 passed, TypeScript/Vite build 성공. 기존 main 별도 기준 검증 62 passed.
+- 초기 Python 경로/ACL 오류 및 첫 matrix의 SQLite cleanup 실패도 결과 문서에 보존했다. 초기 네 run은 최종 판정 계약 이전의 개발 중 기록이며 최종 증거로 재해석하지 않는다.
+- VM/Ubuntu/OpenAI 실호출/실제 브라우저 E2E는 이번 실행에서 검증하지 않았다. Nmap/Playwright도 실행하지 않았다. 이전 VM 기록과 로컬 증거는 위에 그대로 유지한다.

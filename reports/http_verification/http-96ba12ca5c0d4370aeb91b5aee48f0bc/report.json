@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.1",
+  "verification_basis": "http_observation",
+  "run_id": "http-96ba12ca5c0d4370aeb91b5aee48f0bc",
+  "scenario_id": "access-control-http",
+  "target_id": "lab-web",
+  "mode": "unknown",
+  "provider_mode": "mock",
+  "model_id": null,
+  "tool_transport": "function",
+  "started_at": "2026-10-15T14:12:16.559703+00:00",
+  "finished_at": "2026-10-15T14:12:18.007167+00:00",
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE",
+  "finding_candidates": [
+    {
+      "finding_type": "cross_account_document_access",
+      "rationale": "Published scenario asks whether user-a can retrieve user-b's synthetic private document.",
+      "source": "mock_provider"
+    }
+  ],
+  "verified_findings": [
+    {
+      "finding_type": "cross_account_document_access",
+      "verdict": "VULNERABLE",
+      "evidence_ids": [
+        "ev_3a439a1411474223976a67c8924bbb40",
+        "ev_e77afe9cd0d14bdfa3349401bef3c5fd",
+        "ev_f14f85bd5b554b738ffc01b89a9ea792",
+        "ev_e46e864a9a454a908e3d4b04db057c21",
+        "ev_51b7d7578d2c47f5b90b74af3dd6b046",
+        "ev_297fefce0ab34453814f6fdae65101d0",
+        "ev_870359c2da244d08b1eac1f4e89de887"
+      ],
+      "reason": "Independent authenticated sessions and owner controls show the same private canary in user-a's cross-account response."
+    }
+  ],
+  "evidence_ids": [
+    "ev_3a439a1411474223976a67c8924bbb40",
+    "ev_e77afe9cd0d14bdfa3349401bef3c5fd",
+    "ev_f14f85bd5b554b738ffc01b89a9ea792",
+    "ev_e46e864a9a454a908e3d4b04db057c21",
+    "ev_51b7d7578d2c47f5b90b74af3dd6b046",
+    "ev_297fefce0ab34453814f6fdae65101d0",
+    "ev_870359c2da244d08b1eac1f4e89de887"
+  ],
+  "limits_used": {
+    "http_requests": 9,
+    "tool_calls": 10
+  },
+  "model_usage": {
+    "calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0
+  },
+  "warnings": [
+    "Limited to these synthetic accounts, resource, and observation time; not a site-wide safety claim."
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Windows",
+    "target_data": "synthetic-only",
+    "target_server_log": "not_used"
+  },
+  "recommendations": [
+    "Rerun the same bounded HTTP scenario after changes; results apply only to the tested accounts and resource."
+  ]
+}
