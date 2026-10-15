@@ -111,5 +111,22 @@ The guide reports reduced target stdout (`--no-access-log`, warning log level, r
 
 - 운영 이력도 사용자 보고로 보존한다: **이전 버전 worker로 인한 422 실패**, **격리망에 `git bundle`로 코드 전달**, **`TARGET_MODE`를 target 실행 환경에 명시적으로 로드한 뒤 재시작**. 실패 run ID/원본 오류, bundle 해시·명령, VM별 적용 커밋과 실제 재시작 명령은 미제공이다. 성공한 네 run으로 이전 실패를 덮어쓰지 않는다.
 - [VM 결과·운영 절차·확인 수준 상세](http_verification_results.md)의 사용자 보고 절을 참고한다. VM JSON·digest·실행 시간·호출 수·독립 로그 대조 결과는 아직 확인하지 않았으며 로컬 수치를 대신 넣지 않는다. 다음 작업은 VM 정제 원본 JSON 및 실행 버전 대조다.
-- 새 **HTTP 시나리오의 OpenAI 실호출 및 외부 사이트 적용은 미검증**이다. 위의 기존 로그 기반 `access-control` OpenAI 기록과 혼동하지 않는다. 실제 브라우저 E2E나 격리망 전체 보안 검증을 완료했다고 주장하지 않는다.
+- 이 mock 결과 보고 당시에는 새 HTTP 시나리오의 OpenAI 실호출 및 외부 사이트 적용이 미검증이었다. 후속 HTTP OpenAI 출력은 아래 별도 절에 추가한다. 위의 기존 로그 기반 `access-control` OpenAI 기록과 혼동하지 않는다. 실제 브라우저 E2E나 격리망 전체 보안 검증을 완료했다고 주장하지 않는다.
 - 이번 변경은 두 문서에 한정하며 코드·기존 증거 파일은 변경하지 않았다. 테스트는 재실행하지 않았고 기존 로컬 성공/실패 기록은 보존했다.
+
+## User-provided controller JSON output: HTTP OpenAI matrix — 2026-10-16 기록
+
+**사용자가 controller에서 실행하여 이번 대화에 제공한 JSON 출력의 전달값**을 근거로 기록한다. Codex의 VM 원본 파일 직접 검사·독립 재실행 결과가 아니다. 공통값은 `scenario_id=access-control-http`, `provider=openai`, 모델 `gpt-5.4-mini`, `COMPLETED`, 실행별 호출 1회·증거 7개, `verification_basis=http_observation`이다.
+
+| VM 모드 / transport | run ID | verdict | 전체 토큰 | 저장 증거 재판정 (사용자 제공 출력) |
+|---|---|---|---|---|
+| fixed / function | `run_3dd2ccc895c249ed95e7551f5b5156fa` | `BLOCKED_BY_ACCESS_CONTROL` | 307 | `verdict_matches=true` |
+| fixed / MCP | `run_85d5635cf09641fc88b5f920702bc4d4` | `BLOCKED_BY_ACCESS_CONTROL` | 296 | `verdict_matches=true` |
+| vulnerable / function | `run_dcb89c46afdd4461a5f727d06bdd8815` | `VULNERABLE` | 302 | `verdict_matches=true` |
+| vulnerable / MCP | `run_118cdedf22fa4a09871bc74b305266d5` | `VULNERABLE` | 286 | `verdict_matches=true` |
+
+- 합계: **호출 4회 · 입력 952 · 출력 239 · 전체 1,191토큰**. 행별 전체 토큰 및 입력/출력 합계가 일치한다. 개별 입력/출력 분할은 미제공이며, 이전 실행·실패·재시도나 실제 청구액의 합계로 해석하지 않는다.
+- 확인 수준: **사용자 제공 controller 출력에서 완료·예상 판정·재판정 일치 확인**. `verdict_matches=true`는 사용자 제공 출력이며 Codex의 원본 증거 재판정이나 target 로그 독립 대조를 뜻하지 않는다. VM 원본 파일·실행 커밋·환경·시각의 직접 검사는 미실시다.
+- [실행 결과와 한계 상세](http_verification_results.md)의 HTTP OpenAI 절을 참고한다. 기존 mock 결과와 실패 이력은 위에 보존하며, 기존 로그 기반 OpenAI 실험과도 분리한다.
+- **외부 사이트 적용은 미검증**으로 유지한다. 모델 탐지 성능, 실제 브라우저 E2E, Nmap/Playwright 및 전체 격리망 보안 검증을 입증한 것으로 기록하지 않는다.
+- 문서 두 파일만 갱신했다. 코드 변경·추가 OpenAI 호출·테스트 재실행은 하지 않았다.

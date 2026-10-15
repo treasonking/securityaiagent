@@ -111,8 +111,31 @@ VM 실행 당시 controller/worker/target의 커밋 ID, Python/Node 버전, 요�
 - **격리망 코드 전달:** 격리망 VM에는 `git bundle`로 코드를 전달했다. 인터넷에서 직접 pull한 것으로 기록하지 않는다. bundle 파일명·생성/적용 명령·해시·VM별 적용 커밋은 제공되지 않았으므로 코드 일치 여부는 아직 독립 확인하지 않았다.
 - **명시적 `TARGET_MODE` 로드 후 재시작:** 대상 모드에 맞는 `TARGET_MODE`를 target 프로세스 실행 환경에 명시적으로 로드하고 target을 재시작하는 절차를 사용했다. 재시작된 target을 대상으로 각 모드에서 function/MCP 검증을 수행했다는 운영 이력으로 기록한다. 실제 사용한 셸 명령과 환경 파일 경로는 제공되지 않아 추정하지 않는다. `.env` 파일을 수정하는 것만으로 자동 로드된다고 가정하지 않는 절차이며, 재현 명령은 [환경 로딩 가이드](../docs/environment_loading.md)와 [HTTP 실행 가이드](../docs/http_verification_runbook.md)에 있다. `TARGET_MODE`는 타겟 동작 설정이며 HTTP verifier의 판정 입력이 아니다.
 
-### 현재 확인 수준과 후속 작업
+### mock 결과 보고 당시의 확인 수준과 후속 작업
 
 - VM mock 네 조합은 **사용자 보고 기준으로 예상 판정 확인** 상태다. 원본 JSON의 run ID·scenario·provider·basis·증거 수·증거 결합 및 VM별 실제 코드 버전은 추후 대조해야 한다. 원본 대조가 끝나기 전에는 독립 검증 완료로 승격하지 않는다.
-- 새 **`access-control-http`의 OpenAI 실호출과 외부 사이트 적용은 미검증**으로 유지한다. 기존 `access-control`의 OpenAI 기록은 새 HTTP 시나리오의 실호출 증거가 아니다. VM 화면 확인 보고는 자동화된 실제 브라우저 E2E 검증도 아니다.
+- 이 mock 결과 보고 당시에는 새 `access-control-http`의 OpenAI 실호출과 외부 사이트 적용이 미검증이었다. 후속 OpenAI 실행 출력은 아래 별도 절에 기록한다. 기존 `access-control`의 OpenAI 기록은 새 HTTP 시나리오의 실호출 증거가 아니다. VM 화면 확인 보고는 자동화된 실제 브라우저 E2E 검증도 아니다.
 - 이번 업데이트는 문서 두 파일만 수정했다. 코드 변경이나 테스트 재실행은 하지 않았으며, 위 110개 Python/12개 UI 테스트 결과는 2026-10-15 로컬 실행 기록이다. 다음 단계는 VM의 정제된 원본 JSON 및 실행 버전을 확보해 사용자 보고와 대조하는 것이다.
+
+## 사용자 제공 controller 출력: HTTP 시나리오 OpenAI 네 조합 — 2026-10-16 기록
+
+근거는 **사용자가 controller에서 실행하여 이번 대화에 제공한 OpenAI 실행 JSON 출력의 전달값**이다. Codex가 VM에 접속하여 원본 `report.json`/`evidence.json` 파일을 직접 검사하거나 OpenAI를 재호출한 결과가 아니다. 위 mock 화면 확인 보고 및 Codex 직접 실행 로컬 결과와 별도로 보존한다. 날짜는 기록일이며 개별 실행 시각은 제공되지 않았다.
+
+공통 출력값: `scenario_id=access-control-http`, `provider=openai`, 모델 `gpt-5.4-mini`, `status=COMPLETED`, 실행별 모델 호출 **1회**, 증거 **7개**, `verification_basis=http_observation`. 사용자가 제공한 저장 증거 재판정 출력은 네 실행 모두 **`verdict_matches=true`**다.
+
+| VM 모드 / transport | run ID | 판정 | 전체 토큰 | 저장 증거 재판정 (사용자 제공 출력) |
+|---|---|---|---|---|
+| fixed / function | `run_3dd2ccc895c249ed95e7551f5b5156fa` | `BLOCKED_BY_ACCESS_CONTROL` | 307 | `verdict_matches=true` |
+| fixed / MCP | `run_85d5635cf09641fc88b5f920702bc4d4` | `BLOCKED_BY_ACCESS_CONTROL` | 296 | `verdict_matches=true` |
+| vulnerable / function | `run_dcb89c46afdd4461a5f727d06bdd8815` | `VULNERABLE` | 302 | `verdict_matches=true` |
+| vulnerable / MCP | `run_118cdedf22fa4a09871bc74b305266d5` | `VULNERABLE` | 286 | `verdict_matches=true` |
+
+제공된 네 실행의 합계는 **호출 4회 · 입력 952 · 출력 239 · 전체 1,191토큰**이다. 행별 전체 토큰 합계 `307 + 296 + 302 + 286 = 1,191` 및 입력/출력 합계 `952 + 239 = 1,191`이 일치한다. 개별 실행의 입력/출력 분할은 전달되지 않아 배분하지 않는다. 이 합계는 위 네 run의 보고된 사용량이며 기존 mock/로그 기반 OpenAI 실행, 실패·재시도 이력 또는 실제 청구액을 합산한 값이 아니다.
+
+### 확인 수준과 남은 한계
+
+- 새 HTTP 시나리오의 OpenAI 네 조합은 **사용자 제공 controller 출력 기준으로 완료·예상 판정·저장 증거 재판정 일치 확인** 상태로 갱신한다. `verdict_matches=true`는 사용자가 제공한 재판정 출력값이며, Codex가 원본 증거를 직접 재판정했다거나 target 로그와 독립 대조했다는 뜻이 아니다.
+- 판정 기준은 `http_observation`이다. 모델의 의견을 최종 판정 근거로 바꾸지 않으며, 위 결과만으로 모델 정확도·탐지율·일반화 성능을 입증하지 않는다.
+- VM 원본 파일의 직접 검사, VM별 실제 실행 커밋/환경/시각 및 청구 내역은 독립 확인하지 않았다. 원본 파일이나 전체 JSON 첨부를 저장소에 확보한 것처럼 새 증거 파일·링크를 만들지 않는다.
+- **외부 사이트 적용은 계속 미검증**이다. 실제 브라우저 E2E, Nmap/Playwright 및 전체 격리망 보안 검증도 이 출력으로 완료 처리하지 않는다.
+- 기존 mock 결과, 422 및 SQLite 정리 실패, `git bundle` 전달, `TARGET_MODE` 명시적 로드 후 재시작 이력은 유지했다. 이번 변경은 두 문서뿐이며 코드 변경·추가 OpenAI 호출·테스트 재실행은 하지 않았다.
