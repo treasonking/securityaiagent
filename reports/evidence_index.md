@@ -97,3 +97,19 @@ The guide reports reduced target stdout (`--no-access-log`, warning log level, r
 - 최종 회귀: Python 110 passed (6 dependency warnings), UI Node/소스 검사 12 passed, TypeScript/Vite build 성공. 기존 main 별도 기준 검증 62 passed.
 - 초기 Python 경로/ACL 오류 및 첫 matrix의 SQLite cleanup 실패도 결과 문서에 보존했다. 초기 네 run은 최종 판정 계약 이전의 개발 중 기록이며 최종 증거로 재해석하지 않는다.
 - VM/Ubuntu/OpenAI 실호출/실제 브라우저 E2E는 이번 실행에서 검증하지 않았다. Nmap/Playwright도 실행하지 않았다. 이전 VM 기록과 로컬 증거는 위에 그대로 유지한다.
+
+## User-reported VM HTTP-only matrix — 2026-10-16 기록
+
+시나리오 `access-control-http`의 실제 VM 실행 결과를 사용자 보고로 추가한다. 공통 보고값은 `provider=mock`, `verification_basis=http_observation`, 각 실행 증거 7개다. 사용자는 첨부 화면에서 판정을 확인했다고 보고했으나, 이번 문서 업데이트에서 화면 원본을 직접 열람하거나 VM 원본 JSON을 대조하지 않았다. **사용자 보고 / 화면 판정 확인 보고 / 원본 JSON 미대조**이며, 위의 Codex 직접 실행 로컬 결과와 구분한다. 날짜는 보고 기록일이고 개별 실행 시각은 미제공이다.
+
+| VM 모드 / transport | run ID | 판정 (사용자 보고) | 증거 수 (사용자 보고) | 확인 수준 |
+|---|---|---|---|---|
+| vulnerable / function | `run_bc9c414b6860453886d4174dc405459b` | `VULNERABLE` | 7 | 화면 확인 보고, 원본 JSON 미대조 |
+| vulnerable / mcp | `run_74e63dc639ec497782a9f84c8444f7a2` | `VULNERABLE` | 7 | 화면 확인 보고, 원본 JSON 미대조 |
+| fixed / function | `run_54001251a18a463ea9a617162bfec8f5` | `BLOCKED_BY_ACCESS_CONTROL` | 7 | 화면 확인 보고, 원본 JSON 미대조 |
+| fixed / mcp | `run_9d4d0eea1ed1468eace1784a0915ac68` | `BLOCKED_BY_ACCESS_CONTROL` | 7 | 화면 확인 보고, 원본 JSON 미대조 |
+
+- 운영 이력도 사용자 보고로 보존한다: **이전 버전 worker로 인한 422 실패**, **격리망에 `git bundle`로 코드 전달**, **`TARGET_MODE`를 target 실행 환경에 명시적으로 로드한 뒤 재시작**. 실패 run ID/원본 오류, bundle 해시·명령, VM별 적용 커밋과 실제 재시작 명령은 미제공이다. 성공한 네 run으로 이전 실패를 덮어쓰지 않는다.
+- [VM 결과·운영 절차·확인 수준 상세](http_verification_results.md)의 사용자 보고 절을 참고한다. VM JSON·digest·실행 시간·호출 수·독립 로그 대조 결과는 아직 확인하지 않았으며 로컬 수치를 대신 넣지 않는다. 다음 작업은 VM 정제 원본 JSON 및 실행 버전 대조다.
+- 새 **HTTP 시나리오의 OpenAI 실호출 및 외부 사이트 적용은 미검증**이다. 위의 기존 로그 기반 `access-control` OpenAI 기록과 혼동하지 않는다. 실제 브라우저 E2E나 격리망 전체 보안 검증을 완료했다고 주장하지 않는다.
+- 이번 변경은 두 문서에 한정하며 코드·기존 증거 파일은 변경하지 않았다. 테스트는 재실행하지 않았고 기존 로컬 성공/실패 기록은 보존했다.

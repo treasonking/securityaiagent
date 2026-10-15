@@ -10,7 +10,7 @@
 
 구현은 별도 `access-control-http` 시나리오, HTTP 전용 판정 함수, 독립 세션/소유 관계/private canary 비교/재조회, 제한된 증거 스키마와 보고서 기준, UI 선택, 양쪽 transport 전달 및 재현 스크립트를 포함한다. 기존 `access-control`의 로그 요구와 offline import는 유지한다. 임시 DB 정리를 위해 target의 SQLite 연결을 명시적으로 닫도록 수정했다.
 
-## 최종 네 조합 — 실제 실행 및 정리 성공
+## 로컬 최종 네 조합 — 실제 실행 및 정리 성공
 
 명령: `.\.venv\Scripts\python.exe scripts/run_http_verification.py` (PowerShell에서 stdout/stderr를 git-ignore된 `verification_tmp/http-matrix-final.log`로 리디렉션하여 검사; 종료 코드 0).
 
@@ -83,9 +83,36 @@ Pop-Location
 - fixed/function: [http-fe541702a2e54e00af0dbb7593fc9436](http_verification/http-fe541702a2e54e00af0dbb7593fc9436/report.json) — cleanup 실패 실행의 중간 산출물.
 - fixed/mcp: [http-d5e08044fdcb439fbf76425c930bd7af](http_verification/http-d5e08044fdcb439fbf76425c930bd7af/report.json) — cleanup 실패 실행의 중간 산출물.
 
-## 미검증과 다음 작업
+## 2026-10-15 로컬 검증 시점의 미검증과 다음 작업
 
 - Windows 로컬 소켓의 mock 네 조합만 직접 검증했다. **Ubuntu 실행, 실제 VM 네 조합, VM 격리 설정, 실제 브라우저 E2E, OpenAI 실호출은 미검증**이다.
 - 일반 사이트 HTML의 의미 비교, 임의 외부 대상, 모델 학습, Nmap, Playwright, 자동 제보는 추가하지 않았다. MAC/NIC/방화벽/RAM/CPU와 배포 target registry는 변경하지 않았다.
 - worker가 관측한 HTTP 메타데이터와 명시적인 합성 타겟 계약을 신뢰하는 실험이다. 보고서 digest는 동일성 확인이지 위조 방지 서명이나 독립 감사 증명이 아니다. 결과는 해당 계정/문서/시점에만 적용한다.
 - 다음 작업: [HTTP 실행 가이드](../docs/http_verification_runbook.md)의 VM 명령으로 두 모드 × function/MCP를 다시 실행하고 각 VM run ID/판정/basis/증거 수를 보존한다. 외부 테스트는 별도의 허용 프로그램 정책 작업 후 검토한다.
+
+## 사용자 보고: 실제 VM HTTP 시나리오 네 조합 — 2026-10-16 기록
+
+아래는 사용자가 전달한 실제 VM 실행 결과다. 사용자는 첨부 화면에서 판정을 확인했다고 보고했다. 이 문서 업데이트에서는 해당 화면 원본을 직접 열람하지 않았으며, **VM 원본 `report.json`/`evidence.json` 대조도 아직 하지 않았다**. 따라서 위의 Codex 직접 실행·파일 검사 완료 로컬 결과와 구분하여 **사용자 보고 / 화면 판정 확인 보고 / 원본 JSON 미대조**로 기록한다. 2026-10-16은 보고 기록일이며 각 run의 실제 시작·종료 시각은 제공되지 않았다.
+
+공통 보고값: 시나리오 `access-control-http`, `provider=mock`, `verification_basis=http_observation`, 실행별 증거 **7개**.
+
+| VM 모드 / transport | 실제 run ID (사용자 제공) | 화면에서 확인한 판정 (사용자 보고) | 증거 수 (사용자 보고) | 증거 확인 수준 |
+|---|---|---|---|---|
+| vulnerable / function | `run_bc9c414b6860453886d4174dc405459b` | `VULNERABLE` | 7 | 화면 확인 보고, 원본 JSON 미대조 |
+| vulnerable / mcp | `run_74e63dc639ec497782a9f84c8444f7a2` | `VULNERABLE` | 7 | 화면 확인 보고, 원본 JSON 미대조 |
+| fixed / function | `run_54001251a18a463ea9a617162bfec8f5` | `BLOCKED_BY_ACCESS_CONTROL` | 7 | 화면 확인 보고, 원본 JSON 미대조 |
+| fixed / mcp | `run_9d4d0eea1ed1468eace1784a0915ac68` | `BLOCKED_BY_ACCESS_CONTROL` | 7 | 화면 확인 보고, 원본 JSON 미대조 |
+
+VM 실행 당시 controller/worker/target의 커밋 ID, Python/Node 버전, 요청·도구 호출 수, digest, 실행 시간 및 사후 독립 로그 대조 결과는 제공되지 않았다. 위 로컬 실행의 커밋·환경·HTTP 9회/도구 10회·7/7 로그 대조를 이 VM 실행의 측정값으로 복사하지 않는다. VM JSON이나 화면 파일을 이 저장소에 확보한 것처럼 링크하거나 생성하지 않는다.
+
+### VM 실패 이력과 전달·재시작 절차 (사용자 보고)
+
+- **이전 worker 버전으로 인한 HTTP 422 실패:** 새 HTTP 시나리오 실행 과정에서 이전 버전 worker 때문에 422가 발생했다고 보고되었다. 성공한 네 run과 별개의 실패 이력으로 남긴다. 실패 run ID, 정확한 endpoint/응답 본문, 발생 시각은 제공되지 않았으며 이를 독립 진단한 것으로 기록하지 않는다.
+- **격리망 코드 전달:** 격리망 VM에는 `git bundle`로 코드를 전달했다. 인터넷에서 직접 pull한 것으로 기록하지 않는다. bundle 파일명·생성/적용 명령·해시·VM별 적용 커밋은 제공되지 않았으므로 코드 일치 여부는 아직 독립 확인하지 않았다.
+- **명시적 `TARGET_MODE` 로드 후 재시작:** 대상 모드에 맞는 `TARGET_MODE`를 target 프로세스 실행 환경에 명시적으로 로드하고 target을 재시작하는 절차를 사용했다. 재시작된 target을 대상으로 각 모드에서 function/MCP 검증을 수행했다는 운영 이력으로 기록한다. 실제 사용한 셸 명령과 환경 파일 경로는 제공되지 않아 추정하지 않는다. `.env` 파일을 수정하는 것만으로 자동 로드된다고 가정하지 않는 절차이며, 재현 명령은 [환경 로딩 가이드](../docs/environment_loading.md)와 [HTTP 실행 가이드](../docs/http_verification_runbook.md)에 있다. `TARGET_MODE`는 타겟 동작 설정이며 HTTP verifier의 판정 입력이 아니다.
+
+### 현재 확인 수준과 후속 작업
+
+- VM mock 네 조합은 **사용자 보고 기준으로 예상 판정 확인** 상태다. 원본 JSON의 run ID·scenario·provider·basis·증거 수·증거 결합 및 VM별 실제 코드 버전은 추후 대조해야 한다. 원본 대조가 끝나기 전에는 독립 검증 완료로 승격하지 않는다.
+- 새 **`access-control-http`의 OpenAI 실호출과 외부 사이트 적용은 미검증**으로 유지한다. 기존 `access-control`의 OpenAI 기록은 새 HTTP 시나리오의 실호출 증거가 아니다. VM 화면 확인 보고는 자동화된 실제 브라우저 E2E 검증도 아니다.
+- 이번 업데이트는 문서 두 파일만 수정했다. 코드 변경이나 테스트 재실행은 하지 않았으며, 위 110개 Python/12개 UI 테스트 결과는 2026-10-15 로컬 실행 기록이다. 다음 단계는 VM의 정제된 원본 JSON 및 실행 버전을 확보해 사용자 보고와 대조하는 것이다.
