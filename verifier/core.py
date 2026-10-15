@@ -59,7 +59,8 @@ def evidence_identity_digest(evidence: list[Evidence]) -> str:
         "purpose",
     )
     canonical = [
-        {field: getattr(item, field) for field in fields}
+        {**{field: getattr(item, field) for field in fields},
+         **({"http_observation": item.http_observation.model_dump(mode="json")} if item.http_observation else {})}
         for item in sorted(evidence, key=lambda value: value.evidence_id)
     ]
     encoded = json.dumps(

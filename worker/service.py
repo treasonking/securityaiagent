@@ -11,7 +11,7 @@ from typing import Any, Callable
 import httpx
 
 from common.sanitize import body_digest
-from common.schemas import Evidence, ToolResult
+from common.schemas import Evidence, HttpObservation, ScenarioId, ToolResult
 from worker.policy import PolicyViolation, TargetPolicy
 
 
@@ -53,6 +53,7 @@ class WorkerLimits:
 class _Session:
     account_ref: str
     cookies: httpx.Cookies
+    target_id: str
 
 
 @dataclass
@@ -71,6 +72,8 @@ class _RunState:
     cancel_event: asyncio.Event = field(default_factory=asyncio.Event)
     active_http_tasks: set[asyncio.Task[Any]] = field(default_factory=set)
     ended_monotonic: float | None = None
+    scenario_id: ScenarioId = "access-control"
+    target_id: str | None = None
 
 
 class ToolService:
@@ -135,7 +138,9 @@ class ToolService:
             raise PolicyViolation("run timeout exceeded")
     def _count_tool(self, state: _RunState) -> None:
         self._check_run(state)
-        if state.tool_count >= self.limits.max_tool_calls:
+        # HTTP scenario needs exactly 10 tools / 9 HTTP requests, never a global increase.
+        maximum = min(self.limits.max_tool_calls, 10) if state.scenario_id == "access-control-http" else self.limits.max_tool_calls
+        if state.tool_count >= maximum:
             state.cancelled = True
             state.cancel_event.set()
             state.ended_monotonic = time.monotonic()
@@ -225,7 +230,8 @@ class ToolService:
                 if remaining > 0:
                     await self._wait_for_gate(state, asyncio.sleep(remaining))
                 self._check_run(state)
-                if state.request_count >= self.limits.max_requests:
+                maximum = min(self.limits.max_requests, 9) if state.scenario_id == "access-control-http" else self.limits.max_requests
+                if state.request_count >= maximum:
                     state.cancelled = True
                     state.cancel_event.set()
                     state.ended_monotonic = time.monotonic()
@@ -297,12 +303,21 @@ class ToolService:
     @staticmethod
     def _error(run_id: str, exc: Exception) -> ToolResult:
         code = "POLICY_REJECTED" if isinstance(exc, PolicyViolation) else "TOOL_ERROR"
-        return ToolResult(ok=False, run_id=run_id, error_code=code, message=str(exc))
+        return ToolResult(ok=False, run_id=run_id, error_code=code,
+                          message=str(exc) if isinstance(exc, PolicyViolation) else type(exc).__name__)
 
-    async def start_session(self, run_id: str, target_id: str, account_ref: str) -> ToolResult:
+    async def start_session(self, run_id: str, target_id: str, account_ref: str,
+                            scenario_id: ScenarioId = "access-control") -> ToolResult:
         try:
+            if scenario_id not in {"access-control", "access-control-http"}:
+                raise PolicyViolation("scenario_id is not registered")
+            if scenario_id == "access-control-http" and (target_id != "lab-web" or account_ref not in {"user-a", "user-b"}):
+                raise PolicyViolation("HTTP scenario is limited to lab-web and two user accounts")
             state = await self._state(run_id, create=True)
             self._check_run(state)
+            if state.target_id is not None and (state.target_id != target_id or state.scenario_id != scenario_id):
+                raise PolicyViolation("run target or scenario mismatch")
+            state.target_id, state.scenario_id = target_id, scenario_id
             policy = self.policies.get(target_id)
             if policy is None:
                 raise PolicyViolation("target_id is not registered")
@@ -325,9 +340,10 @@ class ToolService:
                     error_code="AUTHENTICATION_FAILED",
                     message=f"synthetic account login returned {response.status_code}",
                 )
-            state.mode = response.headers.get("X-SecurityLab-Mode", "unknown")
+            if state.scenario_id == "access-control":
+                state.mode = response.headers.get("X-SecurityLab-Mode", "unknown")
             session_ref = f"sess_{secrets.token_urlsafe(24)}"
-            state.sessions[session_ref] = _Session(account_ref=account_ref, cookies=response.cookies)
+            state.sessions[session_ref] = _Session(account_ref=account_ref, cookies=response.cookies, target_id=target_id)
             return ToolResult(ok=True, run_id=run_id, data={"session_ref": session_ref, "authenticated": True})
         except Exception as exc:
             return self._error(run_id, exc)
@@ -340,10 +356,10 @@ class ToolService:
             if policy is None:
                 raise PolicyViolation("target_id is not registered")
             session = state.sessions.get(session_ref)
-            if session is None:
+            if session is None or session.target_id != target_id:
                 raise PolicyViolation("unknown opaque session_ref")
             self._count_tool(state)
-            response, _ = await self._request(
+            response, request_id = await self._request(
                 state,
                 policy,
                 method="GET",
@@ -358,8 +374,27 @@ class ToolService:
                     error_code="SESSION_OR_TARGET_ERROR",
                     message=f"document list returned {response.status_code}",
                 )
-            document_ids = [item["document_id"] for item in response.json().get("documents", [])]
-            return ToolResult(ok=True, run_id=run_id, data={"document_ids": document_ids})
+            payload = response.json()
+            items = payload.get("documents", [])
+            if not isinstance(items, list) or len(items) > 100:
+                raise PolicyViolation("invalid bounded document list")
+            document_ids = [item["document_id"] for item in items]
+            for document_id in document_ids:
+                policy.document_path(document_id)
+            if len(document_ids) != len(set(document_ids)):
+                raise PolicyViolation("ambiguous document list")
+            evidence = None
+            if state.scenario_id == "access-control-http":
+                expected = self.account_ids[session.account_ref]
+                if payload.get("account_id") != expected or any(item.get("owner_id") != expected for item in items):
+                    raise PolicyViolation("document list account or ownership is unverified")
+                observation = self._http_metadata(response, session, session_ref)
+                observation.listed_document_ids = document_ids
+                observation.owner_ref = session.account_ref
+                observation.response_kind = "document_list"
+                evidence = self._http_evidence(state, response, request_id, session, "/documents",
+                                               "http-list-" + session.account_ref, observation)
+            return ToolResult(ok=True, run_id=run_id, data={"document_ids": document_ids}, evidence=evidence)
         except Exception as exc:
             return self._error(run_id, exc)
 
@@ -378,9 +413,13 @@ class ToolService:
             if policy is None:
                 raise PolicyViolation("target_id is not registered")
             session = state.sessions.get(session_ref)
-            if session is None:
+            if session is None or session.target_id != target_id:
                 raise PolicyViolation("unknown opaque session_ref")
             path = policy.document_path(document_id)
+            if state.scenario_id == "access-control-http" and purpose not in {
+                "http-own-a", "http-own-b", "http-cross-b", "http-recheck-b", "http-recheck-a"
+            }:
+                raise PolicyViolation("HTTP evidence purpose is not registered")
             self._count_tool(state)
             response, request_id = await self._request(
                 state,
@@ -390,6 +429,10 @@ class ToolService:
                 account_ref=session.account_ref,
                 cookies=session.cookies,
             )
+            if state.scenario_id == "access-control-http":
+                observation = self._http_metadata(response, session, session_ref)
+                evidence = self._http_evidence(state, response, request_id, session, path, purpose, observation)
+                return ToolResult(ok=True, run_id=run_id, data={"status_code": response.status_code}, evidence=evidence)
             marker = None
             if response.status_code == 200:
                 payload = response.json()
@@ -429,6 +472,46 @@ class ToolService:
             )
         except Exception as exc:
             return self._error(run_id, exc)
+
+    def _http_metadata(self, response: httpx.Response, session: _Session, session_ref: str) -> HttpObservation:
+        account_map = {self.account_ids[name]: name for name in ("user-a", "user-b")}
+        observation = HttpObservation(
+            session_binding=body_digest(session_ref.encode()),
+            authenticated_account=account_map.get(response.headers.get("X-SecurityLab-Account")),
+        )
+        try:
+            payload = response.json()
+        except ValueError:
+            return observation
+        if not isinstance(payload, dict):
+            return observation
+        if response.status_code in {403, 404} and payload == {"detail": "document not found"}:
+            observation.response_kind = "document_denied"
+        canary = payload.get("canary")
+        observation.canary_present = canary is not None or payload.get("marker") is not None
+        document_id = payload.get("document_id")
+        if isinstance(document_id, str) and re.fullmatch(r"doc-[a-z]+-[0-9]{3}", document_id):
+            observation.document_id = document_id
+        observation.owner_ref = account_map.get(payload.get("owner_id")) if isinstance(payload.get("owner_id"), str) else None
+        if (payload.get("visibility") == "private" and isinstance(canary, dict)
+                and canary.get("kind") == "synthetic-private"
+                and isinstance(canary.get("value"), str)
+                and re.fullmatch(r"SYN-[A-Za-z0-9_-]{8,96}", canary["value"])):
+            observation.private_canary_digest = body_digest(canary["value"].encode())
+            observation.response_kind = "private_document"
+        return observation
+
+    @staticmethod
+    def _http_evidence(state: _RunState, response: httpx.Response, request_id: str,
+                       session: _Session, path: str, purpose: str, observation: HttpObservation) -> Evidence:
+        evidence = Evidence(
+            evidence_id=f"ev_{uuid.uuid4().hex}", run_id=state.run_id, method="GET", path=path,
+            status_code=response.status_code, account_ref=session.account_ref, request_id=request_id,
+            body_hash=body_digest(response.content), server_observation="http_observation",
+            purpose=purpose, http_observation=observation,
+        )
+        state.evidence.append(evidence)
+        return evidence
 
     async def finish_run(self, run_id: str) -> ToolResult:
         try:

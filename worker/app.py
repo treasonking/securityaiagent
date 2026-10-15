@@ -12,7 +12,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
-from common.schemas import ToolResult
+from common.schemas import ScenarioId, ToolResult
 from worker.policy import TargetPolicy
 from worker.registry import load_target_registry
 from worker.service import ToolService, WorkerLimits
@@ -23,6 +23,7 @@ class StartSessionRequest(BaseModel):
     run_id: str
     target_id: str
     account_ref: str
+    scenario_id: ScenarioId = "access-control"
 
 
 class ListDocumentsRequest(BaseModel):
@@ -91,7 +92,7 @@ def build_worker_app(
 
     @api.post("/v1/tools/start-session", response_model=ToolResult, dependencies=[Depends(authenticate)])
     async def start_session(payload: StartSessionRequest) -> ToolResult:
-        return await service.start_session(payload.run_id, payload.target_id, payload.account_ref)
+        return await service.start_session(payload.run_id, payload.target_id, payload.account_ref, payload.scenario_id)
 
     @api.post("/v1/tools/list-own-documents", response_model=ToolResult, dependencies=[Depends(authenticate)])
     async def list_own_documents(payload: ListDocumentsRequest) -> ToolResult:
@@ -129,9 +130,9 @@ def build_worker_app(
     )
 
     @mcp.tool()
-    async def start_session(run_id: str, target_id: str, account_ref: str) -> dict[str, Any]:
+    async def start_session(run_id: str, target_id: str, account_ref: str, scenario_id: ScenarioId = "access-control") -> dict[str, Any]:
         """Start one opaque synthetic-account session for a registered target."""
-        return (await service.start_session(run_id, target_id, account_ref)).model_dump(mode="json")
+        return (await service.start_session(run_id, target_id, account_ref, scenario_id)).model_dump(mode="json")
 
     @mcp.tool()
     async def list_own_documents(run_id: str, target_id: str, session_ref: str) -> dict[str, Any]:

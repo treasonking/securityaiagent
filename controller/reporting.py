@@ -31,6 +31,7 @@ class ReportWriter:
                     f"# SecurityLab run {report.run_id}",
                     "",
                     f"- Scenario: `{report.scenario_id}`",
+                    f"- Verification basis: `{report.verification_basis}`",
                     f"- Target: `{report.target_id}`",
                     f"- Mode: `{report.mode}`",
                     f"- Provider: `{report.provider_mode}`",

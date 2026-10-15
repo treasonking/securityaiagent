@@ -36,6 +36,7 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("취약/수정 모드의 접근 통제 시나리오를 검증해줘.");
   const [transport, setTransport] = useState<"function" | "mcp">("function");
+  const [scenario, setScenario] = useState<"access-control" | "access-control-http">("access-control");
   const [provider, setProvider] = useState<"mock" | "openai">("mock");
   const [run, setRun] = useState<RunState | null>(null);
   const [events, setEvents] = useState<string[]>([]);
@@ -204,7 +205,7 @@ export default function App() {
         activateConversation(conversationId);
         setConversations(await listConversations());
       }
-      const submitted = await submitMessage(conversationId, message, transport, provider);
+      const submitted = await submitMessage(conversationId, message, transport, provider, scenario);
       const [state, nextMessages] = await Promise.all([
         getRun(submitted.run_id), listMessages(conversationId),
       ]);
@@ -295,7 +296,7 @@ export default function App() {
       <section className="workspace">
         <header className="topbar">
           <div><span className="status-dot" /> 인증된 단일 사용자 · synthetic-only</div>
-          <div className="scope">lab-web / access-control</div>
+          <div className="scope">lab-web / {scenario}</div>
         </header>
 
         <section className="conversation" aria-live="polite">
@@ -329,7 +330,7 @@ export default function App() {
                     <div><span>Provider</span><strong>{run.report.provider_mode}</strong></div>
                     <div><span>Transport</span><strong>{run.report.tool_transport}</strong></div>
                   </div>
-                  <p className="subtle">Target log: {run.report.environment.target_server_log}</p>
+                  <p className="subtle">{run.report.verification_basis === "http_observation" ? "판정 기준: HTTP 관측 · 서버 로그 미사용 · 테스트한 계정과 리소스에 한정" : `Target log: ${run.report.environment.target_server_log}`}</p>
                   <div className="decision-split">
                     <section><span>모델 후보 · 미확정</span>{run.report.finding_candidates.length === 0 ? <p>모델 후보 없음 · 접근 통제 판정은 별도 증거 기반입니다.</p> : run.report.finding_candidates.map((item) => <p key={item.finding_type}>{item.finding_type}: {item.rationale}</p>)}</section>
                     <section><span>Verifier · 증거 확정</span>{run.report.verified_findings.map((item) => <p key={item.finding_type}>{item.verdict}: {item.reason}</p>)}</section>
@@ -351,7 +352,7 @@ export default function App() {
           {error && <p className="error" role="alert">{error}</p>}
           <div className="controls">
             <label>대상<select disabled><option>lab-web</option></select></label>
-            <label>시나리오<select disabled><option>access-control</option></select></label>
+            <label>시나리오<select value={scenario} onChange={(event) => setScenario(event.target.value as "access-control" | "access-control-http")}><option value="access-control">access-control · 로그 대조</option><option value="access-control-http">access-control-http · HTTP 관측</option></select></label>
             <label>Provider<select value={provider} onChange={(event) => setProvider(event.target.value as "mock" | "openai")}><option value="mock">mock · 검증됨</option><option value="openai" disabled={!config?.providers.openai.configured}>OpenAI · {config?.providers.openai.configured ? "설정됨/미검증" : "미설정"}</option></select></label>
             <label>도구 연결<select value={transport} onChange={(event) => setTransport(event.target.value as "function" | "mcp")}><option value="function">function / worker API</option><option value="mcp">SDK-managed MCP</option></select></label>
           </div>

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 def utc_now() -> str:
@@ -27,6 +27,25 @@ class RunStatus(StrEnum):
     INTERRUPTED = "INTERRUPTED"
 
 
+ScenarioId = Literal["access-control", "access-control-http"]
+
+
+class HttpObservation(BaseModel):
+    """Worker-produced, bounded metadata; no response text or authenticators."""
+    model_config = ConfigDict(extra="forbid")
+
+    target_id: Literal["lab-web"] = "lab-web"
+    session_binding: str = Field(pattern=r"^[0-9a-f]{64}$")
+    authenticated_account: Literal["user-a", "user-b"] | None = None
+    response_kind: Literal["document_list", "private_document", "document_denied", "unknown"] = "unknown"
+    document_id: str | None = Field(default=None, pattern=r"^doc-[a-z]+-[0-9]{3}$")
+    owner_ref: Literal["user-a", "user-b"] | None = None
+    listed_document_ids: list[str] = Field(default_factory=list, max_length=100)
+    private_canary_digest: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    # Presence is tracked even on error responses; denial + leakage is not a pass.
+    canary_present: bool = False
+
+
 class Evidence(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -41,6 +60,7 @@ class Evidence(BaseModel):
     body_hash: str
     server_observation: str
     purpose: str
+    http_observation: HttpObservation | None = None
     created_at: str = Field(default_factory=utc_now)
 
 
@@ -76,7 +96,8 @@ class ModelUsage(BaseModel):
 
 
 class RunReport(BaseModel):
-    schema_version: Literal["1.0"] = "1.0"
+    schema_version: Literal["1.0", "1.1"] = "1.1"
+    verification_basis: Literal["http_observation", "target_log_correlated", "pending_target_log"] = "pending_target_log"
     run_id: str
     scenario_id: str
     target_id: str
@@ -96,6 +117,15 @@ class RunReport(BaseModel):
     warnings: list[str]
     environment: dict[str, str]
     recommendations: list[str]
+
+    @model_validator(mode="before")
+    @classmethod
+    def legacy_basis(cls, value: Any) -> Any:
+        if isinstance(value, dict) and "verification_basis" not in value:
+            value = dict(value)
+            correlated = value.get("environment", {}).get("target_server_log") in {"correlated", "offline-correlated"}
+            value["verification_basis"] = "target_log_correlated" if correlated else "pending_target_log"
+        return value
 
 
 class OfflineVerificationImport(BaseModel):

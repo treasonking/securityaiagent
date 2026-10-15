@@ -10,6 +10,7 @@ from controller.providers import ModelProvider, ProviderDiagnosticCode
 from controller.reporting import ReportWriter
 from controller.tool_clients import ToolClient
 from verifier.core import recommendations_for_verdict, verify_access_control
+from verifier.http import verify_http_access_control
 
 
 EventCallback = Callable[[str, dict[str, object]], Awaitable[None]]
@@ -87,6 +88,9 @@ class RunEngine:
         cancel_event: asyncio.Event,
         emit: EventCallback,
     ) -> RunReport:
+        if request.scenario_id not in {"access-control", "access-control-http"} or request.target_id != "lab-web":
+            raise ValueError("scenario or target is not registered")
+        http_only = request.scenario_id == "access-control-http"
         started_at = utc_now()
         evidence: list[Evidence] = []
         warnings: list[str] = []
@@ -94,6 +98,7 @@ class RunEngine:
         candidates = []
         mode = "unknown"
         limits_used: dict[str, int | float] = {"http_requests": 0, "tool_calls": 0}
+        workflow_complete = False
 
         try:
             provider_result = await self._await_cancelable(
@@ -152,12 +157,14 @@ class RunEngine:
                     )
 
                 sessions: dict[str, str] = {}
-                for account_ref in ("user-a", "user-b", "admin"):
+                accounts = ("user-a", "user-b") if http_only else ("user-a", "user-b", "admin")
+                for account_ref in accounts:
                     result = self._required(
                         await invoke(
                             "start_session",
                             lambda account_ref=account_ref: client.start_session(
-                                request.run_id, request.target_id, account_ref
+                                request.run_id, request.target_id, account_ref,
+                                **({"scenario_id": request.scenario_id} if http_only else {}),
                             ),
                         ),
                         f"start_session({account_ref})",
@@ -165,7 +172,7 @@ class RunEngine:
                     sessions[account_ref] = str(result.data["session_ref"])
 
                 documents: dict[str, list[str]] = {}
-                for account_ref in ("user-a", "user-b", "admin"):
+                for account_ref in accounts:
                     result = self._required(
                         await invoke(
                             "list_own_documents",
@@ -180,6 +187,12 @@ class RunEngine:
                         raise ToolExecutionError(f"control account {account_ref} has no published document fixture")
 
                 fetch_plan = (
+                    ("user-a", documents["user-a"][0], "http-own-a"),
+                    ("user-b", documents["user-b"][0], "http-own-b"),
+                    ("user-a", documents["user-b"][0], "http-cross-b"),
+                    ("user-b", documents["user-b"][0], "http-recheck-b"),
+                    ("user-a", documents["user-a"][0], "http-recheck-a"),
+                ) if http_only else (
                     ("user-a", documents["user-a"][0], "safe-own-a"),
                     ("user-b", documents["user-b"][0], "safe-own-b"),
                     ("admin", documents["admin"][0], "safe-admin"),
@@ -205,21 +218,30 @@ class RunEngine:
                     await invoke("finish_run", lambda: client.finish_run(request.run_id)), "finish_run"
                 )
                 await self._check_cancel(cancel_event, client, request.run_id)
-                mode_value = finish.data.get("mode")
+                mode_value = None if http_only else finish.data.get("mode")
                 mode = str(mode_value) if mode_value in {"vulnerable", "fixed"} else "unknown"
                 limits_used = {
                     "http_requests": int(finish.data.get("request_count", 0)),
                     "tool_calls": int(finish.data.get("tool_count", 0)),
                 }
+                workflow_complete = True
         except RunCancelled:
             raise
         except Exception as exc:
             warnings.append(f"tool workflow incomplete: {type(exc).__name__}: {exc}")
 
-        verification = verify_access_control(evidence)
+        verification = verify_http_access_control(
+            evidence if workflow_complete else [], run_id=request.run_id
+        ) if http_only else verify_access_control(evidence)
         warnings.extend(verification.warnings)
         recommendations = recommendations_for_verdict(verification.verdict)
+        if http_only:
+            recommendations = ["Rerun the same bounded HTTP scenario after changes; results apply only to the tested accounts and resource."]
         report = RunReport(
+            verification_basis="http_observation" if http_only else (
+                "target_log_correlated" if evidence and all(item.server_observation == "target_log_correlated" for item in evidence)
+                else "pending_target_log"
+            ),
             run_id=request.run_id,
             scenario_id=request.scenario_id,
             target_id=request.target_id,
@@ -241,7 +263,7 @@ class RunEngine:
                 "python": platform.python_version(),
                 "platform": platform.system(),
                 "target_data": "synthetic-only",
-                "target_server_log": "correlated" if evidence and all(
+                "target_server_log": "not_used" if http_only else "correlated" if evidence and all(
                     item.server_observation == "target_log_correlated" for item in evidence
                 ) else "offline-pending",
             },

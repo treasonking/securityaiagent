@@ -1,6 +1,10 @@
 # SecurityLab AI v1
 
-SecurityLab AI는 사용자가 소유한 로컬 합성 사이트에서 하나의 공개된 접근 통제 시나리오를 재현하고, 모델의 후보 판단과 증거 검증기의 확정 판정을 분리하는 독립 실험용 애플리케이션이다. 현재 구조는 범용 모의해킹 에이전트가 아니라 **고정 시나리오 검증기 + 선택적 LLM 후보 생성기**다. 자유문은 URL·대상·도구·실행 순서를 바꾸지 않는다.
+SecurityLab AI는 사용자가 소유한 로컬 합성 사이트에서 등록된 접근 통제 시나리오를 재현하고, 모델의 후보 판단과 증거 검증기의 확정 판정을 분리하는 독립 실험용 애플리케이션이다. 현재 구조는 범용 모의해킹 에이전트가 아니라 **고정 시나리오 검증기 + 선택적 LLM 후보 생성기**다. 자유문은 URL·대상·도구·실행 순서를 바꾸지 않는다.
+
+`access-control`은 기존 서버 로그 대조 경로이며 로그가 없으면 `INCONCLUSIVE`다. 새 `access-control-http`는 `lab-web`의 두 실습 계정과 명시적인 합성 private canary 구조를 사용하는 HTTP 전용 경로다. 독립 세션, 소유자 목록·상세, 교차 요청, 소유자/요청자 재조회를 검증하며 target DB·로그·모드나 모델 의견으로 판정하지 않는다. 보고서의 `verification_basis`로 두 경로를 구분한다. 일반 HTML 의미 비교나 임의 외부 사이트 테스트는 지원하지 않는다.
+
+로컬 네 조합 자동 재현: `.\.venv\Scripts\python.exe scripts/run_http_verification.py`. 임시 loopback 서버와 DB를 사용하고 자신이 만든 서버만 종료한다. [HTTP 실행 가이드](docs/http_verification_runbook.md)와 [실제 실행 결과](reports/http_verification_results.md)를 참고한다.
 
 ## 구현 범위
 

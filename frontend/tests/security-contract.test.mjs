@@ -60,3 +60,12 @@ test("completed runs can refresh an imported offline verdict", () => {
   assert.match(app, /결과 새로고침/);
   assert.match(app, /offline_verification_imported/);
 });
+
+test("HTTP scenario has explicit selection and separate report basis", () => {
+  assert.match(app, /option value="access-control-http"/);
+  assert.match(api, /scenario_id: scenario/);
+  assert.match(app, /submitMessage\(conversationId, message, transport, provider, scenario\)/);
+  assert.match(app, /verification_basis === "http_observation"/);
+  assert.match(app, /서버 로그 미사용/);
+  assert.match(app, /Target log: \$\{run.report.environment.target_server_log\}/);
+});
