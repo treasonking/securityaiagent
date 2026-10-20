@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   authenticateSession,
   cancelRun,
@@ -42,9 +42,22 @@ export default function App() {
   const [events, setEvents] = useState<string[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
   const [error, setError] = useState("");
+  const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const activeConversationRef = useRef<string | null>(null);
   const activeRunRef = useRef<string | null>(null);
   const busy = useMemo(() => Boolean(run && !terminal.has(run.status)), [run]);
+
+  useLayoutEffect(() => {
+    const input = messageInputRef.current;
+    if (!input) return;
+    const resizeInput = () => {
+      input.style.height = "0px";
+      input.style.height = `${input.scrollHeight + input.offsetHeight - input.clientHeight}px`;
+    };
+    resizeInput();
+    window.addEventListener("resize", resizeInput);
+    return () => window.removeEventListener("resize", resizeInput);
+  }, [message, authenticated]);
 
   function activateConversation(conversationId: string | null) {
     activeConversationRef.current = conversationId;
@@ -356,7 +369,7 @@ export default function App() {
             <label>Provider<select value={provider} onChange={(event) => setProvider(event.target.value as "mock" | "openai")}><option value="mock">mock · 검증됨</option><option value="openai" disabled={!config?.providers.openai.configured}>OpenAI · {config?.providers.openai.configured ? "설정됨/미검증" : "미설정"}</option></select></label>
             <label>도구 연결<select value={transport} onChange={(event) => setTransport(event.target.value as "function" | "mcp")}><option value="function">function / worker API</option><option value="mcp">SDK-managed MCP</option></select></label>
           </div>
-          <div className="input-row"><textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={3} /><button disabled={busy || !message.trim()} onClick={startRun}>검증 실행</button></div>
+          <div className="input-row"><textarea ref={messageInputRef} aria-label="검증 요청" value={message} onChange={(event) => setMessage(event.target.value)} rows={1} /><button disabled={busy || !message.trim()} onClick={startRun}>검증 실행</button></div>
           <small>자유문은 실행 계획을 바꾸지 않습니다. 등록된 고정 시나리오와 도구 순서만 실행합니다.</small>
         </footer>
       </section>
