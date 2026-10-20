@@ -31,6 +31,7 @@ class ReportWriter:
                     f"# SecurityLab run {report.run_id}",
                     "",
                     f"- Scenario: `{report.scenario_id}`",
+                    f"- Scope policy: `{report.scope_policy.profile_id}` revision `{report.scope_policy.revision}`; SHA-256 `{report.scope_policy.snapshot_sha256}`; limits `{report.scope_policy.effective_limits}`" if report.scope_policy else "- Scope policy: legacy / not recorded (no fingerprint inferred).",
                     f"- Verification basis: `{report.verification_basis}`",
                     f"- Target: `{report.target_id}`",
                     f"- Mode: `{report.mode}`",

@@ -119,7 +119,7 @@ def test_response_limit_stops_stream_before_full_download():
             "run-size", "lab-web", "user-a"
         )
         assert not result.ok
-        assert result.error_code == "POLICY_REJECTED"
+        assert result.error_code == "SCOPE_LIMIT_EXCEEDED"
         assert "byte limit" in (result.message or "")
 
     asyncio.run(exercise())
@@ -153,7 +153,7 @@ def test_compressed_response_enforces_decoded_byte_limit():
         )
         assert transport.compressed_length < 128
         assert not result.ok
-        assert result.error_code == "POLICY_REJECTED"
+        assert result.error_code == "SCOPE_LIMIT_EXCEEDED"
         assert "byte limit" in (result.message or "")
 
     asyncio.run(exercise())
@@ -173,7 +173,7 @@ def test_http_request_cap_allows_exactly_n_requests(max_requests):
             assert result.ok, f"request {index + 1} should be allowed"
         rejected = await service.start_session("run-cap", "lab-web", "user-a")
         assert not rejected.ok
-        assert rejected.error_code == "POLICY_REJECTED"
+        assert rejected.error_code == "SCOPE_LIMIT_EXCEEDED"
         assert "request limit" in (rejected.message or "")
         assert transport.request_count == max_requests
 

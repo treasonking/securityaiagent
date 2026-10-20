@@ -64,6 +64,14 @@ class Evidence(BaseModel):
     created_at: str = Field(default_factory=utc_now)
 
 
+class PolicyRecord(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    profile_id: str = Field(pattern=r"^[a-z][a-z0-9-]{0,63}$")
+    revision: int = Field(strict=True, gt=0)
+    snapshot_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    effective_limits: dict[str, int | float]
+
+
 class ToolResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -73,6 +81,7 @@ class ToolResult(BaseModel):
     evidence: Evidence | None = None
     error_code: str | None = None
     message: str | None = None
+    scope_policy: PolicyRecord | None = None
 
 
 class FindingCandidate(BaseModel):
@@ -96,7 +105,8 @@ class ModelUsage(BaseModel):
 
 
 class RunReport(BaseModel):
-    schema_version: Literal["1.0", "1.1"] = "1.1"
+    schema_version: Literal["1.0", "1.1", "1.2"] = "1.2"
+    scope_policy: PolicyRecord | None = None
     verification_basis: Literal["http_observation", "target_log_correlated", "pending_target_log"] = "pending_target_log"
     run_id: str
     scenario_id: str

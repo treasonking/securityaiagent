@@ -99,6 +99,7 @@ class RunEngine:
         mode = "unknown"
         limits_used: dict[str, int | float] = {"http_requests": 0, "tool_calls": 0}
         workflow_complete = False
+        scope_policy = None
 
         try:
             provider_result = await self._await_cancelable(
@@ -123,6 +124,7 @@ class RunEngine:
             warnings.append(f"mock provider failed: {type(exc).__name__}")
 
         async def invoke(name: str, call: Callable[[], Awaitable[ToolResult]]) -> ToolResult:
+            nonlocal scope_policy
             await self._check_cancel(cancel_event, client, request.run_id)
             await emit("tool_started", {"tool": name})
             result = await self._await_cancelable(
@@ -132,6 +134,16 @@ class RunEngine:
                 reason=f"run cancellation requested during {name}",
             )
             assert isinstance(result, ToolResult)
+            if result.ok and result.scope_policy is None:
+                raise ToolExecutionError("SCOPE_METADATA_MISSING: update the worker before running")
+            if result.scope_policy is not None:
+                if scope_policy is not None and result.scope_policy != scope_policy:
+                    raise ToolExecutionError("SCOPE_SNAPSHOT_MISMATCH: worker policy changed within a run")
+                if scope_policy is None:
+                    scope_policy = result.scope_policy
+                    await emit("policy_applied", scope_policy.model_dump(mode="json"))
+            if "request_count" in result.data and "tool_count" in result.data:
+                limits_used.update(http_requests=int(result.data["request_count"]), tool_calls=int(result.data["tool_count"]))
             await self._check_cancel(cancel_event, client, request.run_id)
             await emit("tool_finished", {"tool": name, "ok": result.ok, "error_code": result.error_code})
             if result.evidence:
@@ -232,12 +244,13 @@ class RunEngine:
 
         verification = verify_http_access_control(
             evidence if workflow_complete else [], run_id=request.run_id
-        ) if http_only else verify_access_control(evidence)
+        ) if http_only else verify_access_control(evidence if workflow_complete else [])
         warnings.extend(verification.warnings)
         recommendations = recommendations_for_verdict(verification.verdict)
         if http_only:
             recommendations = ["Rerun the same bounded HTTP scenario after changes; results apply only to the tested accounts and resource."]
         report = RunReport(
+            scope_policy=scope_policy,
             verification_basis="http_observation" if http_only else (
                 "target_log_correlated" if evidence and all(item.server_observation == "target_log_correlated" for item in evidence)
                 else "pending_target_log"

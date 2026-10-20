@@ -4,6 +4,7 @@ import test from "node:test";
 
 const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
 const api = readFileSync(new URL("../src/api.ts", import.meta.url), "utf8");
+const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
 
 test("React UI never enables raw HTML rendering", () => {
   assert.equal(app.includes("dangerouslySetInnerHTML"), false);
@@ -68,4 +69,22 @@ test("HTTP scenario has explicit selection and separate report basis", () => {
   assert.match(app, /verification_basis === "http_observation"/);
   assert.match(app, /서버 로그 미사용/);
   assert.match(app, /Target log: \$\{run.report.environment.target_server_log\}/);
+});
+
+test("report shows worker policy read-only, with legacy absence explicit", () => {
+  assert.match(app, /run.report.scope_policy.profile_id/);
+  assert.match(app, /scope_policy.effective_limits.max_requests/);
+  assert.match(app, /scope_policy.effective_limits.max_tool_calls/);
+  assert.match(app, /정책: legacy \/ 미기록/);
+  assert.equal(api.includes("policy_revision:"), false);
+});
+
+test("compact composer and inner conversation scrolling survive policy display", () => {
+  assert.match(css, /\.shell\s*\{[^}]*height: 100dvh;[^}]*overflow: hidden/);
+  assert.match(css, /\.workspace\s*\{[^}]*grid-template-rows: auto minmax\(0, 1fr\) auto/);
+  assert.match(css, /\.conversation\s*\{[^}]*min-height: 0;[^}]*overflow: auto/);
+  assert.match(app, /textarea ref=\{messageInputRef\}[^\r\n]*rows=\{1\}/);
+  assert.match(app, /input.style.height = "0px"/);
+  assert.match(app, /input.scrollHeight \+ input.offsetHeight - input.clientHeight/);
+  assert.match(css, /textarea\s*\{[^}]*min-height: 44px;[^}]*max-height: clamp\(44px, 24dvh, 160px\)/);
 });

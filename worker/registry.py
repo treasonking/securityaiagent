@@ -1,32 +1,93 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
+from typing import Literal, Mapping
 from urllib.parse import urlsplit
 
-from worker.policy import TargetPolicy
+from pydantic import BaseModel, ConfigDict, ValidationError
+
+from worker.limits import WorkerLimits
+from worker.policy import PolicyViolation, TargetPolicy
+from worker.scope import ScopeProfile, ScopeSnapshot, ScopeViolation, make_snapshot
+
+
+DEFAULT_REGISTRY = Path(__file__).resolve().parents[1] / "config" / "targets.json"
+
+
+class RegisteredTarget(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    origin: str
+    profile: ScopeProfile
+
+
+class RegistryFile(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    schema_version: Literal["2.0"]
+    targets: dict[Literal["lab-web"], RegisteredTarget]
+
+
+@dataclass(frozen=True)
+class ScopeRegistry:
+    policies: Mapping[str, TargetPolicy]
+    # Canonical JSON prevents later mutation of nested profile mappings.
+    profiles_json: Mapping[str, str]
+
+    def profile(self, target_id: str) -> ScopeProfile:
+        if target_id not in self.profiles_json:
+            raise ScopeViolation("SCOPE_TARGET_DENIED", "target is not registered")
+        return ScopeProfile.model_validate(json.loads(self.profiles_json[target_id]))
+
+    def snapshot(self, target_id: str, scenario: str, limits: WorkerLimits) -> ScopeSnapshot:
+        profile = self.profile(target_id)
+        return make_snapshot(self.policies[target_id], profile, scenario, limits)
+
+    def with_test_origins(self, policies: Mapping[str, TargetPolicy]) -> ScopeRegistry:
+        """Code-only synthetic test injection, never an HTTP/env URL override."""
+        if set(policies) != set(self.policies) or any(key != policy.target_id for key, policy in policies.items()):
+            raise ScopeViolation("SCOPE_TARGET_DENIED", "test origins must preserve registered target IDs")
+        return ScopeRegistry(MappingProxyType(dict(policies)), self.profiles_json)
+
+
+def _unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON key")
+        result[key] = value
+    return result
+
+
+def _nonfinite(_value):
+    raise ValueError("nonfinite JSON number")
+
+
+def load_scope_registry(path: str | Path = DEFAULT_REGISTRY, *, expected_origin: str | None = None) -> ScopeRegistry:
+    try:
+        payload = json.loads(Path(path).read_text(encoding="utf-8"), object_pairs_hook=_unique_object, parse_constant=_nonfinite)
+        registry = RegistryFile.model_validate(payload)
+        if not registry.targets:
+            raise ValueError("empty registry")
+        policies, profiles = {}, {}
+        for target_id, target in registry.targets.items():
+            parsed = urlsplit(target.origin)
+            policy = TargetPolicy(target_id, parsed.scheme, parsed.hostname or "", parsed.port or 80)
+            if target.origin != policy.base_url:
+                raise ScopeViolation("SCOPE_ORIGIN_MISMATCH", "registered origin must be canonical and contain no path or credentials")
+            if expected_origin is not None and expected_origin != policy.base_url:
+                raise ScopeViolation("SCOPE_ORIGIN_MISMATCH", "TARGET_BASE_URL differs from the registered origin")
+            if not target.profile.enabled:
+                raise ScopeViolation("SCOPE_DISABLED", "scope profile is disabled")
+            policies[target_id] = policy
+            profiles[target_id] = json.dumps(target.profile.normalized(), sort_keys=True, allow_nan=False)
+        return ScopeRegistry(MappingProxyType(policies), MappingProxyType(profiles))
+    except ScopeViolation:
+        raise
+    except (OSError, ValueError, TypeError, ValidationError, PolicyViolation):
+        raise ScopeViolation("SCOPE_INVALID", "scope registry is missing or invalid; check the operator file") from None
 
 
 def load_target_registry(path: str | Path) -> dict[str, TargetPolicy]:
-    payload = json.loads(Path(path).read_text(encoding="utf-8"))
-    if payload.get("schema_version") != "1.0":
-        raise ValueError("unsupported target registry schema")
-    policies: dict[str, TargetPolicy] = {}
-    for target_id, target in payload.get("targets", {}).items():
-        parsed = urlsplit(target["base_url"])
-        policy = TargetPolicy(
-            target_id=target_id,
-            scheme=parsed.scheme,
-            host=parsed.hostname or "",
-            port=parsed.port or 80,
-        )
-        if (
-            target.get("allowed_scheme") != policy.scheme
-            or target.get("allowed_host") != policy.host
-            or int(target.get("allowed_port")) != policy.port
-        ):
-            raise ValueError(f"target registry origin mismatch for {target_id}")
-        policies[target_id] = policy
-    if not policies:
-        raise ValueError("target registry contains no targets")
-    return policies
+    return dict(load_scope_registry(path).policies)

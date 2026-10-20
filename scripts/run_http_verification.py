@@ -94,8 +94,10 @@ def run_matrix(output: Path) -> list[dict]:
                         client = (FunctionWorkerClient(base_url=base, token=token) if transport == "function"
                                   else MCPWorkerClient(server_url=base + "/mcp", token=token))
                         run_id = "http-" + uuid.uuid4().hex
+                        rejection_codes = []
                         async def emit(_event, _payload):
-                            pass
+                            if _event == "tool_finished" and _payload.get("error_code"):
+                                rejection_codes.append(_payload["error_code"])
 
                         report = asyncio.run(RunEngine(report_writer=ReportWriter(output)).execute(
                             EngineRequest(run_id, "access-control-http", "lab-web"),
@@ -123,6 +125,8 @@ def run_matrix(output: Path) -> list[dict]:
                         "run_id": run_id, "fixture_mode": mode, "transport": transport,
                         "verdict": report.verdict, "verification_basis": report.verification_basis,
                         "evidence_count": len(evidence), "limits_used": report.limits_used,
+                        "scope_policy": report.scope_policy.model_dump(mode="json") if report.scope_policy else None,
+                        "rejection_codes": rejection_codes,
                         "started_at": report.started_at, "finished_at": report.finished_at,
                         "independent_log_checks": len(evidence), "python": platform.python_version(),
                     })

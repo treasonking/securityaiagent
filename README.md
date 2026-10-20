@@ -6,6 +6,8 @@ SecurityLab AI는 사용자가 소유한 로컬 합성 사이트에서 등록된
 
 로컬 네 조합 자동 재현: `.\.venv\Scripts\python.exe scripts/run_http_verification.py`. 임시 loopback 서버와 DB를 사용하고 자신이 만든 서버만 종료한다. [HTTP 실행 가이드](docs/http_verification_runbook.md)와 [실제 실행 결과](reports/http_verification_results.md)를 참고한다.
 
+실행 범위는 운영자 파일 `config/targets.json`의 schema 2.0 프로필로 관리한다. worker가 세션 생성 전과 HTTP 전송 직전에 계정·작업·경로·세션·실효 한도를 검사한다. 정책 변경은 worker 재시작 후 적용되며 `TARGET_BASE_URL`은 등록 origin과 일치해야 한다. 오프라인 검사: `.\.venv\Scripts\python.exe -m worker.cli check-policy`. [정책 형식·VM 갱신 절차](docs/scope_policy_runbook.md), [정책 검증 결과](reports/scope_policy_verification.md)를 참고한다. 과거 보고서의 정책 정보는 `legacy / 미기록`으로 유지한다.
+
 ## 구현 범위
 
 구현됨:

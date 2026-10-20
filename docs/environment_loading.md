@@ -48,6 +48,8 @@ WORKER_STATE_TTL_SECONDS=600
 
 `MCP_ALLOWED_HOSTS`에는 실제 worker의 Host 헤더만 정확히 등록한다. `*` 전체 Host나 DNS rebinding 보호 비활성화는 사용하지 않는다. `127.0.0.1:*`와 `localhost:*`는 로컬 회귀 시험 전용이다.
 
+scope profile 적용 버전에서는 `TARGET_BASE_URL`이 `config/targets.json`의 origin과 정확히 같아야 하며 URL override로 쓰이지 않는다. `TARGET_REGISTRY_PATH`로 운영자 로컬 파일을 선택할 수 있고 schema 2.0 검증 실패 시 worker가 시작되지 않는다. 정책·전역 한도는 worker 시작 시 고정된다. 환경 파일을 로드한 `python -m worker.cli check-policy`로 전송 없이 검사한 뒤 재시작한다. [전체 정책 및 bundle 절차](scope_policy_runbook.md)를 참고한다.
+
 ## controller VM
 
 ```dotenv

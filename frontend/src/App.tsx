@@ -343,6 +343,9 @@ export default function App() {
                     <div><span>Provider</span><strong>{run.report.provider_mode}</strong></div>
                     <div><span>Transport</span><strong>{run.report.tool_transport}</strong></div>
                   </div>
+                  <p className="subtle">{run.report.scope_policy
+                    ? `정책: ${run.report.scope_policy.profile_id} r${run.report.scope_policy.revision} · HTTP ${run.report.scope_policy.effective_limits.max_requests}회 / 도구 ${run.report.scope_policy.effective_limits.max_tool_calls}회 · 응답 ${run.report.scope_policy.effective_limits.max_response_bytes}B · 요청 ${run.report.scope_policy.effective_limits.timeout_seconds}초 / 실행 ${run.report.scope_policy.effective_limits.run_timeout_seconds}초 · 초당 ${run.report.scope_policy.effective_limits.requests_per_second}회 / 동시 ${run.report.scope_policy.effective_limits.max_concurrency}개`
+                    : "정책: legacy / 미기록"}</p>
                   <p className="subtle">{run.report.verification_basis === "http_observation" ? "판정 기준: HTTP 관측 · 서버 로그 미사용 · 테스트한 계정과 리소스에 한정" : `Target log: ${run.report.environment.target_server_log}`}</p>
                   <div className="decision-split">
                     <section><span>모델 후보 · 미확정</span>{run.report.finding_candidates.length === 0 ? <p>모델 후보 없음 · 접근 통제 판정은 별도 증거 기반입니다.</p> : run.report.finding_candidates.map((item) => <p key={item.finding_type}>{item.finding_type}: {item.rationale}</p>)}</section>

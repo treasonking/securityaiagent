@@ -13,9 +13,10 @@ from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
 from common.schemas import ScenarioId, ToolResult
-from worker.policy import TargetPolicy
-from worker.registry import load_target_registry
-from worker.service import ToolService, WorkerLimits
+from worker.registry import load_scope_registry
+from worker.limits import limits_from_env
+from worker.scope import ScopeViolation
+from worker.service import ToolService
 
 
 class StartSessionRequest(BaseModel):
@@ -171,35 +172,17 @@ def create_app_from_env():
         "TARGET_REGISTRY_PATH",
         str(__import__("pathlib").Path(__file__).resolve().parents[1] / "config" / "targets.json"),
     )
-    policies = load_target_registry(registry_path)
-    target_url = os.getenv("TARGET_BASE_URL")
-    if target_url:
-        from urllib.parse import urlsplit
-
-        parsed = urlsplit(target_url)
-        policies["lab-web"] = TargetPolicy(
-            target_id="lab-web",
-            scheme=parsed.scheme,
-            host=parsed.hostname or "",
-            port=parsed.port or 80,
-        )
+    registry = load_scope_registry(registry_path, expected_origin=os.getenv("TARGET_BASE_URL") or None)
     accounts = {
         "user-a": ("user_a", os.getenv("LAB_USER_A_PASSWORD") or "local-a-password"),
         "user-b": ("user_b", os.getenv("LAB_USER_B_PASSWORD") or "local-b-password"),
         "admin": ("admin", os.getenv("LAB_ADMIN_PASSWORD") or "local-admin-password"),
     }
-    limits = WorkerLimits(
-        max_requests=int(os.getenv("HTTP_MAX_REQUESTS", "30")),
-        max_tool_calls=int(os.getenv("AGENT_MAX_STEPS", "12")),
-        timeout_seconds=float(os.getenv("HTTP_TIMEOUT_SECONDS", "5")),
-        run_timeout_seconds=float(os.getenv("RUN_TIMEOUT_SECONDS", "180")),
-        max_response_bytes=int(os.getenv("HTTP_MAX_RESPONSE_BYTES", "65536")),
-        requests_per_second=float(os.getenv("HTTP_REQUESTS_PER_SECOND", "2")),
-        max_concurrency=int(os.getenv("HTTP_MAX_CONCURRENCY", "1")),
-        max_runs=int(os.getenv("WORKER_MAX_RUNS", "100")),
-        state_ttl_seconds=float(os.getenv("WORKER_STATE_TTL_SECONDS", "600")),
-    )
-    service = ToolService(policies=policies, accounts=accounts, limits=limits)
+    try:
+        limits = limits_from_env()
+    except (ValueError, OverflowError):
+        raise ScopeViolation("SCOPE_INVALID", "invalid global worker limits") from None
+    service = ToolService(registry=registry, accounts=accounts, limits=limits)
     allowed = {
         item.strip()
         for item in os.getenv("WORKER_ALLOWED_CLIENTS", "10.77.0.10,127.0.0.1,::1").split(",")

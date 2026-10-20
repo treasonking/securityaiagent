@@ -25,6 +25,7 @@ export type Evidence = {
 export type ScenarioId = "access-control" | "access-control-http";
 
 export type RunReport = {
+  scope_policy?: { profile_id: string; revision: number; snapshot_sha256: string; effective_limits: Record<string, number> } | null;
   verification_basis?: "http_observation" | "target_log_correlated" | "pending_target_log";
   run_id: string;
   status: string;
