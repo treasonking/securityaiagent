@@ -118,15 +118,23 @@ The guide reports reduced target stdout (`--no-access-log`, warning log level, r
 
 **사용자가 controller에서 실행하여 이번 대화에 제공한 JSON 출력의 전달값**을 근거로 기록한다. Codex의 VM 원본 파일 직접 검사·독립 재실행 결과가 아니다. 공통값은 `scenario_id=access-control-http`, `provider=openai`, 모델 `gpt-5.4-mini`, `COMPLETED`, 실행별 호출 1회·증거 7개, `verification_basis=http_observation`이다.
 
-| VM 모드 / transport | run ID | verdict | 전체 토큰 | 저장 증거 재판정 (사용자 제공 출력) |
+| VM 모드 / transport | run ID | verdict | 입력 / 출력 / 전체 토큰 | 저장 증거 재판정 (사용자 제공 출력) |
 |---|---|---|---|---|
-| fixed / function | `run_3dd2ccc895c249ed95e7551f5b5156fa` | `BLOCKED_BY_ACCESS_CONTROL` | 307 | `verdict_matches=true` |
-| fixed / MCP | `run_85d5635cf09641fc88b5f920702bc4d4` | `BLOCKED_BY_ACCESS_CONTROL` | 296 | `verdict_matches=true` |
-| vulnerable / function | `run_dcb89c46afdd4461a5f727d06bdd8815` | `VULNERABLE` | 302 | `verdict_matches=true` |
-| vulnerable / MCP | `run_118cdedf22fa4a09871bc74b305266d5` | `VULNERABLE` | 286 | `verdict_matches=true` |
+| fixed / function | `run_3dd2ccc895c249ed95e7551f5b5156fa` | `BLOCKED_BY_ACCESS_CONTROL` | 238 / 69 / 307 | `verdict_matches=true` |
+| fixed / MCP | `run_85d5635cf09641fc88b5f920702bc4d4` | `BLOCKED_BY_ACCESS_CONTROL` | 238 / 58 / 296 | `verdict_matches=true` |
+| vulnerable / function | `run_dcb89c46afdd4461a5f727d06bdd8815` | `VULNERABLE` | 238 / 64 / 302 | `verdict_matches=true` |
+| vulnerable / MCP | `run_118cdedf22fa4a09871bc74b305266d5` | `VULNERABLE` | 238 / 48 / 286 | `verdict_matches=true` |
 
-- 합계: **호출 4회 · 입력 952 · 출력 239 · 전체 1,191토큰**. 행별 전체 토큰 및 입력/출력 합계가 일치한다. 개별 입력/출력 분할은 미제공이며, 이전 실행·실패·재시도나 실제 청구액의 합계로 해석하지 않는다.
+- 합계: **호출 4회 · 입력 952 · 출력 239 · 전체 1,191토큰**. 행별 전체 토큰 및 입력/출력 합계가 일치한다. 개별 입력/출력 분할은 2026-10-20 사용자가 적용 요청한 `SecurityAI_Scope_Profile_Codex_Task.md`의 전달값으로 보완했다. 이전 실행·실패·재시도나 실제 청구액의 합계로 해석하지 않는다.
 - 확인 수준: **사용자 제공 controller 출력에서 완료·예상 판정·재판정 일치 확인**. `verdict_matches=true`는 사용자 제공 출력이며 Codex의 원본 증거 재판정이나 target 로그 독립 대조를 뜻하지 않는다. VM 원본 파일·실행 커밋·환경·시각의 직접 검사는 미실시다.
 - [실행 결과와 한계 상세](http_verification_results.md)의 HTTP OpenAI 절을 참고한다. 기존 mock 결과와 실패 이력은 위에 보존하며, 기존 로그 기반 OpenAI 실험과도 분리한다.
 - **외부 사이트 적용은 미검증**으로 유지한다. 모델 탐지 성능, 실제 브라우저 E2E, Nmap/Playwright 및 전체 격리망 보안 검증을 입증한 것으로 기록하지 않는다.
 - 문서 두 파일만 갱신했다. 코드 변경·추가 OpenAI 호출·테스트 재실행은 하지 않았다.
+
+## Codex-verified scope profile local evidence — 2026-10-20
+
+- 위 2026-10-16 기록과 별개의 구현 작업이다. [정책 검증 보고서](scope_policy_verification.md), [정책 운영 가이드](../docs/scope_policy_runbook.md), [실제 네 조합 matrix](scope_policy/matrix-a96fc4e51fbf.json)를 추가했다.
+- Windows loopback 실제 TCP target+worker, mock vulnerable/fixed × function/MCP 네 run의 정제 report/evidence가 `scope_policy/<run_id>/`에 있다. 각 run 증거 7개, HTTP 9회, 도구 10회, `http_observation`, 정책 `lab-access-control` revision 1, 거절 없음 `[]`. 각 row의 전체 SHA-256/실효 한도는 matrix에 보존했다.
+- 사전 계정·시나리오·작업 거절은 target 전송 0, 허용 N회 뒤 N+1 거절, 세션·origin·경로 결합, 불변 snapshot/재시작 규칙, metadata 불일치·미완료 INCONCLUSIVE는 [`tests/test_scope_policy.py`](../tests/test_scope_policy.py)의 별도 로컬 회귀다.
+- 기존 mock/VM/OpenAI/실패 이력을 유지했다. 사용자 제공 OpenAI 결과는 VM 원본 직접 검사 증거가 아니며, 원문에 없는 정책 해시·digest·실행 버전·시각은 추정하지 않는다. 합성 계정·리소스·시점 범위 경고도 유지한다.
+- 새 정책 VM 적용, Ubuntu, 실제 브라우저 E2E, 외부 사이트는 미검증이다. OpenAI 추가 호출, VM 네트워크/방화벽/자원 변경은 하지 않았다.

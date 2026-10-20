@@ -123,14 +123,14 @@ VM 실행 당시 controller/worker/target의 커밋 ID, Python/Node 버전, 요�
 
 공통 출력값: `scenario_id=access-control-http`, `provider=openai`, 모델 `gpt-5.4-mini`, `status=COMPLETED`, 실행별 모델 호출 **1회**, 증거 **7개**, `verification_basis=http_observation`. 사용자가 제공한 저장 증거 재판정 출력은 네 실행 모두 **`verdict_matches=true`**다.
 
-| VM 모드 / transport | run ID | 판정 | 전체 토큰 | 저장 증거 재판정 (사용자 제공 출력) |
+| VM 모드 / transport | run ID | 판정 | 입력 / 출력 / 전체 토큰 | 저장 증거 재판정 (사용자 제공 출력) |
 |---|---|---|---|---|
-| fixed / function | `run_3dd2ccc895c249ed95e7551f5b5156fa` | `BLOCKED_BY_ACCESS_CONTROL` | 307 | `verdict_matches=true` |
-| fixed / MCP | `run_85d5635cf09641fc88b5f920702bc4d4` | `BLOCKED_BY_ACCESS_CONTROL` | 296 | `verdict_matches=true` |
-| vulnerable / function | `run_dcb89c46afdd4461a5f727d06bdd8815` | `VULNERABLE` | 302 | `verdict_matches=true` |
-| vulnerable / MCP | `run_118cdedf22fa4a09871bc74b305266d5` | `VULNERABLE` | 286 | `verdict_matches=true` |
+| fixed / function | `run_3dd2ccc895c249ed95e7551f5b5156fa` | `BLOCKED_BY_ACCESS_CONTROL` | 238 / 69 / 307 | `verdict_matches=true` |
+| fixed / MCP | `run_85d5635cf09641fc88b5f920702bc4d4` | `BLOCKED_BY_ACCESS_CONTROL` | 238 / 58 / 296 | `verdict_matches=true` |
+| vulnerable / function | `run_dcb89c46afdd4461a5f727d06bdd8815` | `VULNERABLE` | 238 / 64 / 302 | `verdict_matches=true` |
+| vulnerable / MCP | `run_118cdedf22fa4a09871bc74b305266d5` | `VULNERABLE` | 238 / 48 / 286 | `verdict_matches=true` |
 
-제공된 네 실행의 합계는 **호출 4회 · 입력 952 · 출력 239 · 전체 1,191토큰**이다. 행별 전체 토큰 합계 `307 + 296 + 302 + 286 = 1,191` 및 입력/출력 합계 `952 + 239 = 1,191`이 일치한다. 개별 실행의 입력/출력 분할은 전달되지 않아 배분하지 않는다. 이 합계는 위 네 run의 보고된 사용량이며 기존 mock/로그 기반 OpenAI 실행, 실패·재시도 이력 또는 실제 청구액을 합산한 값이 아니다.
+제공된 네 실행의 합계는 **호출 4회 · 입력 952 · 출력 239 · 전체 1,191토큰**이다. 행별 전체 토큰 합계 `307 + 296 + 302 + 286 = 1,191` 및 입력/출력 합계 `952 + 239 = 1,191`이 일치한다. 개별 입력/출력 분할은 2026-10-20 사용자가 적용 요청한 `SecurityAI_Scope_Profile_Codex_Task.md`의 전달값으로 보완했다. 이 합계는 위 네 run의 보고된 사용량이며 기존 mock/로그 기반 OpenAI 실행, 실패·재시도 이력 또는 실제 청구액을 합산한 값이 아니다.
 
 ### 확인 수준과 남은 한계
 
@@ -139,3 +139,11 @@ VM 실행 당시 controller/worker/target의 커밋 ID, Python/Node 버전, 요�
 - VM 원본 파일의 직접 검사, VM별 실제 실행 커밋/환경/시각 및 청구 내역은 독립 확인하지 않았다. 원본 파일이나 전체 JSON 첨부를 저장소에 확보한 것처럼 새 증거 파일·링크를 만들지 않는다.
 - **외부 사이트 적용은 계속 미검증**이다. 실제 브라우저 E2E, Nmap/Playwright 및 전체 격리망 보안 검증도 이 출력으로 완료 처리하지 않는다.
 - 기존 mock 결과, 422 및 SQLite 정리 실패, `git bundle` 전달, `TARGET_MODE` 명시적 로드 후 재시작 이력은 유지했다. 이번 변경은 두 문서뿐이며 코드 변경·추가 OpenAI 호출·테스트 재실행은 하지 않았다.
+
+## 2026-10-20 scope profile 적용 후 로컬 회귀
+
+이번 scope profile 작업은 위 2026-10-16 문서만 수정한 작업과 별개의 구현·테스트다. [`scope_policy_verification.md`](scope_policy_verification.md)에 새 로컬 네 조합과 테스트 결과를, [`scope_policy/matrix-a96fc4e51fbf.json`](scope_policy/matrix-a96fc4e51fbf.json)에 실제 run ID·판정·정책 해시·실효 한도·거절 코드 배열을 기록했다. 네 run 모두 mock, `http_observation`, 증거 7개, HTTP 9회/도구 10회이며 예상 판정과 일치했다.
+
+worker의 정책은 `lab-access-control` revision 1이며 전송 직전 강제한다. 신규 결과는 worker 반환 snapshot을 기록하지만 **과거 VM/mock/OpenAI run의 정책 해시·적용 버전은 미기록**으로 유지한다. 과거 결과를 새 정책의 VM 검증으로 재해석하지 않는다. 위 OpenAI 출력의 경고는 합성 계정·리소스·시점의 범위 안내이며 정책 성공 증명이나 일반 사이트 적용 증거가 아니다.
+
+새 정책의 VM 적용·Ubuntu·실제 브라우저 검증과 외부 사이트 적용은 미검증이다. 추가 OpenAI 호출은 없었다. 다음은 [VM 허용·거절·한도 절차](../docs/scope_policy_runbook.md)를 사용자 환경에서 확인하는 작업이다.

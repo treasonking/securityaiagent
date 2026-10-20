@@ -1,0 +1,134 @@
+[
+  {
+    "run_id": "http-f0c757f54732429792a056884ca73362",
+    "fixture_mode": "vulnerable",
+    "transport": "function",
+    "verdict": "VULNERABLE",
+    "verification_basis": "http_observation",
+    "evidence_count": 7,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    },
+    "scope_policy": {
+      "profile_id": "lab-access-control",
+      "revision": 1,
+      "snapshot_sha256": "3cb79db70b1a3ff33c2e4a24b22ecaf3fb11d767334238ca6b470182c69f27fb",
+      "effective_limits": {
+        "max_requests": 9,
+        "max_tool_calls": 10,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 2.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      }
+    },
+    "rejection_codes": [],
+    "started_at": "2026-10-20T12:10:23.928660+00:00",
+    "finished_at": "2026-10-20T12:10:28.267735+00:00",
+    "independent_log_checks": 7,
+    "python": "3.12.14"
+  },
+  {
+    "run_id": "http-805902fcb8c846c6b848d5420298c969",
+    "fixture_mode": "vulnerable",
+    "transport": "mcp",
+    "verdict": "VULNERABLE",
+    "verification_basis": "http_observation",
+    "evidence_count": 7,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    },
+    "scope_policy": {
+      "profile_id": "lab-access-control",
+      "revision": 1,
+      "snapshot_sha256": "3cb79db70b1a3ff33c2e4a24b22ecaf3fb11d767334238ca6b470182c69f27fb",
+      "effective_limits": {
+        "max_requests": 9,
+        "max_tool_calls": 10,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 2.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      }
+    },
+    "rejection_codes": [],
+    "started_at": "2026-10-20T12:10:31.181173+00:00",
+    "finished_at": "2026-10-20T12:10:35.378200+00:00",
+    "independent_log_checks": 7,
+    "python": "3.12.14"
+  },
+  {
+    "run_id": "http-584a334bedad497f9c57adcb843d014e",
+    "fixture_mode": "fixed",
+    "transport": "function",
+    "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "verification_basis": "http_observation",
+    "evidence_count": 7,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    },
+    "scope_policy": {
+      "profile_id": "lab-access-control",
+      "revision": 1,
+      "snapshot_sha256": "2f52e1e4ac3e7e8637fa1692ab938cf4de62978bd1b2ce53884964912239a587",
+      "effective_limits": {
+        "max_requests": 9,
+        "max_tool_calls": 10,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 2.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      }
+    },
+    "rejection_codes": [],
+    "started_at": "2026-10-20T12:10:36.609228+00:00",
+    "finished_at": "2026-10-20T12:10:40.820561+00:00",
+    "independent_log_checks": 7,
+    "python": "3.12.14"
+  },
+  {
+    "run_id": "http-5bb12f2158904d8ab564266917026495",
+    "fixture_mode": "fixed",
+    "transport": "mcp",
+    "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "verification_basis": "http_observation",
+    "evidence_count": 7,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    },
+    "scope_policy": {
+      "profile_id": "lab-access-control",
+      "revision": 1,
+      "snapshot_sha256": "2f52e1e4ac3e7e8637fa1692ab938cf4de62978bd1b2ce53884964912239a587",
+      "effective_limits": {
+        "max_requests": 9,
+        "max_tool_calls": 10,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 2.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      }
+    },
+    "rejection_codes": [],
+    "started_at": "2026-10-20T12:10:41.083340+00:00",
+    "finished_at": "2026-10-20T12:10:45.359404+00:00",
+    "independent_log_checks": 7,
+    "python": "3.12.14"
+  }
+]
