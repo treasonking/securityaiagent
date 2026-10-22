@@ -138,3 +138,48 @@ The guide reports reduced target stdout (`--no-access-log`, warning log level, r
 - 사전 계정·시나리오·작업 거절은 target 전송 0, 허용 N회 뒤 N+1 거절, 세션·origin·경로 결합, 불변 snapshot/재시작 규칙, metadata 불일치·미완료 INCONCLUSIVE는 [`tests/test_scope_policy.py`](../tests/test_scope_policy.py)의 별도 로컬 회귀다.
 - 기존 mock/VM/OpenAI/실패 이력을 유지했다. 사용자 제공 OpenAI 결과는 VM 원본 직접 검사 증거가 아니며, 원문에 없는 정책 해시·digest·실행 버전·시각은 추정하지 않는다. 합성 계정·리소스·시점 범위 경고도 유지한다.
 - 새 정책 VM 적용, Ubuntu, 실제 브라우저 E2E, 외부 사이트는 미검증이다. OpenAI 추가 호출, VM 네트워크/방화벽/자원 변경은 하지 않았다.
+
+## 사용자 제공 VM scope 정책 6건 — 2026-10-22 기록
+
+근거는 사용자가 제공한 `SecurityAI_Scope_VM_Results_Codex_20261022.md`의 정제 요약과 화면 확인 기록이다. 사용자는 controller VM의 `reports/runs/<run_id>/report.json` 및 `evidence.json`을 읽은 출력과 function/MCP 각 세 건의 화면·요약을 확인했다고 전달했다. **문서를 편집한 Codex가 VM 원본 JSON·화면·target DB를 직접 확보·검사한 결과가 아니다.** 원본 파일이나 화면을 확보한 것처럼 새 증거 파일·링크를 생성하지 않았다. 날짜는 기록일이며 개별 실행 시각은 미확인이다.
+
+공통 조건은 `access-control-http`, `mock`, 등록 대상 `lab-web`, origin `http://10.78.0.30:8080`, `http_observation`, profile `lab-access-control`이다. provider는 function 화면, MCP 화면·출력에서 확인되었다는 사용자 기록이며 basis는 화면 확인 기록이다. UI의 `mode=unknown`은 HTTP verifier에 target mode 정답을 입력하지 않는 정상 표시다. 허용 run이 VULNERABLE로 관측되었지만 이번 여섯 실행의 별도 health 캡처는 제공되지 않아 target mode를 독립 확인한 것으로 기록하지 않는다.
+
+| 연결 | 시험 | run ID | revision | 판정 | HTTP 보고 계수 | 도구 | 증거 |
+|---|---|---|---:|---|---:|---:|---:|
+| function | 허용 | `run_713d4db103fc460badb3a0a6af4591b6` | 1 | VULNERABLE | 9 | 10 | 7 |
+| function | 계정 거절 | `run_39dfc5d3ecdb48d1bd7004904a8ac9a2` | 2 | INCONCLUSIVE | 1 | 1 | 0 |
+| function | 한도 차단 | `run_99a5ea3be54e43f8ab17ca7b07178bce` | 3 | INCONCLUSIVE | 2 | 3 | 0 |
+| MCP | 허용 | `run_d184b2c2c4954dd3b65c030aa5787afd` | 1 | VULNERABLE | 9 | 10 | 7 |
+| MCP | 계정 거절 | `run_ed3e60f80bb345e8b36d0b21b7695bb9` | 2 | INCONCLUSIVE | 1 | 1 | 0 |
+| MCP | 한도 차단 | `run_e6edada2a8d740e9b03ea8ca5b97d110` | 3 | INCONCLUSIVE | 2 | 3 | 0 |
+
+두 transport의 revision별 `snapshot_sha256`은 사용자 제공값 기준으로 같다. 해시는 동일성 추적값이며 서명이나 권한 증명이 아니다.
+
+| revision | snapshot_sha256 | max_requests |
+|---|---|---:|
+| 1 | `3b68f75e546f09653322195a3f1a84051f7a8a7cd5d0e6bb5b8225c671dd4cb4` | 9 |
+| 2 | `dc699a1df2edbc2f44a4e7c8dcf37bb5457f351129bdeaf44e76a9a23bce3c57` | 9 |
+| 3 | `2a7b6d4fc8666b6f233ee3aa25dcf58170d9dcf13bd7addf651934847ad7368d` | 2 |
+
+나머지 실효 한도: `max_tool_calls=10`, `timeout_seconds=5`, `run_timeout_seconds=180`, `max_response_bytes=65536`, `requests_per_second=2`, `max_concurrency=1`, `max_runs=100`, `state_ttl_seconds=600`.
+
+- r1은 user-a/user-b를 허용했다. 경고는 `Limited to these synthetic accounts, resource, and observation time; not a site-wide safety claim.` 하나다.
+- r2는 원본 정책 복사본 `verification_tmp/scope-deny-user-b.json`의 HTTP 계정만 `[user-a]`로 축소했다. A 로그인 뒤 `start_session(user-b)`에서 `SCOPE_ACCOUNT_DENIED` / `account is outside the scope profile`로 중단됐다. HTTP/도구 보고 계수는 1/1, 증거는 0이다.
+- r3는 원본 정책의 별도 복사본 `verification_tmp/scope-limit-two.json`에서 `max_requests=2`로 축소하고 두 계정을 허용했다. 로그인 두 번 뒤 `list_own_documents(user-a)`에서 `SCOPE_LIMIT_EXCEEDED` / `HTTP request limit exceeded`로 중단됐다. 도구 3회는 차단된 도구 진입을 포함하며 HTTP 보고 계수는 2다.
+- 거절 시험의 `HTTP scenario evidence is missing, duplicated, or out of sequence`는 이 실행에서는 조기 중단에 따른 증거 부족 안내다. 실제 증거 중복이나 순서 오류가 발생했다는 뜻으로 해석하지 않는다. 네 거절/한도 run의 INCONCLUSIVE는 취약/차단 판정을 확정하지 않은 기대 동작이다.
+- **HTTP 계수는 worker가 보고서에 기록한 값**이다. 거절 요청의 전송 0이나 N+1 미전송을 별도 패킷 캡처·target-local 로그로 독립 입증한 결과는 아니다.
+
+### 사용자 보고 운영 이력과 복원 상태
+
+인터넷이 격리된 worker는 Windows에서 만든 git bundle을 공유 폴더로 전달받아 scope 브랜치로 갱신했다. 초기 구버전의 `No module named worker.cli` 실패를 보존한다. 갱신 후 `check-policy`가 성공했으며 새 전역 Python/venv 생성 또는 DNS 변경으로 해결한 것이 아니다.
+
+검사와 기동에 같은 `.env.worker`를 로드하고 프로세스별 `TARGET_REGISTRY_PATH`를 명시했다. 정책 변경마다 기존 worker를 Ctrl+C로 정상 종료 후 재시작했다. 실행 중 파일 변경의 자동 반영으로 설명하지 않는다. 실제 사용했다고 전달된 명령과 복원 명령은 [운영 가이드의 2026-10-22 보완](../docs/scope_policy_runbook.md#2026-10-22-사용자-보고-명령과-복원-주의)에 있다. **원본 정책 복원 완료 출력은 아직 없으므로 복원 완료로 단정하지 않는다.**
+
+### 갱신된 확인 범위와 남은 작업
+
+이번 추가로 VM mock function/MCP 각각의 허용·계정 거절·한도 차단은 **사용자 제공 출력·화면 확인 기록 수준**에서 예상 동작을 확인했다. 앞선 2026-10-20의 VM 미검증 표시는 당시 로컬 검사 범위다. 새 증거는 해당 여섯 run 범위만 보완하며, Codex의 VM 직접 재현·독립 검사 완료로 승격하지 않는다.
+
+새 scope 버전의 **fixed 정상 실행 두 조합**은 이번 여섯 건에 없다. 실행 시각, VM별 commit SHA, Python/Node 버전, 독립 target 로그 대조, 정책 복원 확인은 미확인이다. 실제 브라우저 E2E, 외부 사이트, wildcard/DNS·일반 HTML 어댑터, Nmap/Playwright, 부하·장시간 안정성 검증도 포함하지 않는다. 합성 계정·리소스·시점의 결과를 사이트 전체 안전성이나 모델 탐지 정확도로 일반화하지 않는다.
+
+새 scope 정책에서 OpenAI/GPT-6 Luna를 실제 호출한 증거가 아니며 기존 GPT-5.4-mini 네 run과 구분한다. 이번 변경은 문서만 수정했으며 코드·VM 설정 변경, 추가 OpenAI 호출, 테스트 재실행은 하지 않았다. 기존 **253개 Python/14개 UI** 결과는 2026-10-20 Windows 로컬 기록 그대로다. 다음 권장 작업은 원본 정책 복원 확인, VM별 실행 버전 기록, 새 scope의 fixed 정상 function/MCP 두 조합 확인이다.

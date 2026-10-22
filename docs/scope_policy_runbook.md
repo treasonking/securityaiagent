@@ -146,4 +146,36 @@ Windows VM의 재시작 명령은 같은 모듈/인자에 `.venv/bin/python` 대
 2. 운영자 파일의 복사본에서 HTTP 시나리오의 `user-b`만 제외하고 revision을 올린다. `TARGET_REGISTRY_PATH`를 그 로컬 파일로 지정·검사·worker 재시작 후 위 mock 실행을 반복한다. 예상: A 로그인 1회 뒤 B 로그인은 전송 0, `SCOPE_ACCOUNT_DENIED`, `INCONCLUSIVE`. 사전 전체 거절은 HTTP 시나리오를 제거한 복사본으로 확인하면 target 요청 0이다.
 3. 별도 복사본의 `max_requests=2`로 검사·재시작 후 반복한다. 예상: 로그인 2회 후 목록 N+1 요청 0, `SCOPE_LIMIT_EXCEEDED`, `INCONCLUSIVE`. request_count와 정책 snapshot을 함께 보존한다.
 
-시험 후 원래 프로필/환경 경로를 복원하고 worker를 재시작한다. raw target 로그/DB는 target/evaluator 경계에 두고 정제된 실행 결과만 전달한다. 새 정책의 VM 동작·실제 브라우저 레이아웃·외부 사이트 적용은 별도 확인 전까지 미검증이다. OpenAI 추가 호출은 이 절차에 없다.
+시험 후 원래 프로필/환경 경로를 복원하고 worker를 재시작한다. raw target 로그/DB는 target/evaluator 경계에 두고 정제된 실행 결과만 전달한다. 2026-10-20 작성 시점에는 새 정책의 VM 동작·실제 브라우저 레이아웃·외부 사이트 적용이 미검증이었다. 2026-10-22 사용자 보고로 확인된 VM 범위와 남은 한계는 아래 보완 절과 결과 문서에서 구분한다. OpenAI 추가 호출은 이 절차에 없다.
+
+## 2026-10-22 사용자 보고 명령과 복원 주의
+
+사용자 제공 지침에 실제 사용한 것으로 기록된 명령이다. 이 문서를 편집한 Codex가 VM에서 실행한 명령은 아니다. 인터넷 격리 worker는 Windows git bundle을 공유 폴더로 받아 scope 브랜치를 갱신했다. 구버전의 `No module named worker.cli`는 갱신 후 해소되고 `check-policy`가 성공했다고 보고됐다. 전역 Python/venv 재생성이나 DNS 변경은 하지 않았다.
+
+검사와 기동에 같은 환경을 로드하고 프로세스별 정책 경로를 명시했다:
+
+```bash
+cd ~/securityaiagent
+set -a
+source ./.env.worker
+set +a
+
+TARGET_REGISTRY_PATH=verification_tmp/scope-deny-user-b.json \
+  .venv/bin/python -m worker.cli check-policy
+
+TARGET_REGISTRY_PATH=verification_tmp/scope-deny-user-b.json \
+  .venv/bin/python -m uvicorn --factory worker.app:create_app_from_env \
+  --env-file .env.worker --host 10.77.0.20 --port 9000
+```
+
+한도 시험에서는 경로만 `verification_tmp/scope-limit-two.json`으로 바꿨다. r2는 원본 정책 복사본의 HTTP 계정만 `[user-a]`, r3는 원본 정책의 별도 복사본에서 두 계정 허용과 `max_requests=2`를 적용했다. 정책 변경마다 worker를 Ctrl+C로 정상 종료한 후 재기동했다. 파일만 변경해도 실행 중 worker가 자동 갱신되는 것은 아니다.
+
+아래는 시험 종료 후 원본 정책으로 돌아가기 위한 명령이다. **복원 완료를 확인한 출력은 아직 제공되지 않았다.** 같은 `.env.worker`를 로드한 터미널에서 현재 시험용 worker를 정상 종료한 뒤 원본 정책을 명시하여 시작하고, 실제 적용 profile/revision/hash를 확인한다.
+
+```bash
+TARGET_REGISTRY_PATH=config/targets.json \
+  .venv/bin/python -m uvicorn --factory worker.app:create_app_from_env \
+  --env-file .env.worker --host 10.77.0.20 --port 9000
+```
+
+여섯 run의 계수·해시·정제된 실패 이유와 확인 수준은 [VM 결과 기록](../reports/scope_policy_verification.md#사용자-제공-vm-scope-정책-6건--2026-10-22-기록)에 있다. HTTP 계수는 worker 보고값이며 패킷/target 로그 독립 대조는 아니다. 새 scope의 fixed 정상 두 조합과 복원 확인은 후속 작업으로 남긴다.
