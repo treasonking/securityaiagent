@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import re
 import secrets
 import time
@@ -10,6 +11,7 @@ from typing import Any, Callable
 
 import httpx
 
+from common.api_contract import ApiAdapter, select
 from common.sanitize import body_digest
 from common.schemas import Evidence, HttpObservation, ScenarioId, ToolResult
 from worker.policy import PolicyViolation, TargetPolicy
@@ -26,6 +28,7 @@ class _Session:
     account_ref: str
     cookies: httpx.Cookies
     target_id: str
+    bearer: str | None = field(default=None, repr=False)
 
 
 @dataclass
@@ -232,6 +235,8 @@ class ToolService:
                 state.last_request_monotonic = time.monotonic()
             self._check_run(state)
             headers = {"X-SecurityLab-Run": state.run_id, "X-SecurityLab-Request": request_id}
+            if session_ref is not None and state.sessions[session_ref].bearer is not None:
+                headers["Authorization"] = "Bearer " + state.sessions[session_ref].bearer
             timeout_seconds = min(state.scope.limits.timeout_seconds, self._run_seconds_remaining(state))
             if timeout_seconds <= 0:
                 self._check_run(state)
@@ -299,7 +304,7 @@ class ToolService:
         if operation == "login":
             credentials = self.accounts.get(account_ref)
             if (session_ref is not None or cookies is not None or credentials is None
-                    or payload != {"username": credentials[0], "password": credentials[1]}):
+                    or payload != state.scope.adapter.login_payload(credentials)):
                 raise ScopeViolation("SCOPE_SESSION_DENIED", "login must use worker-owned credentials")
         else:
             session = state.sessions.get(session_ref)
@@ -346,11 +351,18 @@ class ToolService:
                 policy,
                 operation="login",
                 method="POST",
-                path="/login",
+                path=scope.adapter.routes.login_path,
                 account_ref=account_ref,
-                json={"username": credentials[0], "password": credentials[1]},
+                json=scope.adapter.login_payload(credentials),
             )
-            if response.status_code != 200 or "lab_session" not in response.cookies:
+            adapter = scope.adapter
+            auth_value = None
+            if response.status_code == 200:
+                if adapter.auth_mode == "cookie":
+                    auth_value = response.cookies.get(adapter.cookie_name)
+                else:
+                    auth_value = select(self._json_object(response), adapter.token_field)
+            if not isinstance(auth_value, str) or not re.fullmatch(r"[A-Za-z0-9._~-]{1,2048}", auth_value):
                 state.failed = True
                 state.ended_monotonic = time.monotonic()
                 state.sessions.clear()
@@ -362,7 +374,9 @@ class ToolService:
             if state.scenario_id == "access-control":
                 state.mode = response.headers.get("X-SecurityLab-Mode", "unknown")
             session_ref = f"sess_{secrets.token_urlsafe(24)}"
-            state.sessions[session_ref] = _Session(account_ref=account_ref, cookies=response.cookies, target_id=target_id)
+            cookies = httpx.Cookies({adapter.cookie_name: auth_value}) if adapter.auth_mode == "cookie" else httpx.Cookies()
+            state.sessions[session_ref] = _Session(account_ref=account_ref, cookies=cookies, target_id=target_id,
+                                                  bearer=auth_value if adapter.auth_mode == "bearer" else None)
             return self._result(state, ok=True, data={"session_ref": session_ref, "authenticated": True})
         except Exception as exc:
             return self._error(run_id, exc)
@@ -383,7 +397,7 @@ class ToolService:
                 policy,
                 operation="list_own_documents",
                 method="GET",
-                path="/documents",
+                path=state.scope.adapter.routes.list_path,
                 account_ref=session.account_ref,
                 session_ref=session_ref,
                 cookies=session.cookies,
@@ -397,25 +411,26 @@ class ToolService:
                     error_code="SESSION_OR_TARGET_ERROR",
                     message=f"document list returned {response.status_code}",
                 )
-            payload = response.json()
-            items = payload.get("documents", [])
+            adapter = state.scope.adapter
+            payload = self._json_object(response)
+            items = select(payload, adapter.list_field)
             if not isinstance(items, list) or len(items) > 100:
                 raise PolicyViolation("invalid bounded document list")
-            document_ids = [item["document_id"] for item in items]
+            document_ids = [select(item, adapter.list_id_field) for item in items]
             for document_id in document_ids:
-                policy.document_path(document_id)
+                adapter.routes.detail(document_id)
             if len(document_ids) != len(set(document_ids)):
                 raise PolicyViolation("ambiguous document list")
             evidence = None
             if state.scenario_id == "access-control-http":
                 expected = self.account_ids[session.account_ref]
-                if payload.get("account_id") != expected or any(item.get("owner_id") != expected for item in items):
+                if select(payload, adapter.list_account_field) != expected or any(select(item, adapter.list_owner_field) != expected for item in items):
                     raise PolicyViolation("document list account or ownership is unverified")
-                observation = self._http_metadata(response, session, session_ref)
+                observation = self._http_metadata(response, session, session_ref, state.scope.adapter)
                 observation.listed_document_ids = document_ids
                 observation.owner_ref = session.account_ref
                 observation.response_kind = "document_list"
-                evidence = self._http_evidence(state, response, request_id, session, "/documents",
+                evidence = self._http_evidence(state, response, request_id, session, adapter.routes.list_path,
                                                "http-list-" + session.account_ref, observation)
             return self._result(state, ok=True, data={"document_ids": document_ids}, evidence=evidence)
         except Exception as exc:
@@ -438,7 +453,7 @@ class ToolService:
             session = state.sessions.get(session_ref)
             if session is None or session.target_id != target_id:
                 raise ScopeViolation("SCOPE_SESSION_DENIED", "unknown opaque session_ref")
-            path = policy.document_path(document_id)
+            path = state.scope.adapter.routes.detail(document_id)
             if state.scenario_id == "access-control-http" and purpose not in {
                 "http-own-a", "http-own-b", "http-cross-b", "http-recheck-b", "http-recheck-a"
             }:
@@ -455,7 +470,7 @@ class ToolService:
                 cookies=session.cookies,
             )
             if state.scenario_id == "access-control-http":
-                observation = self._http_metadata(response, session, session_ref)
+                observation = self._http_metadata(response, session, session_ref, state.scope.adapter)
                 evidence = self._http_evidence(state, response, request_id, session, path, purpose, observation)
                 return self._result(state, ok=True, data={"status_code": response.status_code}, evidence=evidence)
             marker = None
@@ -497,31 +512,51 @@ class ToolService:
         except Exception as exc:
             return self._error(run_id, exc)
 
-    def _http_metadata(self, response: httpx.Response, session: _Session, session_ref: str) -> HttpObservation:
+    @staticmethod
+    def _json_object(response):
+        def unique(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise ValueError("duplicate response field")
+                result[key] = value
+            return result
+        payload = json.loads(response.content, object_pairs_hook=unique,
+                             parse_constant=lambda _: (_ for _ in ()).throw(ValueError("nonfinite response")))
+        if not isinstance(payload, dict):
+            raise ValueError("expected a JSON object")
+        return payload
+
+    def _http_metadata(self, response: httpx.Response, session: _Session, session_ref: str, adapter: ApiAdapter) -> HttpObservation:
         account_map = {self.account_ids[name]: name for name in ("user-a", "user-b")}
         observation = HttpObservation(
-            session_binding=body_digest(session_ref.encode()),
-            authenticated_account=account_map.get(response.headers.get("X-SecurityLab-Account")),
+            session_binding=body_digest(session_ref.encode()), routes=adapter.routes,
+            authenticated_account=account_map.get(response.headers.get(adapter.identity_header)),
         )
         try:
-            payload = response.json()
-        except ValueError:
+            payload = self._json_object(response)
+        except (ValueError, UnicodeError):
             return observation
-        if not isinstance(payload, dict):
-            return observation
-        if response.status_code in {403, 404} and payload == {"detail": "document not found"}:
+        # Denials must contain exactly the configured nested error object. A generic
+        # error/HTML/login/public body cannot establish access-control blocking.
+        denial = adapter.denial_value
+        for key in reversed(adapter.denial_field.split(".")):
+            denial = {key: denial}
+        if response.status_code in {403, 404} and payload == denial:
             observation.response_kind = "document_denied"
-        canary = payload.get("canary")
-        observation.canary_present = canary is not None or payload.get("marker") is not None
-        document_id = payload.get("document_id")
+        observation.canary_present = (select(payload, adapter.content_container_field) is not None
+                                      or select(payload, adapter.legacy_marker_field) is not None)
+        document_id = select(payload, adapter.resource_id_field)
         if isinstance(document_id, str) and re.fullmatch(r"doc-[a-z]+-[0-9]{3}", document_id):
             observation.document_id = document_id
-        observation.owner_ref = account_map.get(payload.get("owner_id")) if isinstance(payload.get("owner_id"), str) else None
-        if (payload.get("visibility") == "private" and isinstance(canary, dict)
-                and canary.get("kind") == "synthetic-private"
-                and isinstance(canary.get("value"), str)
-                and re.fullmatch(r"SYN-[A-Za-z0-9_-]{8,96}", canary["value"])):
-            observation.private_canary_digest = body_digest(canary["value"].encode())
+        owner = select(payload, adapter.owner_field)
+        observation.owner_ref = account_map.get(owner) if isinstance(owner, str) else None
+        visibility = select(payload, adapter.visibility_field)
+        content = select(payload, adapter.content_field)
+        if (type(visibility) is type(adapter.private_value) and visibility == adapter.private_value
+                and select(payload, adapter.content_kind_field) == adapter.content_kind_value
+                and isinstance(content, str) and re.fullmatch(r"SYN-[A-Za-z0-9_-]{8,96}", content)):
+            observation.private_canary_digest = body_digest(content.encode())
             observation.response_kind = "private_document"
         return observation
 

@@ -30,7 +30,7 @@ def test_service_examples_are_separate_and_checks_never_launch(service, monkeypa
         http = result["scope_policies"][1]
         assert http["effective_limits"]["max_requests"] == 9
         assert http["effective_limits"]["max_tool_calls"] == 10
-        assert http["snapshot_sha256"] == "3b68f75e546f09653322195a3f1a84051f7a8a7cd5d0e6bb5b8225c671dd4cb4"
+        assert http["snapshot_sha256"] == "d8136fafff1bda07b32b13feab426c76ccf570e40ac52c9b8e494f48ef2a9d1a"
 
 
 @pytest.mark.parametrize("service,foreign", [("controller", "LAB_USER_A_PASSWORD"), ("worker", "OPENAI_API_KEY"),

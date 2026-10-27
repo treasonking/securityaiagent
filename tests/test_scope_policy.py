@@ -111,7 +111,7 @@ def test_origin_is_canonical_http_ip_literal(tmp_path, origin):
 
 def test_duplicate_json_keys_and_missing_file_do_not_fallback(tmp_path):
     path = write_policy(tmp_path)
-    path.write_text(path.read_text().replace('"revision": 1', '"revision": 1, "revision": 2'))
+    path.write_text(path.read_text().replace('"revision": 4', '"revision": 4, "revision": 5'))
     with pytest.raises(ScopeViolation): load_scope_registry(path)
     with pytest.raises(ScopeViolation): load_scope_registry(tmp_path / "missing.json")
 
@@ -371,7 +371,7 @@ def test_controller_never_confirms_incomplete_or_mismatched_scope(tmp_path, scen
         client=ChangedClient(service), cancel_event=asyncio.Event(), emit=emit,
     ))
     assert report.verdict == "INCONCLUSIVE"
-    assert report.scope_policy.revision == 1
+    assert report.scope_policy.revision == 4
     expected = {"missing": "SCOPE_METADATA_MISSING", "changed": "SCOPE_SNAPSHOT_MISMATCH",
                 "finish-denied": "SCOPE_LIMIT_EXCEEDED"}[failure]
     assert any(expected in warning for warning in report.warnings)

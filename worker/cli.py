@@ -23,6 +23,8 @@ def main() -> None:
             for scenario in sorted(registry.profile(target_id).scenarios):
                 snapshot = registry.snapshot(target_id, scenario, limits)
                 rows.append({"target_id": target_id, "origin": target.base_url, "scenario_id": scenario,
+                             "adapter_id": snapshot.adapter.adapter_id, "auth_mode": snapshot.adapter.auth_mode,
+                             "http_routes": snapshot.http_routes.model_dump(mode="json"),
                              "accounts": snapshot.accounts, "operations": snapshot.operations,
                              **snapshot.record().model_dump(mode="json")})
         print(json.dumps({"ok": True, "schema_version": "2.0", "applies": "worker startup; frozen per run",

@@ -9,6 +9,7 @@ from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
+from common.api_contract import ApiAdapter
 from worker.limits import WorkerLimits
 from worker.policy import PolicyViolation, TargetPolicy
 from worker.scope import ScopeProfile, ScopeSnapshot, ScopeViolation, make_snapshot
@@ -21,6 +22,7 @@ class RegisteredTarget(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     origin: str
     profile: ScopeProfile
+    adapter: ApiAdapter = ApiAdapter()
 
 
 class RegistryFile(BaseModel):
@@ -34,6 +36,7 @@ class ScopeRegistry:
     policies: Mapping[str, TargetPolicy]
     # Canonical JSON prevents later mutation of nested profile mappings.
     profiles_json: Mapping[str, str]
+    adapters_json: Mapping[str, str]
 
     def profile(self, target_id: str) -> ScopeProfile:
         if target_id not in self.profiles_json:
@@ -42,13 +45,27 @@ class ScopeRegistry:
 
     def snapshot(self, target_id: str, scenario: str, limits: WorkerLimits) -> ScopeSnapshot:
         profile = self.profile(target_id)
-        return make_snapshot(self.policies[target_id], profile, scenario, limits)
+        return make_snapshot(self.policies[target_id], profile, scenario, limits, self.adapter(target_id))
+
+    def adapter(self, target_id: str) -> ApiAdapter:
+        return ApiAdapter.model_validate(json.loads(self.adapters_json[target_id]))
+
+    def credentials(self, environ) -> dict[str, tuple[str, str]]:
+        adapter = self.adapter("lab-web")
+        result = {}
+        for account in ("user-a", "user-b", "admin"):
+            ref = getattr(adapter.accounts, account.replace("-", "_"))
+            value = environ.get(ref.password_env)
+            if not value:
+                raise ScopeViolation("SCOPE_ACCOUNT_DENIED", "adapter credential environment reference is unset")
+            result[account] = (ref.username, value)
+        return result
 
     def with_test_origins(self, policies: Mapping[str, TargetPolicy]) -> ScopeRegistry:
         """Code-only synthetic test injection, never an HTTP/env URL override."""
         if set(policies) != set(self.policies) or any(key != policy.target_id for key, policy in policies.items()):
             raise ScopeViolation("SCOPE_TARGET_DENIED", "test origins must preserve registered target IDs")
-        return ScopeRegistry(MappingProxyType(dict(policies)), self.profiles_json)
+        return ScopeRegistry(MappingProxyType(dict(policies)), self.profiles_json, self.adapters_json)
 
 
 def _unique_object(pairs):
@@ -70,7 +87,7 @@ def load_scope_registry(path: str | Path = DEFAULT_REGISTRY, *, expected_origin:
         registry = RegistryFile.model_validate(payload)
         if not registry.targets:
             raise ValueError("empty registry")
-        policies, profiles = {}, {}
+        policies, profiles, adapters = {}, {}, {}
         for target_id, target in registry.targets.items():
             parsed = urlsplit(target.origin)
             policy = TargetPolicy(target_id, parsed.scheme, parsed.hostname or "", parsed.port or 80)
@@ -80,9 +97,14 @@ def load_scope_registry(path: str | Path = DEFAULT_REGISTRY, *, expected_origin:
                 raise ScopeViolation("SCOPE_ORIGIN_MISMATCH", "TARGET_BASE_URL differs from the registered origin")
             if not target.profile.enabled:
                 raise ScopeViolation("SCOPE_DISABLED", "scope profile is disabled")
+            if target.adapter.routes != target.profile.http_routes:
+                raise ScopeViolation("SCOPE_ADAPTER_MISMATCH", "adapter routes are not approved by scope")
+            if "access-control" in target.profile.scenarios and target.adapter != ApiAdapter():
+                raise ScopeViolation("SCOPE_SCENARIO_DENIED", "legacy log scenario requires the default adapter")
+            adapters[target_id] = target.adapter.model_dump_json()
             policies[target_id] = policy
             profiles[target_id] = json.dumps(target.profile.normalized(), sort_keys=True, allow_nan=False)
-        return ScopeRegistry(MappingProxyType(policies), MappingProxyType(profiles))
+        return ScopeRegistry(MappingProxyType(policies), MappingProxyType(profiles), MappingProxyType(adapters))
     except ScopeViolation:
         raise
     except (OSError, ValueError, TypeError, ValidationError, PolicyViolation):

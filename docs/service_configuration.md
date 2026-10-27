@@ -1,5 +1,7 @@
 # 서비스별 API·인증 설정
 
+후속 `codex/target-api-adapters`는 이 환경 분리 기능을 유지하며 검사 대상 API 구조 설정을 추가했다. target의 `TARGET_API_STYLE`과 worker registry의 어댑터·승인 경로 선택은 [검사 대상 웹 API 어댑터](target_api_adapters.md)를 따른다. 아래의 초기 작업 설명·검증 이력은 당시 범위를 기록한 것이다.
+
 2026-10-27 작업은 기존 scope-policy 최신 `f21c8e5`에서 시작한 `codex/service-auth-config` 브랜치에 있다. controller·worker·target의 운영자 환경 파일을 분리하고, 선택한 파일만 검증·전달하는 실행 경로를 추가했다. API endpoint나 인증 프로토콜을 새로 만들거나 외부 사이트용 어댑터를 추가한 작업은 아니다.
 
 ## 설정 소유권

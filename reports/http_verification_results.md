@@ -1,5 +1,7 @@
 # HTTP 관측 검증 실행 결과 — 2026-10-15
 
+후속 API 어댑터 작업의 documents/records 정상 8조합과 거절 8건은 [별도 로컬 검증 보고서](api_adapter_verification.md)에 기록했다. 기존 VM mock/OpenAI 결과 및 실패 이력과 구분하며, 새 어댑터의 VM/OpenAI/외부 사이트 적용은 미검증이다.
+
 ## 변경과 실행 환경
 
 - 기준 main: `17d72b8` (`origin/main` fetch 후 차이 0/0, 시작 당시 사용자 변경 없음).

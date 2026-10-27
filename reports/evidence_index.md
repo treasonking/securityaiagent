@@ -1,5 +1,11 @@
 # Evidence index
 
+## Codex 직접 실행 — API 어댑터 로컬 검증, 2026-10-27
+
+[API 어댑터 검증 보고서](api_adapter_verification.md)와 [16건 원본 행렬](api_adapters/matrix-f36d4e7ff64b.json)에 documents/records × vulnerable/fixed × function/MCP의 정상 8건과 두 API의 계정·한도 거절 8건을 추가했다. provider는 모두 mock이며 HTTP 관찰만 사용했다. 정상 8건은 각 증거 7개·실제 HTTP 9회·도구 10회, 거절은 INCONCLUSIVE다. 모든 행에 정제된 report/evidence 파일이 연결돼 있다. 이는 Codex의 로컬 TCP 검증이며 사용자 VM 출력이나 VM 원본 직접 검증이 아니다. 이전 VM/OpenAI 결과와 실패 이력은 아래 기록을 유지한다.
+
+## 기존 증거의 출처
+
 이 인덱스는 2026-10-10·14 Codex가 직접 실행한 로컬 Windows 검증과 2026-10-14~15 첨부 가이드에 기록된 사용자 VM 결과를 분리한다. 첨부 가이드는 VM report 필드·target-local verifier JSON·DB 조회·UI 캡처를 근거로 작성됐다고 설명하지만, 그 원본 캡처와 파일은 이번 작업에 직접 첨부되지 않았다. VM run 파일과 DB도 이 Windows 작업 사본에 없었으므로, VM 행은 파일 직접 검사 결과가 아니다.
 
 ## Codex-verified local evidence — 2026-10-10

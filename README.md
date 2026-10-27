@@ -66,6 +66,8 @@ Linux VM에서는 `.venv/bin/python`을 사용한다.
 
 ## 설정
 
+검사 대상의 로그인·쿠키/Bearer 인증·목록·상세 응답 구조는 이제 운영자 API 어댑터로 선택한다. 기본 documents와 중첩 JSON records API를 같은 HTTP 검사 흐름으로 실행한다. [어댑터 설정 및 VM별 업데이트·실행 명령](docs/target_api_adapters.md), [로컬 8조합 및 거절 검증 결과](reports/api_adapter_verification.md)를 참고한다.
+
 서비스별 `.env.controller.example`, `.env.worker.example`, `.env.target.example`을 각 VM의 해당 환경 파일로 복사하고 비밀값을 로컬에서 채운다. `python -m common.service_config check worker`는 네트워크 없이 검사하고, `serve worker`는 선택한 worker 파일만 전달하여 실행한다. controller/target도 같은 형식을 사용한다. [서비스별 API·인증 설정과 이전 절차](docs/service_configuration.md)를 참고한다. 기존 직접 Uvicorn/CLI 실행은 호환되지만 새 launcher의 파일 검사·환경 필터를 거치지 않는다.
 
 `.env.example`을 참고하되 비밀값이 든 환경 파일은 커밋하지 않는다. controller와 worker에는 같은 충분히 긴 `WORKER_TOKEN`을, controller에는 24자 이상의 `APP_SESSION_SECRET`, 16자 이상의 `APP_ACCESS_TOKEN`, evaluator 결과 반영용 `OFFLINE_VERIFICATION_TOKEN`을 설정한다. 브라우저에는 `APP_ACCESS_TOKEN`만 입력하며 worker token과 OpenAI 키는 노출하지 않는다. target과 worker에 동일한 `LAB_USER_A_PASSWORD`, `LAB_USER_B_PASSWORD`, `LAB_ADMIN_PASSWORD`를 설정한다. 이미 seed한 DB의 비밀번호를 바꿀 때는 target DB를 제거해 재-seed해야 하며 일반 reset은 문서 fixture를 보존한다.

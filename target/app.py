@@ -17,7 +17,7 @@ class LoginRequest(BaseModel):
     password: str
 
 
-def create_app(store: TargetStore | None = None) -> FastAPI:
+def create_app(store: TargetStore | None = None, *, api_style: str | None = None) -> FastAPI:
     default_database = Path(__file__).resolve().parents[1] / "data" / "target.sqlite3"
     target_store = store or TargetStore(
         Path(os.getenv("TARGET_DATABASE_PATH", str(default_database))),
@@ -28,6 +28,12 @@ def create_app(store: TargetStore | None = None) -> FastAPI:
             "admin": os.getenv("LAB_ADMIN_PASSWORD") or "local-admin-password",
         },
     )
+    style = api_style or os.getenv("TARGET_API_STYLE", "documents")
+    if style == "records":
+        from target.records import create_records_app
+        return create_records_app(target_store)
+    if style != "documents":
+        raise ValueError("TARGET_API_STYLE must be documents or records")
     app = FastAPI(title="SecurityLab synthetic target", docs_url=None, redoc_url=None)
     app.state.store = target_store
 

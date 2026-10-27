@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any, Literal
 
+from common.api_contract import HttpRoutes
+
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -35,6 +37,7 @@ class HttpObservation(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     target_id: Literal["lab-web"] = "lab-web"
+    routes: HttpRoutes = HttpRoutes()
     session_binding: str = Field(pattern=r"^[0-9a-f]{64}$")
     authenticated_account: Literal["user-a", "user-b"] | None = None
     response_kind: Literal["document_list", "private_document", "document_denied", "unknown"] = "unknown"

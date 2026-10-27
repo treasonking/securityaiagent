@@ -30,6 +30,9 @@ def verify_http_access_control(evidence: list[Evidence], *, run_id: str) -> Veri
                 or item.server_observation != "http_observation" or observation is None
                 or observation.target_id != "lab-web" or observation.authenticated_account != account):
             return inconclusive("HTTP run, request account, or authenticated response identity mismatch")
+    routes = evidence[0].http_observation.routes
+    if any(item.http_observation.routes != routes for item in evidence):
+        return inconclusive("HTTP route contracts differ within the run")
     # All observations have now passed the presence check.
     a_list, b_list, own_a, own_b, cross, again_b, again_a = evidence
     a_binding = a_list.http_observation.session_binding
@@ -42,7 +45,7 @@ def verify_http_access_control(evidence: list[Evidence], *, run_id: str) -> Veri
     lists = []
     for item in (a_list, b_list):
         ids = item.http_observation.listed_document_ids
-        if (item.path != "/documents" or item.status_code != 200 or not ids
+        if (item.path != routes.list_path or item.status_code != 200 or not ids
                 or item.http_observation.owner_ref != item.account_ref
                 or item.http_observation.response_kind != "document_list"
                 or len(set(ids)) != len(ids)
@@ -56,7 +59,7 @@ def verify_http_access_control(evidence: list[Evidence], *, run_id: str) -> Veri
         obs = item.http_observation
         if (item.status_code != 200 or obs.owner_ref != account or obs.document_id not in ids
                 or obs.response_kind != "private_document"
-                or item.path != f"/documents/{obs.document_id}"
+                or item.path != routes.detail(obs.document_id)
                 or not obs.private_canary_digest or not obs.canary_present):
             return inconclusive("normal private owner control failed")
     for first, last in ((own_a, again_a), (own_b, again_b)):

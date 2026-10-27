@@ -173,11 +173,7 @@ def create_app_from_env():
         str(__import__("pathlib").Path(__file__).resolve().parents[1] / "config" / "targets.json"),
     )
     registry = load_scope_registry(registry_path, expected_origin=os.getenv("TARGET_BASE_URL") or None)
-    accounts = {
-        "user-a": ("user_a", os.getenv("LAB_USER_A_PASSWORD") or "local-a-password"),
-        "user-b": ("user_b", os.getenv("LAB_USER_B_PASSWORD") or "local-b-password"),
-        "admin": ("admin", os.getenv("LAB_ADMIN_PASSWORD") or "local-admin-password"),
-    }
+    accounts = registry.credentials(os.environ)
     try:
         limits = limits_from_env()
     except (ValueError, OverflowError):

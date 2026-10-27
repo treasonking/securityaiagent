@@ -8,6 +8,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from common.api_contract import ApiAdapter, HttpRoutes
 from common.schemas import PolicyRecord, ScenarioId
 from worker.limits import WorkerLimits
 from worker.policy import PolicyViolation, TargetPolicy
@@ -45,6 +46,7 @@ class ScopeProfile(BaseModel):
     enabled: bool
     scenarios: dict[ScenarioId, tuple[AccountRef, ...]]
     operations: tuple[Operation, ...]
+    http_routes: HttpRoutes = HttpRoutes()
     limits: ProfileLimits
 
     @field_validator("operations", mode="before")
@@ -90,6 +92,8 @@ class ScopeSnapshot:
     profile_id: str
     revision: int
     snapshot_sha256: str
+    adapter: ApiAdapter
+    http_routes: HttpRoutes
 
     def record(self) -> PolicyRecord:
         return PolicyRecord(profile_id=self.profile_id, revision=self.revision,
@@ -111,19 +115,25 @@ class ScopeSnapshot:
             raise ScopeViolation("SCOPE_PATH_DENIED", "path is outside the normalized operation boundary") from None
         if path != normalized:
             raise ScopeViolation("SCOPE_PATH_DENIED", "request path must already be canonical")
-        expected = {"login": ("POST", "/login"), "list_own_documents": ("GET", "/documents")}
+        expected = {"login": ("POST", self.http_routes.login_path), "list_own_documents": ("GET", self.http_routes.list_path)}
         if operation == "fetch_document":
-            if not path.startswith("/documents/"):
-                raise ScopeViolation("SCOPE_PATH_DENIED", "document path is outside the registered operation")
+            prefix = self.http_routes.detail_path.split("{document_id}")[0]
             try:
-                expected[operation] = ("GET", target.document_path(path[len("/documents/"):]))
-            except PolicyViolation:
-                raise ScopeViolation("SCOPE_PATH_DENIED", "document path is outside the registered operation") from None
+                if not path.startswith(prefix):
+                    raise ValueError()
+                expected[operation] = ("GET", self.http_routes.detail(path[len(prefix):]))
+            except ValueError:
+                raise ScopeViolation("SCOPE_PATH_DENIED", "document path is outside the approved scope route") from None
         if expected.get(operation) != (method, path):
             raise ScopeViolation("SCOPE_PATH_DENIED", "method/path does not match the registered operation")
 
 
-def make_snapshot(target: TargetPolicy, profile: ScopeProfile, scenario: str, global_limits: WorkerLimits) -> ScopeSnapshot:
+def make_snapshot(target: TargetPolicy, profile: ScopeProfile, scenario: str, global_limits: WorkerLimits, adapter: ApiAdapter | None = None) -> ScopeSnapshot:
+    adapter = adapter or ApiAdapter()
+    if adapter.routes != profile.http_routes:
+        raise ScopeViolation("SCOPE_ADAPTER_MISMATCH", "adapter routes are not approved by scope")
+    if scenario == "access-control" and adapter != ApiAdapter():
+        raise ScopeViolation("SCOPE_SCENARIO_DENIED", "legacy log correlation requires the default adapter")
     if not profile.enabled:
         raise ScopeViolation("SCOPE_DISABLED", "scope profile is disabled")
     if scenario not in profile.scenarios:
@@ -139,6 +149,6 @@ def make_snapshot(target: TargetPolicy, profile: ScopeProfile, scenario: str, gl
     effective = WorkerLimits(**values)
     canonical = json.dumps({"schema_version": "2.0", "target_id": target.target_id, "origin": target.base_url,
                             "profile": profile.normalized(), "scenario_id": scenario,
-                            "effective_limits": asdict(effective)}, sort_keys=True, separators=(",", ":"), allow_nan=False)
+                            "effective_limits": asdict(effective), "adapter": adapter.model_dump(mode="json")}, sort_keys=True, separators=(",", ":"), allow_nan=False)
     return ScopeSnapshot(target, scenario, tuple(sorted(profile.scenarios[scenario])), tuple(sorted(profile.operations)),
-                         effective, profile.profile_id, profile.revision, hashlib.sha256(canonical.encode()).hexdigest())
+                         effective, profile.profile_id, profile.revision, hashlib.sha256(canonical.encode()).hexdigest(), adapter, profile.http_routes)
