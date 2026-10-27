@@ -1,5 +1,7 @@
 # VM별 환경변수 로딩과 실행
 
+서비스별 예제와 검사·실행 경로는 [서비스별 API·인증 설정](service_configuration.md)에 있다. 새 `python -m common.service_config check|serve <service>`는 선택한 역할의 로컬 파일만 읽으며 다른 서비스의 키와 부모 환경의 알려진 앱 설정이 섞이는 것을 막는다. 아래 직접 Uvicorn/셸 로딩 명령은 기존 호환 경로로 유지되며 새 launcher의 필터는 적용되지 않는다.
+
 SecurityLab은 `.env`를 애플리케이션 코드에서 자동 로드하지 않는다. 비밀을 한 파일에 모아 모든 VM에 복사하지 말고 `.env.target`, `.env.worker`, `.env.controller`를 각 VM에만 만든다. 세 파일은 Git에 커밋하지 않는다.
 
 ## target VM

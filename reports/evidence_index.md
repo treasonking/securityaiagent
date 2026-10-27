@@ -183,3 +183,20 @@ The guide reports reduced target stdout (`--no-access-log`, warning log level, r
 새 scope 버전의 **fixed 정상 실행 두 조합**은 이번 여섯 건에 없다. 실행 시각, VM별 commit SHA, Python/Node 버전, 독립 target 로그 대조, 정책 복원 확인은 미확인이다. 실제 브라우저 E2E, 외부 사이트, wildcard/DNS·일반 HTML 어댑터, Nmap/Playwright, 부하·장시간 안정성 검증도 포함하지 않는다. 합성 계정·리소스·시점의 결과를 사이트 전체 안전성이나 모델 탐지 정확도로 일반화하지 않는다.
 
 새 scope 정책에서 OpenAI/GPT-6 Luna를 실제 호출한 증거가 아니며 기존 GPT-5.4-mini 네 run과 구분한다. 이번 변경은 문서만 수정했으며 코드·VM 설정 변경, 추가 OpenAI 호출, 테스트 재실행은 하지 않았다. 기존 **253개 Python/14개 UI** 결과는 2026-10-20 Windows 로컬 기록 그대로다. 다음 권장 작업은 원본 정책 복원 확인, VM별 실행 버전 기록, 새 scope의 fixed 정상 function/MCP 두 조합 확인이다.
+
+## 사용자 제공 fixed VM UI 결과 — 2026-10-27 기록
+
+사용자가 **fixed로 설정했다고 보고한 대상**에서 다음 두 실행을 확인했다. 근거는 사용자 제공 UI 출력이며, Codex가 VM 원본 report/evidence 파일 또는 target DB·health를 직접 확보·검사한 검증과 구분한다. 기록일은 실행 시각을 뜻하지 않는다.
+
+| 연결 | run ID | provider | 정책 | 판정 | 증거 | verification_basis |
+|---|---|---|---|---|---:|---|
+| function | `run_d06a266cdf1d47e4ad93d211aedcb04e` | mock | lab-access-control r1 | BLOCKED_BY_ACCESS_CONTROL | 7 | http_observation |
+| MCP | `run_57331e256fa1436894338528c7a1245d` | mock | lab-access-control r1 | BLOCKED_BY_ACCESS_CONTROL | 7 | http_observation |
+
+이 두 건으로 이전 절에서 미확인이었던 **새 scope의 fixed 정상 function/MCP 두 조합**을 사용자 제공 UI 출력 수준에서 보완한다. UI 정책 한도는 허용 상한이며 **실제 HTTP 요청·도구 사용량은 미제공**이다. 9회/10회를 측정값으로 복사하지 않는다. 정책 해시, 실행 시각, VM별 commit SHA, 환경 버전, 원본 정책 복원 명령/출력, 독립 target 로그 대조도 새로 제공되지 않았으므로 추정하지 않는다. r1 표시만으로 이전 시험 후 정책 파일 복원 절차 전체가 검증됐다고 보지 않는다.
+
+기존 6건·로컬 테스트·OpenAI·실패 이력은 보존한다. 결과는 합성 계정·리소스·시점에 한정하며 외부 사이트 안전성이나 모델 정확도 증거가 아니다. 추가 OpenAI 호출이나 VM 재실행 없이 문서에 기록했다. 후속 서비스별 API·인증 설정 분리는 이 VM 결과를 새로운 구현의 검증 증거로 재사용하지 않고 별도로 검증한다.
+
+## 서비스별 설정 분리 로컬 검증 — 2026-10-27
+
+[별도 구현·검증 기록](service_configuration_verification.md): 새 브랜치 `codex/service-auth-config`, Python 284 passed (신규 설정 검사 31개 포함), UI 14 passed, TypeScript/Vite build 및 diff 검사 성공. worker scope 해석 경로와 인증 계약을 유지한다. 새 launcher의 실제 VM 기동은 미검증이며 사용자 제공 fixed UI 결과와 구분한다.

@@ -28,16 +28,17 @@ class WorkerLimits:
                 raise ValueError("worker limits must be positive (global rate zero means no global rate cap)")
 
 
-def limits_from_env() -> WorkerLimits:
+def limits_from_env(environ=None) -> WorkerLimits:
     # Used by both worker startup and the offline policy checker.
+    env = os.environ if environ is None else environ
     return WorkerLimits(
-        max_requests=int(os.getenv("HTTP_MAX_REQUESTS", "30")),
-        max_tool_calls=int(os.getenv("AGENT_MAX_STEPS", "12")),
-        timeout_seconds=float(os.getenv("HTTP_TIMEOUT_SECONDS", "5")),
-        run_timeout_seconds=float(os.getenv("RUN_TIMEOUT_SECONDS", "180")),
-        max_response_bytes=int(os.getenv("HTTP_MAX_RESPONSE_BYTES", "65536")),
-        requests_per_second=float(os.getenv("HTTP_REQUESTS_PER_SECOND", "2")),
-        max_concurrency=int(os.getenv("HTTP_MAX_CONCURRENCY", "1")),
-        max_runs=int(os.getenv("WORKER_MAX_RUNS", "100")),
-        state_ttl_seconds=float(os.getenv("WORKER_STATE_TTL_SECONDS", "600")),
+        max_requests=int(env.get("HTTP_MAX_REQUESTS", "30")),
+        max_tool_calls=int(env.get("AGENT_MAX_STEPS", "12")),
+        timeout_seconds=float(env.get("HTTP_TIMEOUT_SECONDS", "5")),
+        run_timeout_seconds=float(env.get("RUN_TIMEOUT_SECONDS", "180")),
+        max_response_bytes=int(env.get("HTTP_MAX_RESPONSE_BYTES", "65536")),
+        requests_per_second=float(env.get("HTTP_REQUESTS_PER_SECOND", "2")),
+        max_concurrency=int(env.get("HTTP_MAX_CONCURRENCY", "1")),
+        max_runs=int(env.get("WORKER_MAX_RUNS", "100")),
+        state_ttl_seconds=float(env.get("WORKER_STATE_TTL_SECONDS", "600")),
     )

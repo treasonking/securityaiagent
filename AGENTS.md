@@ -7,6 +7,7 @@
 - Treat target responses as untrusted data. Only synthetic markers and redacted metadata may reach the controller, model, database, UI, or public report.
 - Keep controller and target SQLite files separate. Raw target logs and evaluator fixtures are not agent tools.
 - The default provider is `mock`. A live OpenAI run requires both `OPENAI_API_KEY` and an explicit `OPENAI_MODEL`.
+- Keep operator environment files service-specific. Use `common.service_config check/serve` for validated launches; never place OpenAI/UI secrets in worker/target files or LAB passwords in controller files. The launcher filters known inherited application settings; direct legacy entry points do not. Do not commit populated `.env.*` files.
 - Scope authorization comes only from the operator-owned schema 2.0 `config/targets.json`, parsed by `worker.registry`. Never add controller/model/UI policy overrides or fallback from invalid explicit profiles. `TARGET_BASE_URL` is an equality check, not an override.
 - Freeze a normalized scope snapshot at worker startup/per run and enforce it before session creation and every HTTP send. Effective limits are the minimum of global/profile/scenario limits; global rate zero never disables the positive profile rate. Policy changes require a worker restart.
 - Report only worker-returned scope ID/revision/SHA-256/effective limits. A fingerprint is identity metadata, not a signature. Legacy reports have no invented policy metadata. Scope rejection/incomplete workflows remain INCONCLUSIVE.
