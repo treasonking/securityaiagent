@@ -47,8 +47,27 @@ Python 전체 회귀: **332 passed, 7 warnings, 200.12초**. 기존 MCP/Pydantic
 
 프런트엔드 `npm test`: **14 passed**. `npm run build`: **성공**. 브라우저 E2E 실행을 의미하지 않는다.
 
+## 사용자 제공 VM 정상 8조합 — 2026-10-30 기록
+
+출처: **사용자 제공 VM UI 및 Controller 재판정 출력**. 아래는 사용자가 실제 VM에서 실행하고 Controller의 저장된 증거로 재판정했다고 제공한 결과다. Codex는 VM 원본 파일을 확보하거나 직접 검사하지 않았으며 VM 재실행도 하지 않았다. 기록일은 실행 시각을 의미하지 않는다.
+
+모두 `mock` / `access-control-http`, `COMPLETED`, `evidence_count=7`, `verdict_matches=true`다. 각 실행의 **실제 사용량**은 HTTP 요청 9회·도구 호출 10회이며 정책 상한 표시를 사용량으로 옮긴 것이 아니다. 설정 모드는 사용자 작업 이력이며 HTTP Verifier 입력이 아니다. 정책 hash, VM별 commit, 실행 시각, 환경 버전은 미제공이다. 원본 증거 파일 링크는 만들지 않았다.
+
+| API / revision | 사용자 설정 모드 | 연결 | run_id | 판정 |
+|---|---|---|---|---|
+| documents r4 | fixed | function | `run_c91a9ac2317d49e18dd0545b325ce6f9` | BLOCKED_BY_ACCESS_CONTROL |
+| documents r4 | fixed | mcp | `run_3b997adb0d194bdd97b9a32e97169346` | BLOCKED_BY_ACCESS_CONTROL |
+| documents r4 | vulnerable | function | `run_d6635b330ff348dfa0e10c7f5fbf0a1e` | VULNERABLE |
+| documents r4 | vulnerable | mcp | `run_67f60df099684b2582dce2ac80f03b4e` | VULNERABLE |
+| records r1 | fixed | function | `run_7139b4e0c56947a290048efa451b1079` | BLOCKED_BY_ACCESS_CONTROL |
+| records r1 | fixed | mcp | `run_8f7031d015384cf38e243f04a24af07c` | BLOCKED_BY_ACCESS_CONTROL |
+| records r1 | vulnerable | function | `run_64945b71f35a4da9b7411462183d02a1` | VULNERABLE |
+| records r1 | vulnerable | mcp | `run_897c1f09f83446fe965bcc7a2800c421` | VULNERABLE |
+
+VM 정상 8조합은 위 사용자 제공 출력 범위에서 확인됐으며, 앞의 Codex 직접 실행 로컬 TCP 16건과 별도 증거다. 이번 갱신은 문서만 변경했으며 테스트와 OpenAI 호출을 재실행하지 않았다. 이전 OpenAI 결과와 실패 이력도 유지한다.
+
 ## 미검증 범위
 
-새 어댑터의 실제 VM 배포·8조합, VM NIC/방화벽, 사용자 브라우저 E2E, OpenAI 실호출·비용·모델 품질, 외부 사이트 적용은 미검증이다. 이번 작업은 OpenAI API를 호출하지 않았다. 기존 사용자 제공 gpt-5.4-mini 네 실행은 기존 API의 역사적 증거이며 새 records 어댑터 검증으로 재사용하지 않는다. Nmap/Playwright는 phase 2로 미구현이다.
+새 어댑터의 **계정 거절·한도 차단 VM 검증**, VM 원본 파일 직접 검사, VM NIC/방화벽, 사용자 브라우저 E2E, 새 어댑터의 OpenAI 실호출·비용·모델 품질, 외부 사이트 적용은 미검증이다. 이번 작업은 OpenAI API를 호출하지 않았다. 기존 사용자 제공 gpt-5.4-mini 네 실행은 기존 API의 역사적 증거이며 새 records 어댑터 검증으로 재사용하지 않는다. Nmap/Playwright는 phase 2로 미구현이다.
 
 지원 범위는 등록된 로컬 합성 대상과 정해진 ID/계정/읽기 동작이다. OAuth, refresh token, MFA, HTML 폼 로그인, CSRF 흐름, pagination, 임의 API schema 또는 임의 웹사이트를 지원한다고 주장하지 않는다. 운영자 설정·VM별 명령은 [target_api_adapters.md](../docs/target_api_adapters.md)에 있다.

@@ -1,5 +1,11 @@
 # Evidence index
 
+## 사용자 제공 API 어댑터 VM 8조합 — 2026-10-30 기록
+
+출처는 **사용자 제공 VM UI 및 Controller 재판정 출력**이다. documents r4 / records r1 × fixed/vulnerable × function/MCP 정상 8건의 run ID와 판정을 [VM 결과 표](api_adapter_verification.md#사용자-제공-vm-정상-8조합--2026-10-30-기록)에 기록했다. 모두 mock / access-control-http, COMPLETED, evidence_count=7, verdict_matches=true이며 실제 사용량은 각 HTTP 9회·도구 10회다. 정책 상한과 구분한다.
+
+설정 모드는 사용자 작업 이력이며 HTTP Verifier 입력이 아니다. Codex는 VM 원본 파일을 확보·검사하지 않았으므로 파일 증거 링크는 없다. 정책 hash, VM별 commit, 실행 시각, 환경 버전은 미제공이며 기록일을 실행일로 간주하지 않는다. 기존 로컬 TCP 16건·이전 OpenAI·실패 이력을 보존한다. 새 어댑터의 계정 거절·한도 차단 VM 검증, 원본 직접 검사 및 외부 사이트 적용은 여전히 미검증이다.
+
 ## Codex 직접 실행 — API 어댑터 로컬 검증, 2026-10-27
 
 [API 어댑터 검증 보고서](api_adapter_verification.md)와 [16건 원본 행렬](api_adapters/matrix-f36d4e7ff64b.json)에 documents/records × vulnerable/fixed × function/MCP의 정상 8건과 두 API의 계정·한도 거절 8건을 추가했다. provider는 모두 mock이며 HTTP 관찰만 사용했다. 정상 8건은 각 증거 7개·실제 HTTP 9회·도구 10회, 거절은 INCONCLUSIVE다. 모든 행에 정제된 report/evidence 파일이 연결돼 있다. 이는 Codex의 로컬 TCP 검증이며 사용자 VM 출력이나 VM 원본 직접 검증이 아니다. 이전 VM/OpenAI 결과와 실패 이력은 아래 기록을 유지한다.

@@ -1,5 +1,13 @@
 # 검사 대상 웹 API 어댑터
 
+## 검증 현황과 다음 단계 — 2026-10-30 기록
+
+**사용자 제공 VM UI 및 Controller 재판정 출력**으로 documents r4 / records r1 × fixed/vulnerable × function/MCP 정상 8조합을 확인했다. 모두 mock / access-control-http, COMPLETED, 증거 7개, verdict_matches=true이며 실제 사용량은 각 HTTP 9회·도구 10회다. 이는 정책 상한이 아니다. [8건의 run ID와 판정](../reports/api_adapter_verification.md#사용자-제공-vm-정상-8조합--2026-10-30-기록)은 기존 로컬 TCP 16건과 구분했다.
+
+설정 모드는 사용자의 작업 이력이며 HTTP Verifier 입력이 아니다. Codex는 VM 원본 파일을 확보·검사하거나 재실행하지 않았다. 정책 hash, VM별 commit, 실행 시각, 환경 버전은 미제공으로 남긴다. 기록일은 실행일이 아니다.
+
+다음 단계는 운영자가 두 API에서 계정 거절·한도 차단을 VM으로 확인하고, 가능하면 정책 hash·배포 commit·실행 시각·환경 버전과 정제된 Controller 증거를 함께 제공하는 것이다. 이 음성 대조군의 새 어댑터 VM 검증은 아직 미검증이다. VM NIC/방화벽, 브라우저 E2E, 새 어댑터 OpenAI 실호출 및 외부 사이트 적용도 미검증으로 유지한다. 아래 절차는 재현·후속 검증용이며 이번 문서 갱신에서 실행하지 않았다.
+
 `codex/target-api-adapters`는 `codex/service-auth-config`의 `ac1e00f`에서 시작했다. 서비스별 환경 파일과 검증 launcher를 유지하면서, 검사 대상의 로그인·세션·리소스 구조를 운영자 JSON 설정으로 분리했다. 같은 `access-control-http` engine·worker·verifier를 function과 MCP가 공유한다. 검사 코드 수정 없이 아래 설정 쌍을 선택한다.
 
 | 선택 | 기본 documents | 두 번째 records |
