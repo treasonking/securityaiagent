@@ -66,6 +66,8 @@ Linux VM에서는 `.venv/bin/python`을 사용한다.
 
 ## 설정
 
+로컬 OpenAPI JSON에서 접근 통제 검사 **후보를 추출**하는 오프라인 운영자 CLI를 제공한다. 후보는 취약점이나 실행 승인이 아니며 자동 실행하지 않는다. [명령과 지원 범위](docs/openapi_candidate_import.md), [검증 결과](reports/openapi_candidate_verification.md)를 참고한다.
+
 검사 대상의 로그인·쿠키/Bearer 인증·목록·상세 응답 구조는 이제 운영자 API 어댑터로 선택한다. 기본 documents와 중첩 JSON records API를 같은 HTTP 검사 흐름으로 실행한다. [어댑터 설정 및 VM별 업데이트·실행 명령](docs/target_api_adapters.md), [로컬 8조합 및 거절 검증 결과](reports/api_adapter_verification.md)를 참고한다.
 
 서비스별 `.env.controller.example`, `.env.worker.example`, `.env.target.example`을 각 VM의 해당 환경 파일로 복사하고 비밀값을 로컬에서 채운다. `python -m common.service_config check worker`는 네트워크 없이 검사하고, `serve worker`는 선택한 worker 파일만 전달하여 실행한다. controller/target도 같은 형식을 사용한다. [서비스별 API·인증 설정과 이전 절차](docs/service_configuration.md)를 참고한다. 기존 직접 Uvicorn/CLI 실행은 호환되지만 새 launcher의 파일 검사·환경 필터를 거치지 않는다.

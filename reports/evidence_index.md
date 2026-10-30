@@ -1,5 +1,9 @@
 # Evidence index
 
+## Codex 직접 실행 — OpenAPI 후보 importer, 2026-10-31
+
+[별도 검증 보고서](openapi_candidate_verification.md)에 documents/records 합성 명세의 오프라인 CLI 결과와 신규 입력 경계·부작용 감시 시험을 기록했다. 각각 상세 후보 1건이며 NOT_EXECUTED다. 명세 추출은 네트워크·모델·취약점 검증을 수행하지 않는다. 기존 로컬 TCP·사용자 제공 VM·OpenAI 결과와 별개이며 기존 증거와 실패 이력을 보존한다.
+
 ## 사용자 제공 API 어댑터 VM 8조합 — 2026-10-30 기록
 
 출처는 **사용자 제공 VM UI 및 Controller 재판정 출력**이다. documents r4 / records r1 × fixed/vulnerable × function/MCP 정상 8건의 run ID와 판정을 [VM 결과 표](api_adapter_verification.md#사용자-제공-vm-정상-8조합--2026-10-30-기록)에 기록했다. 모두 mock / access-control-http, COMPLETED, evidence_count=7, verdict_matches=true이며 실제 사용량은 각 HTTP 9회·도구 10회다. 정책 상한과 구분한다.
