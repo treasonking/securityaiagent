@@ -100,10 +100,20 @@ class Resolver:
                 if k not in {'description', 'summary', 'example', 'examples', 'default', 'externalDocs'} and not k.startswith('x-')}
 
 
+def schema_type(schema, expected):
+    """Only an unambiguous, non-nullable primitive/container declaration is supported."""
+    return (isinstance(schema, dict) and schema.get('type') == expected
+            and schema.get('nullable', False) is False
+            and (expected == 'object' or 'properties' not in schema)
+            and (expected == 'array' or 'items' not in schema))
+
+
 def field(schema, selector):
     for key in selector.split('.'):
-        schema = schema.get('properties', {}).get(key, {}) if isinstance(schema, dict) else {}
-    return schema
+        if not schema_type(schema, 'object') or not isinstance(schema.get('properties'), dict):
+            return {}
+        schema = schema['properties'].get(key, {})
+    return schema if isinstance(schema, dict) else {}
 
 
 def response_schema(operation):
@@ -134,6 +144,35 @@ def auth_matches(doc, item, operation, adapter):
         return False
     return (scheme.get('type') == 'http' and scheme.get('scheme') == 'bearer') if adapter.auth_mode == 'bearer' else (
         scheme.get('type') == 'apiKey' and scheme.get('in') == 'cookie' and scheme.get('name') == adapter.cookie_name)
+
+
+def anonymous_login_supported(doc, operation):
+    """Login supplies no prior credentials. Validate every OR/AND branch before accepting anonymity."""
+    security = operation.get('security', doc.get('security', []))
+    if not isinstance(security, list):
+        return False
+    components = doc.get('components', {})
+    schemes = components.get('securitySchemes', {}) if isinstance(components, dict) else None
+    if not isinstance(schemes, dict):
+        return False
+    for alternative in security:
+        if not isinstance(alternative, dict):
+            return False
+        for name, scopes in alternative.items():
+            scheme = schemes.get(name)
+            if scopes != [] or not isinstance(scheme, dict):
+                return False
+            if scheme.get('type') == 'apiKey':
+                if scheme.get('in') not in ('header', 'cookie', 'query') or not isinstance(scheme.get('name'), str) or not scheme['name']:
+                    return False
+            elif scheme.get('type') == 'http':
+                if scheme.get('scheme') not in ('basic', 'bearer'):
+                    return False
+            else:
+                return False
+    # OR is the outer array; schemes within each object are AND. Only an empty
+    # requirement can be satisfied by the credential-free login transport.
+    return not security or {} in security
 
 
 def parameters(item, operation):
@@ -236,29 +275,33 @@ def _analyse(input_path, registry_path, target_id):
             detail = response_schema(op)
             for selector in (adapter.resource_id_field, adapter.owner_field, adapter.visibility_field, adapter.content_field, adapter.content_kind_field):
                 expected_type = 'boolean' if selector == adapter.visibility_field and isinstance(adapter.private_value, bool) else 'string'
-                if field(detail, selector).get('type') != expected_type:
+                if not schema_type(field(detail, selector), expected_type):
                     reasons.append('RESPONSE_MAPPING_UNPROVEN')
                     break
             login_item = paths.get(adapter.routes.login_path, {})
             login = login_item.get('post', {})
             listing_item = paths.get(adapter.routes.list_path, {})
             listing = listing_item.get('get', {})
+            if not anonymous_login_supported(doc, login):
+                reasons.append('LOGIN_AUTH_UNPROVEN')
             login_schema = login.get('requestBody', {}).get('content', {}).get('application/json', {}).get('schema', {})
             list_schema = response_schema(listing)
             array = field(list_schema, adapter.list_field)
             controls = (login and listing and field(login_schema, adapter.login_user_field) and field(login_schema, adapter.login_password_field)
-                        and array.get('type') == 'array' and field(array.get('items', {}), adapter.list_id_field)
-                        and field(array.get('items', {}), adapter.list_owner_field) and field(list_schema, adapter.list_account_field)
+                        and schema_type(array, 'array') and schema_type(array.get('items'), 'object')
+                        and schema_type(field(array.get('items', {}), adapter.list_id_field), 'string')
+                        and schema_type(field(array.get('items', {}), adapter.list_owner_field), 'string')
+                        and schema_type(field(list_schema, adapter.list_account_field), 'string')
                         and auth_matches(doc, listing_item, listing, adapter) and supplied_inputs(listing_item, listing)
                         and not parameters(login_item, login)
                         and not origin_check(doc, login_item, login, origin)[1] and not origin_check(doc, listing_item, listing, origin)[1]
                         and {'user-a', 'user-b'} <= set(profile.scenarios['access-control-http']))
             if adapter.auth_mode == 'bearer':
-                controls = controls and field(response_schema(login), adapter.token_field)
+                controls = controls and schema_type(field(response_schema(login), adapter.token_field), 'string')
             else:
-                controls = controls and login.get('responses', {}).get('200', {}).get('headers', {}).get('Set-Cookie', {}).get('schema', {}).get('type') == 'string'
+                controls = controls and schema_type(login.get('responses', {}).get('200', {}).get('headers', {}).get('Set-Cookie', {}).get('schema', {}), 'string')
             controls = controls and set(login_schema.get('required', [])) <= {adapter.login_user_field, adapter.login_password_field}
-            controls = controls and all(field(login_schema, x).get('type') == 'string' for x in (adapter.login_user_field, adapter.login_password_field))
+            controls = controls and all(schema_type(field(login_schema, x), 'string') for x in (adapter.login_user_field, adapter.login_password_field))
             if not controls:
                 reasons.append('CONTROLS_UNPROVEN')
             if not reasons:

@@ -144,3 +144,106 @@ def test_cli_exclusive_outputs(tmp_path, monkeypatch, capsys):
 def test_local_file_boundary(path):
     with pytest.raises(c.ImportFailure, match='LOCAL_FILE_REQUIRED'):
         c.analyse(path, 'config/targets.json', 'lab-web')
+
+
+@pytest.mark.parametrize('style', ['documents', 'records'])
+@pytest.mark.parametrize('case,ready', [
+    ('explicit-anonymous', True), ('empty-alternative', True), ('anonymous-or-key', True),
+    ('no-security-anywhere', True), ('inherited-anonymous', True),
+    ('api-key', False), ('inherited-session', False), ('inherited-bearer', False), ('and', False), ('or-auth-only', False),
+    ('unknown', False), ('unknown-with-anonymous', False), ('bad-scopes', False),
+    ('nonempty-scopes', False), ('null', False), ('object', False), ('bad-alternative', False),
+    ('invalid-scheme-with-anonymous', False),
+])
+def test_login_security_requirements(tmp_path, style, case, ready):
+    def mutate(spec):
+        login = next(item['post'] for item in spec['paths'].values() if 'post' in item)
+        spec['components']['securitySchemes']['ExtraKey'] = {'type': 'apiKey', 'in': 'header', 'name': 'X-Lab-Key'}
+        declarations = {
+            'explicit-anonymous': [], 'empty-alternative': [{}],
+            'anonymous-or-key': [{'ExtraKey': []}, {}], 'api-key': [{'ExtraKey': []}],
+            'and': [{'ExtraKey': [], 'LabSession': []}],
+            'or-auth-only': [{'ExtraKey': []}, {'LabSession': []}],
+            'unknown': [{'Missing': []}], 'unknown-with-anonymous': [{}, {'Missing': []}],
+            'bad-scopes': [{'ExtraKey': 'secret'}], 'nonempty-scopes': [{'ExtraKey': ['secret']}],
+            'null': None, 'object': {}, 'bad-alternative': [None],
+            'invalid-scheme-with-anonymous': [{}, {'ExtraKey': []}],
+        }
+        if case in ('inherited-session', 'inherited-bearer', 'no-security-anywhere', 'inherited-anonymous'):
+            del login['security']
+            if case != 'inherited-session':
+                # Keep resource/list authentication explicit while changing root login inheritance.
+                for item in spec['paths'].values():
+                    if 'get' in item:
+                        item['get']['security'] = [{'LabSession': []}]
+                if case == 'no-security-anywhere':
+                    del spec['security']
+                elif case == 'inherited-bearer':
+                    spec['components']['securitySchemes']['PriorBearer'] = {'type': 'http', 'scheme': 'bearer'}
+                    spec['security'] = [{'PriorBearer': []}]
+                else:
+                    spec['security'] = []
+        else:
+            login['security'] = declarations[case]
+        if case == 'invalid-scheme-with-anonymous':
+            spec['components']['securitySchemes']['ExtraKey'] = {'type': 'apiKey'}
+    result, _ = run(tmp_path, style, mutate)
+    candidate = result['candidates'][0]
+    assert candidate['status'] == ('READY_FOR_REVIEW' if ready else 'NEEDS_CONFIGURATION')
+    if not ready:
+        assert 'LOGIN_AUTH_UNPROVEN' in candidate['reason_codes']
+    assert 'secret' not in json.dumps(result)
+
+
+def schema_at(schema, selector):
+    for key in selector.split('.'):
+        schema = schema['properties'][key]
+    return schema
+
+
+@pytest.mark.parametrize('style', ['documents', 'records'])
+@pytest.mark.parametrize('role', ['list-id', 'list-owner', 'list-account', 'list-array', 'list-items', 'list-root'])
+@pytest.mark.parametrize('bad', [{'type': 'integer'}, {'type': 'array'}, {}, {'type': ['string', 'null']}, {'type': 'string', 'nullable': True}])
+def test_list_control_schema_types(tmp_path, style, role, bad):
+    adapter = c.load_scope_registry('config/targets.json' if style == 'documents' else 'config/targets.records.json').adapter('lab-web')
+    def mutate(spec):
+        root = c.response_schema(spec['paths'][adapter.routes.list_path]['get'])
+        array = schema_at(root, adapter.list_field)
+        node = {'list-id': lambda: schema_at(array['items'], adapter.list_id_field),
+                'list-owner': lambda: schema_at(array['items'], adapter.list_owner_field),
+                'list-account': lambda: schema_at(root, adapter.list_account_field),
+                'list-array': lambda: array, 'list-items': lambda: array['items'], 'list-root': lambda: root}[role]()
+        # Preserve properties/items to test contradictory containers, not just missing fields.
+        node.pop('type', None)
+        node.update(bad)
+        if role == 'list-array' and bad == {'type': 'array'}:
+            # An array remains valid with type=array; add contradictory object
+            # structure so this negative case actually changes the contract.
+            node['properties'] = {}
+    result, _ = run(tmp_path, style, mutate)
+    assert result['candidates'][0]['status'] == 'NEEDS_CONFIGURATION'
+    assert 'CONTROLS_UNPROVEN' in result['candidates'][0]['reason_codes']
+
+
+@pytest.mark.parametrize('role', ['token', 'token-parent', 'list-parent', 'owner-parent'])
+@pytest.mark.parametrize('bad', [{'type': 'integer'}, {'type': 'array'}, {}, {'type': ['string', 'null']}, {'type': 'string', 'nullable': True}])
+def test_records_nested_types(tmp_path, role, bad):
+    def mutate(spec):
+        login = c.response_schema(spec['paths']['/api/session']['post'])
+        listing = c.response_schema(spec['paths']['/api/me/records']['get'])
+        node = {'token': lambda: schema_at(login, 'session.access_token'),
+                'token-parent': lambda: schema_at(login, 'session'),
+                'list-parent': lambda: schema_at(listing, 'data'),
+                'owner-parent': lambda: schema_at(schema_at(listing, 'data.items')['items'], 'owner')}[role]()
+        node.pop('type', None)
+        node.update(bad)
+    result, _ = run(tmp_path, 'records', mutate)
+    assert result['candidates'][0]['status'] == 'NEEDS_CONFIGURATION'
+
+
+@pytest.mark.parametrize('bad', [{'type': 'integer'}, {'type': 'array'}, {}, {'type': ['string', 'null']}, {'type': 'string', 'properties': {}}])
+def test_cookie_response_type(tmp_path, bad):
+    def mutate(spec):
+        spec['paths']['/login']['post']['responses']['200']['headers']['Set-Cookie']['schema'] = bad
+    result, _ = run(tmp_path, 'documents', mutate)
+    assert result['candidates'][0]['status'] == 'NEEDS_CONFIGURATION'

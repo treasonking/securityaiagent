@@ -1,5 +1,24 @@
 # OpenAPI 후보 importer 검증 — 2026-10-31
 
+## 검토 보완 — 로그인 요구사항 및 대조군 타입
+
+검토 기준 `fd86c33`에서 로그인 자체의 security를 검사하지 않아 추가 API 키·root 인증 상속을 준비 완료로 분류했고, 일부 토큰·목록 필드는 존재 여부만 검사했다. 로그인 operation/root 우선순위 및 익명 OR 대안 해석, 모든 보안 분기 구조 검사와 고정 reason code를 추가했다. 토큰·목록 ID/소유자/계정의 string 및 부모 object/목록 array 구조를 강제했다. 후보 schema·구조 ID·Scope 권한·실행 엔진은 변경하지 않았다.
+
+최종 집중 검사: `.\.venv\Scripts\python.exe -m pytest tests/test_candidates.py --tb=short` → **164 passed, 3.86초**. 두 API의 추가 API 키·root Bearer 상속·익명/OR/AND·잘못된 security/scopes, records 토큰 및 양 API의 목록 타입·중첩 구조, cookie 응답 타입을 검사했다. 기존 socket/HTTP/OpenAI/subprocess/Uvicorn/SQLite 부작용 감시를 유지했다. 수정 전 새 시험에서 잘못된 READY 분류를 재현한 뒤 수정했으며, 정상 array를 음성 입력으로 취급했던 테스트 조합도 모순된 객체 구조를 명시하도록 바로잡았다.
+
+기본 CLI를 기존 결과를 덮어쓰지 않는 새 임시 경로로 재실행했다:
+
+```powershell
+.\.venv\Scripts\python.exe -m controller.candidates import-openapi --input examples/openapi/documents.json --registry config/targets.json --target lab-web --output verification_tmp/review-fixes-documents.json
+.\.venv\Scripts\python.exe -m controller.candidates import-openapi --input examples/openapi/records.json --registry config/targets.records.json --target lab-web --output verification_tmp/review-fixes-records.json
+```
+
+각각 후보 1건, READY_FOR_REVIEW / NOT_EXECUTED를 유지했다. candidate ID도 기존 documents `6b1a0af20067f1610b3cba91f505f21b246128a85fc3099ef6315fafe72b6928`, records `38eae30a50bfb3b8b5cebc483cd96e63b9cd712af75c798eecf59f0413273b89`와 같다. source_sha256은 원본 bytes digest이며 OS 개행 변화에도 달라질 수 있어 구조 ID 안정성과 별개다. 임시 출력은 Git에 포함하지 않으며 기존 저장된 후보 예제는 유지했다.
+
+최종 전체 회귀 `.\.venv\Scripts\python.exe -m pytest --tb=short`: **496 passed, 7 warnings, 178.86초**. 기존 MCP/Pydantic 의존성 경고이며 실패는 없었다. 위 집중 검사와 동일한 최종 코드로 실행했다. 프런트엔드 `npm run build`도 성공했다. 전체 회귀의 기존 로컬 TCP·임시 DB 테스트 외에 VM·기존 환경파일·DB 변경·유료 모델·외부 서비스 테스트는 수행하지 않았다. 이전 TCP·VM 증거를 이 검사의 증거로 재사용하지 않는다. 아래 최초 구현의 검사 수는 당시 이력이며 이번 수치와 합산하지 않는다.
+
+## 최초 구현 이력
+
 기준 `codex/target-api-adapters`의 최신 원격 `bb39b1d`를 fetch·대조한 뒤 `codex/openapi-candidate-import`에서 작업했다. 로컬 Windows, Python 3.12.14, Node v22.18.0 및 기존 잠금 의존성을 사용했으며 새 의존성은 없다. VM 설정·실제 환경파일·기존 DB는 수정하지 않았다.
 
 ## 직접 실행한 오프라인 CLI
