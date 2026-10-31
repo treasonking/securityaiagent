@@ -1,5 +1,9 @@
 # Evidence index
 
+## Codex 직접 실행 — 후보 preview/run, 2026-11-01
+
+[신규 경로 검증 보고서](candidate_execution_verification.md)와 [새 TCP 8조합 행렬](candidate_execution/matrix-948a35b72598.json)을 추가했다. 두 API × vulnerable/fixed × function/MCP를 후보 재분석→Worker 정책 preview→digest 확인→기존 엔진으로 실행했다. 각 preview target 0회, 정상 run target 9회·도구 10회·증거 7개·저장 증거 재판정 일치다. 정제된 plan과 기존 report/evidence에 연결 정보를 별도 보관한다. 이전 로컬/VM/OpenAI 결과를 재사용하지 않았으며 신규 VM 배포는 미검증이다.
+
 ## Codex 직접 실행 — OpenAPI 후보 importer, 2026-10-31
 
 [별도 검증 보고서](openapi_candidate_verification.md)에 documents/records 합성 명세의 오프라인 CLI 결과와 신규 입력 경계·부작용 감시 시험을 기록했다. 각각 상세 후보 1건이며 NOT_EXECUTED다. 명세 추출은 네트워크·모델·취약점 검증을 수행하지 않는다. 기존 로컬 TCP·사용자 제공 VM·OpenAI 결과와 별개이며 기존 증거와 실패 이력을 보존한다.

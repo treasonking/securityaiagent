@@ -66,6 +66,8 @@ Linux VM에서는 `.venv/bin/python`을 사용한다.
 
 ## 설정
 
+후보 하나를 선택하고 Worker 정책을 확인한 뒤, digest를 명시해 기존 mock 검사를 실행하는 [후보 preview/run CLI](docs/candidate_preview_run.md)를 제공한다. 미리보기는 실행이나 취약점 판정이 아니며 [별도 검증 결과](reports/candidate_execution_verification.md)를 기록했다.
+
 로컬 OpenAPI JSON에서 접근 통제 검사 **후보를 추출**하는 오프라인 운영자 CLI를 제공한다. 후보는 취약점이나 실행 승인이 아니며 자동 실행하지 않는다. [명령과 지원 범위](docs/openapi_candidate_import.md), [검증 결과](reports/openapi_candidate_verification.md)를 참고한다.
 
 검사 대상의 로그인·쿠키/Bearer 인증·목록·상세 응답 구조는 이제 운영자 API 어댑터로 선택한다. 기본 documents와 중첩 JSON records API를 같은 HTTP 검사 흐름으로 실행한다. [어댑터 설정 및 VM별 업데이트·실행 명령](docs/target_api_adapters.md), [로컬 8조합 및 거절 검증 결과](reports/api_adapter_verification.md)를 참고한다.

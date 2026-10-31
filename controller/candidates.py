@@ -226,7 +226,7 @@ def _analyse(input_path, registry_path, target_id):
     registry = load_scope_registry(local_path(registry_path))
     profile, adapter = registry.profile(target_id), registry.adapter(target_id)
     origin = registry.policies[target_id].base_url
-    config_hash = digest(canonical({'origin': origin, 'profile': profile.normalized(), 'adapter': adapter.model_dump(mode='json')}))
+    config_hash = registry.config_digest(target_id)
     candidates, excluded, operations = [], {}, 0
     for path, item in sorted(paths.items()):
         if not isinstance(item, dict):

@@ -19,3 +19,4 @@ frontend/vite.config.d.ts
 reports/runs/
 
 verification_tmp/
+data/candidate_plans/

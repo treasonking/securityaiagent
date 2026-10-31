@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
@@ -49,6 +50,11 @@ class ScopeRegistry:
 
     def adapter(self, target_id: str) -> ApiAdapter:
         return ApiAdapter.model_validate(json.loads(self.adapters_json[target_id]))
+
+    def config_digest(self, target_id: str) -> str:
+        value = {'origin': self.policies[target_id].base_url, 'profile': self.profile(target_id).normalized(),
+                 'adapter': self.adapter(target_id).model_dump(mode='json')}
+        return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()).hexdigest()
 
     def credentials(self, environ) -> dict[str, tuple[str, str]]:
         adapter = self.adapter("lab-web")

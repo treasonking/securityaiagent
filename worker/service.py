@@ -18,6 +18,7 @@ from worker.policy import PolicyViolation, TargetPolicy
 from worker.limits import WorkerLimits
 from worker.registry import ScopeRegistry, load_scope_registry
 from worker.scope import ScopeSnapshot, ScopeViolation
+from worker.candidate_policy import CONTRACT
 
 
 _MARKER = re.compile(r"^SYN-[A-Z]+-(?:PRIVATE-)?[0-9]{3}$")
@@ -51,6 +52,7 @@ class _RunState:
     target_id: str | None = None
     scope: ScopeSnapshot | None = None
     failed: bool = False
+    candidate_snapshot: str | None = None
 
 
 class ToolService:
@@ -87,7 +89,8 @@ class ToolService:
             *(self.registry.profile(key).limits.max_concurrency for key in self.registry.policies),
         ))
 
-    async def _state(self, run_id: str, *, create: bool = False, scope: ScopeSnapshot | None = None) -> _RunState:
+    async def _state(self, run_id: str, *, create: bool = False, scope: ScopeSnapshot | None = None,
+                     candidate_snapshot: str | None = None) -> _RunState:
         if not run_id or len(run_id) > 128:
             raise PolicyViolation("invalid run_id")
         async with self._runs_lock:
@@ -107,10 +110,13 @@ class ToolService:
                 if len(self._runs) >= scope.limits.max_runs:
                     raise ScopeViolation("SCOPE_LIMIT_EXCEEDED", "worker run queue limit exceeded")
                 state = _RunState(run_id=run_id, started_monotonic=time.monotonic(), scope=scope,
-                                  target_id=scope.target.target_id, scenario_id=scope.scenario_id)
+                                  target_id=scope.target.target_id, scenario_id=scope.scenario_id,
+                                  candidate_snapshot=candidate_snapshot)
                 self._runs[run_id] = state
             if state is None:
                 raise PolicyViolation("run is not initialized")
+            if create and state.candidate_snapshot != candidate_snapshot:
+                raise ScopeViolation('CANDIDATE_BINDING_REQUIRED', 'run policy binding cannot change')
             return state
 
     def _check_run(self, state: _RunState) -> None:
@@ -330,14 +336,25 @@ class ToolService:
         return ToolResult(run_id=run_id, **kwargs)
 
     async def start_session(self, run_id: str, target_id: str, account_ref: str,
-                            scenario_id: ScenarioId = "access-control") -> ToolResult:
+                            scenario_id: ScenarioId = "access-control", *,
+                            expected_snapshot_sha256: str | None = None,
+                            candidate_contract: str | None = None) -> ToolResult:
         try:
             existing = self._runs.get(run_id)
             scope = existing.scope if existing else self.registry.snapshot(target_id, scenario_id, self.limits)
+            if expected_snapshot_sha256 is not None or candidate_contract is not None:
+                if (candidate_contract != CONTRACT or scenario_id != 'access-control-http'
+                        or not isinstance(expected_snapshot_sha256, str)
+                        or not re.fullmatch(r'[0-9a-f]{64}', expected_snapshot_sha256)):
+                    raise ScopeViolation('CANDIDATE_BINDING_REQUIRED', 'candidate policy binding is invalid')
+                if expected_snapshot_sha256 != scope.snapshot_sha256:
+                    raise ScopeViolation('CANDIDATE_POLICY_CHANGED', 'worker snapshot differs from preview')
+            if existing and existing.candidate_snapshot != expected_snapshot_sha256:
+                raise ScopeViolation('CANDIDATE_BINDING_REQUIRED', 'run policy binding cannot change')
             if scope.target.target_id != target_id or scope.scenario_id != scenario_id:
                 raise ScopeViolation("SCOPE_SESSION_DENIED", "run target or scenario mismatch")
             scope.authorize(account_ref, "login")
-            state = await self._state(run_id, create=True, scope=scope)
+            state = await self._state(run_id, create=True, scope=scope, candidate_snapshot=expected_snapshot_sha256)
             self._check_run(state)
             if state.scope != scope:
                 raise ScopeViolation("SCOPE_SESSION_DENIED", "concurrent run scope mismatch")

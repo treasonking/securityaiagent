@@ -17,6 +17,7 @@ from worker.registry import load_scope_registry
 from worker.limits import limits_from_env
 from worker.scope import ScopeViolation
 from worker.service import ToolService
+from worker.candidate_policy import CandidatePolicy, policy_for
 
 
 class StartSessionRequest(BaseModel):
@@ -25,6 +26,8 @@ class StartSessionRequest(BaseModel):
     target_id: str
     account_ref: str
     scenario_id: ScenarioId = "access-control"
+    expected_snapshot_sha256: str | None = None
+    candidate_contract: str | None = None
 
 
 class ListDocumentsRequest(BaseModel):
@@ -93,7 +96,15 @@ def build_worker_app(
 
     @api.post("/v1/tools/start-session", response_model=ToolResult, dependencies=[Depends(authenticate)])
     async def start_session(payload: StartSessionRequest) -> ToolResult:
-        return await service.start_session(payload.run_id, payload.target_id, payload.account_ref, payload.scenario_id)
+        return await service.start_session(payload.run_id, payload.target_id, payload.account_ref, payload.scenario_id,
+            expected_snapshot_sha256=payload.expected_snapshot_sha256, candidate_contract=payload.candidate_contract)
+
+    @api.get('/v1/operator/candidate-policy', response_model=CandidatePolicy, dependencies=[Depends(authenticate)])
+    async def candidate_policy() -> CandidatePolicy:
+        try:
+            return policy_for(service)
+        except ScopeViolation:
+            raise HTTPException(status_code=409, detail='candidate policy unavailable') from None
 
     @api.post("/v1/tools/list-own-documents", response_model=ToolResult, dependencies=[Depends(authenticate)])
     async def list_own_documents(payload: ListDocumentsRequest) -> ToolResult:
@@ -131,9 +142,11 @@ def build_worker_app(
     )
 
     @mcp.tool()
-    async def start_session(run_id: str, target_id: str, account_ref: str, scenario_id: ScenarioId = "access-control") -> dict[str, Any]:
+    async def start_session(run_id: str, target_id: str, account_ref: str, scenario_id: ScenarioId = "access-control",
+                            expected_snapshot_sha256: str | None = None, candidate_contract: str | None = None) -> dict[str, Any]:
         """Start one opaque synthetic-account session for a registered target."""
-        return (await service.start_session(run_id, target_id, account_ref, scenario_id)).model_dump(mode="json")
+        return (await service.start_session(run_id, target_id, account_ref, scenario_id,
+            expected_snapshot_sha256=expected_snapshot_sha256, candidate_contract=candidate_contract)).model_dump(mode="json")
 
     @mcp.tool()
     async def list_own_documents(run_id: str, target_id: str, session_ref: str) -> dict[str, Any]:
