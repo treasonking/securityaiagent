@@ -1,0 +1,216 @@
+[
+  {
+    "evidence_id": "ev_d30d413e878243e6aa923746a081d979",
+    "run_id": "adapter-e7e0cecfcc9d436ba805c7f2e0c3ebb4",
+    "method": "GET",
+    "path": "/api/me/records",
+    "status_code": 200,
+    "account_ref": "user-a",
+    "request_id": "4c548982-0201-40be-be4b-c548c2e231b2",
+    "synthetic_document_marker": null,
+    "body_hash": "d47cad2772c19493302ded0a6d36131b40ac67435b726e154f43442267fd68f4",
+    "server_observation": "http_observation",
+    "purpose": "http-list-user-a",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/api/session",
+        "list_path": "/api/me/records",
+        "detail_path": "/api/records/{document_id}"
+      },
+      "session_binding": "d8df490add0cebfef69c87d3e006b97faa01a9e3a42e3c1b665424c43fc26f87",
+      "authenticated_account": "user-a",
+      "response_kind": "document_list",
+      "document_id": null,
+      "owner_ref": "user-a",
+      "listed_document_ids": [
+        "doc-a-001"
+      ],
+      "private_canary_digest": null,
+      "canary_present": false
+    },
+    "created_at": "2026-11-04T12:49:47.367846+00:00"
+  },
+  {
+    "evidence_id": "ev_c8a23184aa0840cc82bf4b200443c309",
+    "run_id": "adapter-e7e0cecfcc9d436ba805c7f2e0c3ebb4",
+    "method": "GET",
+    "path": "/api/me/records",
+    "status_code": 200,
+    "account_ref": "user-b",
+    "request_id": "29c377e9-20d3-403e-b3cb-e37a24a9d05a",
+    "synthetic_document_marker": null,
+    "body_hash": "eb3f2d75667829489cd0b4e8d6eb8fd7aeef264edbd3491f3dfbc52a15601cc6",
+    "server_observation": "http_observation",
+    "purpose": "http-list-user-b",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/api/session",
+        "list_path": "/api/me/records",
+        "detail_path": "/api/records/{document_id}"
+      },
+      "session_binding": "847be4fb1e087bd57077882b572f09a752c8163d7a1b6945179a7195e83115d3",
+      "authenticated_account": "user-b",
+      "response_kind": "document_list",
+      "document_id": null,
+      "owner_ref": "user-b",
+      "listed_document_ids": [
+        "doc-b-001"
+      ],
+      "private_canary_digest": null,
+      "canary_present": false
+    },
+    "created_at": "2026-11-04T12:49:47.862229+00:00"
+  },
+  {
+    "evidence_id": "ev_3979ce9a69654485bcada491319f1fe7",
+    "run_id": "adapter-e7e0cecfcc9d436ba805c7f2e0c3ebb4",
+    "method": "GET",
+    "path": "/api/records/doc-a-001",
+    "status_code": 200,
+    "account_ref": "user-a",
+    "request_id": "b3365808-837d-4650-b55c-5b05003dcd83",
+    "synthetic_document_marker": null,
+    "body_hash": "cd4d8f7c4fc78d021a60f0ce310f07f369b638c4aeb0c1744ad193a4519cbd87",
+    "server_observation": "http_observation",
+    "purpose": "http-own-a",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/api/session",
+        "list_path": "/api/me/records",
+        "detail_path": "/api/records/{document_id}"
+      },
+      "session_binding": "d8df490add0cebfef69c87d3e006b97faa01a9e3a42e3c1b665424c43fc26f87",
+      "authenticated_account": "user-a",
+      "response_kind": "private_document",
+      "document_id": "doc-a-001",
+      "owner_ref": "user-a",
+      "listed_document_ids": [],
+      "private_canary_digest": "7fa04f6bc293b2cd76d0b94c369891233c708ce998906d44708d39e0d5739f32",
+      "canary_present": true
+    },
+    "created_at": "2026-11-04T12:49:48.360005+00:00"
+  },
+  {
+    "evidence_id": "ev_68e5761583d54135a02783336a8018f0",
+    "run_id": "adapter-e7e0cecfcc9d436ba805c7f2e0c3ebb4",
+    "method": "GET",
+    "path": "/api/records/doc-b-001",
+    "status_code": 200,
+    "account_ref": "user-b",
+    "request_id": "42eeade5-e036-4421-a85c-6fc0e1e78ca1",
+    "synthetic_document_marker": null,
+    "body_hash": "0a3c01e47452169236e601aa5807d3d33d81145eef6b151d4a95879ec21f6e24",
+    "server_observation": "http_observation",
+    "purpose": "http-own-b",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/api/session",
+        "list_path": "/api/me/records",
+        "detail_path": "/api/records/{document_id}"
+      },
+      "session_binding": "847be4fb1e087bd57077882b572f09a752c8163d7a1b6945179a7195e83115d3",
+      "authenticated_account": "user-b",
+      "response_kind": "private_document",
+      "document_id": "doc-b-001",
+      "owner_ref": "user-b",
+      "listed_document_ids": [],
+      "private_canary_digest": "344c7e4172f6ed5c5f00f879a3b5309458c21457855433d4847de5c7df92bbc3",
+      "canary_present": true
+    },
+    "created_at": "2026-11-04T12:49:48.849259+00:00"
+  },
+  {
+    "evidence_id": "ev_de1964bd3e194a36a96b4dc405c03354",
+    "run_id": "adapter-e7e0cecfcc9d436ba805c7f2e0c3ebb4",
+    "method": "GET",
+    "path": "/api/records/doc-b-001",
+    "status_code": 404,
+    "account_ref": "user-a",
+    "request_id": "da54162e-4f1d-478a-a46a-cb5f09646304",
+    "synthetic_document_marker": null,
+    "body_hash": "4bb4ef842d768e6a6039c6f5f146d0ec029a02f24b934829ede74dd527194ea2",
+    "server_observation": "http_observation",
+    "purpose": "http-cross-b",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/api/session",
+        "list_path": "/api/me/records",
+        "detail_path": "/api/records/{document_id}"
+      },
+      "session_binding": "d8df490add0cebfef69c87d3e006b97faa01a9e3a42e3c1b665424c43fc26f87",
+      "authenticated_account": "user-a",
+      "response_kind": "document_denied",
+      "document_id": null,
+      "owner_ref": null,
+      "listed_document_ids": [],
+      "private_canary_digest": null,
+      "canary_present": false
+    },
+    "created_at": "2026-11-04T12:49:49.352847+00:00"
+  },
+  {
+    "evidence_id": "ev_2b21f08b3e50406e92f60115755343e8",
+    "run_id": "adapter-e7e0cecfcc9d436ba805c7f2e0c3ebb4",
+    "method": "GET",
+    "path": "/api/records/doc-b-001",
+    "status_code": 200,
+    "account_ref": "user-b",
+    "request_id": "70d46451-5bac-4803-9803-3d41fb7e267b",
+    "synthetic_document_marker": null,
+    "body_hash": "0a3c01e47452169236e601aa5807d3d33d81145eef6b151d4a95879ec21f6e24",
+    "server_observation": "http_observation",
+    "purpose": "http-recheck-b",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/api/session",
+        "list_path": "/api/me/records",
+        "detail_path": "/api/records/{document_id}"
+      },
+      "session_binding": "847be4fb1e087bd57077882b572f09a752c8163d7a1b6945179a7195e83115d3",
+      "authenticated_account": "user-b",
+      "response_kind": "private_document",
+      "document_id": "doc-b-001",
+      "owner_ref": "user-b",
+      "listed_document_ids": [],
+      "private_canary_digest": "344c7e4172f6ed5c5f00f879a3b5309458c21457855433d4847de5c7df92bbc3",
+      "canary_present": true
+    },
+    "created_at": "2026-11-04T12:49:49.868313+00:00"
+  },
+  {
+    "evidence_id": "ev_219569efc7c04a3e996f2c3e93d8b981",
+    "run_id": "adapter-e7e0cecfcc9d436ba805c7f2e0c3ebb4",
+    "method": "GET",
+    "path": "/api/records/doc-a-001",
+    "status_code": 200,
+    "account_ref": "user-a",
+    "request_id": "c0e139b5-a67d-4cb1-be6b-540dbc9059ad",
+    "synthetic_document_marker": null,
+    "body_hash": "cd4d8f7c4fc78d021a60f0ce310f07f369b638c4aeb0c1744ad193a4519cbd87",
+    "server_observation": "http_observation",
+    "purpose": "http-recheck-a",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/api/session",
+        "list_path": "/api/me/records",
+        "detail_path": "/api/records/{document_id}"
+      },
+      "session_binding": "d8df490add0cebfef69c87d3e006b97faa01a9e3a42e3c1b665424c43fc26f87",
+      "authenticated_account": "user-a",
+      "response_kind": "private_document",
+      "document_id": "doc-a-001",
+      "owner_ref": "user-a",
+      "listed_document_ids": [],
+      "private_canary_digest": "7fa04f6bc293b2cd76d0b94c369891233c708ce998906d44708d39e0d5739f32",
+      "canary_present": true
+    },
+    "created_at": "2026-11-04T12:49:50.346172+00:00"
+  }
+]

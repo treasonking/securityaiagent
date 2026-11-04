@@ -1,0 +1,53 @@
+{
+  "changed_paths": [],
+  "added_paths": [
+    "data/securitylab.sqlite3-shm",
+    "data/securitylab.sqlite3-wal"
+  ],
+  "sqlite_logical_checks": [
+    {
+      "file": "securitylab.sqlite3",
+      "same_as_backup": true
+    },
+    {
+      "file": "target.sqlite3",
+      "same_as_backup": true
+    }
+  ],
+  "non_sqlite_changes": [],
+  "preservation_verified": true,
+  "config_check": {
+    "ok": true,
+    "service": "controller",
+    "network_requests": 0,
+    "configured_settings": [
+      "APP_ACCESS_TOKEN",
+      "APP_SECURE_COOKIE",
+      "APP_SESSION_SECRET",
+      "APP_SESSION_TTL_SECONDS",
+      "CONTROLLER_ALLOWED_CLIENTS",
+      "CONTROLLER_RUN_TIMEOUT_SECONDS",
+      "DATABASE_PATH",
+      "MCP_WORKER_URL",
+      "MODEL_MAX_CALLS",
+      "MODEL_PROVIDER",
+      "OFFLINE_VERIFICATION_TOKEN",
+      "OPENAI_API_KEY",
+      "OPENAI_MODEL",
+      "RUN_MAX_CONCURRENCY",
+      "UI_ALLOWED_HOSTS",
+      "UI_ALLOWED_ORIGINS",
+      "WORKER_TOKEN",
+      "WORKER_URL"
+    ],
+    "configured_secrets": [
+      "APP_ACCESS_TOKEN",
+      "APP_SESSION_SECRET",
+      "OFFLINE_VERIFICATION_TOKEN",
+      "OPENAI_API_KEY",
+      "WORKER_TOKEN"
+    ]
+  },
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "backup": "/home/ubuntu/securityaiagent-backups/20261104T130312Z"
+}

@@ -1,5 +1,9 @@
 # Evidence index
 
+## Codex 직접 VM 배포·실행 — 2026-11-04
+
+[VM 업데이트 보고서](vm_update_20261104.md)에 controller/worker/target의 `793f5ae` → `ef25892` 적용, VM 내부 백업, 기존 환경파일·DB 행·보고서 보존 및 재기동을 기록했다. 기존 records 설정에서 실제 VM mock function/MCP 두 run 모두 COMPLETED / VULNERABLE, 증거 7개·HTTP 9회·도구 10회이며 정제된 원본 report/evidence 재판정도 일치했다. [VM 결과 JSON](vm_update_20261104/vm/vm-tests.json)은 이번 직접 실행 증거다. Windows 로컬 546개 Python·14개 frontend 테스트 및 로컬 TCP 16조합은 별도로 구분한다. 과거 사용자 보고를 이 실행의 증거로 재사용하지 않았다.
+
 ## Codex 직접 실행 — 후보 preview/run, 2026-11-01
 
 [신규 경로 검증 보고서](candidate_execution_verification.md)와 [새 TCP 8조합 행렬](candidate_execution/matrix-948a35b72598.json)을 추가했다. 두 API × vulnerable/fixed × function/MCP를 후보 재분석→Worker 정책 preview→digest 확인→기존 엔진으로 실행했다. 각 preview target 0회, 정상 run target 9회·도구 10회·증거 7개·저장 증거 재판정 일치다. 정제된 plan과 기존 report/evidence에 연결 정보를 별도 보관한다. 이전 로컬/VM/OpenAI 결과를 재사용하지 않았으며 신규 VM 배포는 미검증이다.
