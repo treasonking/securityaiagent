@@ -29,7 +29,7 @@ exit 0: preview 생성 또는 완료된 확정 mock 판정. exit 1: 완료 보�
 
 ## Windows PowerShell
 
-저장소 루트, 기존 서비스별 `.env.controller`를 사용한다. Controller에 LAB 비밀번호를 복사하지 않는다. `WORKER_TOKEN`은 worker와 일치해야 한다. 아래 명령은 운영자가 추후 실행할 명령이며 이번 작업에서 VM에 적용하지 않았다.
+저장소 루트, 기존 서비스별 `.env.controller`를 사용한다. Controller에 LAB 비밀번호를 복사하지 않는다. `WORKER_TOKEN`은 worker와 일치해야 한다. 아래는 재현용 명령 예시이며, 실제 VM에서 확인한 범위와 결과는 문서 끝의 VM 검증 보고서에 구분했다.
 
 ```powershell
 New-Item -ItemType Directory -Force verification_tmp | Out-Null
@@ -80,4 +80,4 @@ documents는 명세를 `examples/openapi/documents.json`, registry를 `config/ta
 4. Controller VM: 기존 `.env.controller`를 유지하고 check 후 위 preview/run CLI를 사용한다. UI 소스는 바꾸지 않았으나 배포 빌드가 필요하면 `frontend`에서 `npm run build`를 수행한다. Controller 프로세스를 사용한다면 자체 check/serve 절차를 따른다.
 5. Target VM: 기존 API style/mode·DB·비밀번호를 유지한다. 두 API/mode 전환이 필요할 때만 기존 [어댑터 절차](target_api_adapters.md)에 따라 운영자가 설정·재시작한다. 이번 기능은 target 변경을 요구하지 않는다.
 
-새 기능의 VM 배포·실행은 **미검증**이다. 로컬 결과·남은 한계는 [검증 보고서](../reports/candidate_execution_verification.md)에 있다. UI 승인 화면·외부 사이트·자율 탐색·새 취약점 유형은 이번 범위에 없다.
+2026-11-05에 기존 records 설정을 유지한 실제 VM function/MCP의 preview → 별도 plan 검토 → digest 명시 run을 검증했다. [VM 직접 실행 보고서](../reports/vm_candidate_verification_20261105.md)에 preview 대상 요청 0회, 실행 정책 연결, 실제 사용량과 증거 재판정, 보존 확인을 기록했다. documents/다른 target 모드/정책 변경 거절을 이번 VM 검증에 포함하지 않았다. 로컬 결과와 이전 한계는 [기존 검증 보고서](../reports/candidate_execution_verification.md)에 보존한다. UI 승인 화면·외부 사이트·자율 탐색·새 취약점 유형은 이 경로의 범위에 없다.

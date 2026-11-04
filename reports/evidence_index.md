@@ -1,5 +1,9 @@
 # Evidence index
 
+## Codex 직접 VM 후보 preview/run — 2026-11-05
+
+[records 후보 VM 검증](vm_candidate_verification_20261105.md)은 `controller.candidate_execution`의 preview → 별도 plan 검토 → digest 명시 run을 function/MCP에서 각각 실제 실행한 증거다. 기존 `controller.cli` 결과로 대체하지 않았다. 두 preview 모두 지정 구간 target 방향 패킷 0·socket drop 0이며, run은 각각 COMPLETED / VULNERABLE, HTTP 9회·도구 10회·증거 7개, 정책 연결·재판정 일치다. 기존 환경·정책·DB 행·이력을 보존하고 새 issued/claimed 4개를 남겼다. 원본 plan·claim·실행 연결·정제 증거·수동 계수 결과를 함께 보관한다.
+
 ## Codex 직접 VM 배포·실행 — 2026-11-04
 
 [VM 업데이트 보고서](vm_update_20261104.md)에 controller/worker/target의 `793f5ae` → `ef25892` 적용, VM 내부 백업, 기존 환경파일·DB 행·보고서 보존 및 재기동을 기록했다. 기존 records 설정에서 실제 VM mock function/MCP 두 run 모두 COMPLETED / VULNERABLE, 증거 7개·HTTP 9회·도구 10회이며 정제된 원본 report/evidence 재판정도 일치했다. [VM 결과 JSON](vm_update_20261104/vm/vm-tests.json)은 이번 직접 실행 증거다. Windows 로컬 546개 Python·14개 frontend 테스트 및 로컬 TCP 16조합은 별도로 구분한다. 과거 사용자 보고를 이 실행의 증거로 재사용하지 않았다.

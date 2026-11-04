@@ -1,0 +1,182 @@
+"""Operator harness for actual VM candidate CLIs; never controller.cli."""
+import contextlib
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import socket
+import sqlite3
+import subprocess
+import sys
+import time
+import uuid
+
+ROOT = Path('/home/ubuntu/securityaiagent')
+STATE = ROOT / 'verification_tmp/candidate_vm_20261105'
+PUBLIC = STATE / 'public'
+PRIVATE = STATE / 'private'
+ROLE = socket.gethostname().removeprefix('security-')
+assert ROLE in {'controller', 'worker', 'target'}
+PUBLIC.mkdir(parents=True, exist_ok=True)
+PRIVATE.mkdir(mode=0o700, exist_ok=True)
+os.chdir(ROOT)
+sys.path.insert(0, str(ROOT))
+from common.service_config import read_config, validate_config, child_environment
+PY = str(ROOT / '.venv/bin/python')
+ACTION = sys.argv[1]
+TRANSPORT = sys.argv[2] if len(sys.argv) > 2 else None
+RESULT = {'role': ROLE, 'action': ACTION, 'ok': False}
+
+def save(name, value):
+    (PUBLIC / name).write_text(json.dumps(value, indent=2))
+
+def hashes():
+    paths = [p for p in ROOT.glob('.env*') if p.is_file()]
+    for folder in ('config', 'reports/runs', 'data/candidate_plans'):
+        paths += [p for p in (ROOT / folder).rglob('*') if p.is_file()]
+    return {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+
+def db_rows(path):
+    with contextlib.closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)) as con:
+        assert con.execute('PRAGMA quick_check').fetchone()[0] == 'ok'
+        names = con.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").fetchall()
+        return {name: set(con.execute('SELECT * FROM "' + name.replace('"', '""') + '"').fetchall()) for (name,) in names}
+
+def cli(args, label):
+    # Prevent ambient application settings from overriding the dedicated config.
+    env = child_environment(read_config('controller', ROOT / '.env.controller'))
+    p = subprocess.run([PY, *args], cwd=ROOT, env=env, capture_output=True, text=True, timeout=210)
+    (PRIVATE / (label + '.stdout')).write_text(p.stdout)
+    (PRIVATE / (label + '.stderr')).write_text(p.stderr)
+    return p
+
+try:
+    settings = read_config(ROLE, ROOT / ('.env.' + ROLE))
+    validate_config(ROLE, settings)
+    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+    RESULT['head'] = head
+    assert head == 'ef25892aafd4c0dc243d45d95cbe6ce6118c978d', 'unexpected VM application commit'
+    if ACTION == 'preflight':
+        assert not (PRIVATE / 'baseline.json').exists(), 'baseline already exists'
+        baseline = hashes()
+        (PRIVATE / 'baseline.json').write_text(json.dumps(baseline))
+        for p in (ROOT / 'data').glob('*.sqlite3'):
+            with contextlib.closing(sqlite3.connect(p.as_uri() + '?mode=ro', uri=True)) as source:
+                assert source.execute('PRAGMA quick_check').fetchone()[0] == 'ok'
+                with contextlib.closing(sqlite3.connect(PRIVATE / p.name)) as dest:
+                    source.backup(dest)
+        RESULT.update(baseline_created=True, protected_files=len(baseline),
+                      backup_directory=str(PRIVATE), configuration_valid=True)
+    elif ACTION == 'start':
+        host, port = {'controller': ('192.168.56.10',8000), 'worker': ('10.77.0.20',9000), 'target': ('10.78.0.30',8080)}[ROLE]
+        with socket.socket() as s:
+            s.settimeout(1)
+            listening = s.connect_ex((host,port)) == 0
+        if listening:
+            RESULT['already_listening'] = True
+        else:
+            with (PRIVATE / 'service.log').open('ab') as log:
+                p = subprocess.Popen([PY,'-m','common.service_config','serve',ROLE,'--env-file','.env.'+ROLE],
+                    cwd=ROOT, stdin=subprocess.DEVNULL,stdout=log,stderr=log,start_new_session=True)
+            (PRIVATE / 'service.pid').write_text(str(p.pid))
+            for _ in range(30):
+                assert p.poll() is None, 'service exited; inspect local service log'
+                with socket.socket() as s:
+                    s.settimeout(1)
+                    if s.connect_ex((host,port)) == 0:
+                        break
+                time.sleep(1)
+            else:
+                raise RuntimeError('service readiness timeout')
+            RESULT['launcher_pid'] = p.pid
+        RESULT['listener_ready'] = True
+    elif ACTION == 'import':
+        assert ROLE == 'controller'
+        p = cli(['-m','controller.candidates','import-openapi','--input','examples/openapi/records.json',
+                 '--registry','config/targets.records.json','--target','lab-web','--output',str(PUBLIC/'records-candidates.json')], 'import')
+        RESULT['exit_code'] = p.returncode
+        assert p.returncode == 0, 'candidate import failed'
+        cat = json.loads((PUBLIC/'records-candidates.json').read_text())
+        ready = [c for c in cat['candidates'] if c['status']=='READY_FOR_REVIEW']
+        assert len(ready)==1, 'review requires exactly one ready records candidate'
+        RESULT['candidate'] = ready[0]
+    elif ACTION == 'preview':
+        assert ROLE == 'controller' and TRANSPORT in ('function','mcp')
+        cat = json.loads((PUBLIC/'records-candidates.json').read_text())
+        candidate = [c for c in cat['candidates'] if c['status']=='READY_FOR_REVIEW'][0]
+        output = PUBLIC / (TRANSPORT+'-plan-'+uuid.uuid4().hex[:8]+'.json')
+        p = cli(['-m','controller.candidate_execution','preview','--input','examples/openapi/records.json',
+                 '--registry','config/targets.records.json','--target','lab-web','--candidate-id',candidate['candidate_id'],
+                 '--transport',TRANSPORT,'--env-file','.env.controller','--output',str(output)],TRANSPORT+'-preview')
+        RESULT.update(transport=TRANSPORT, exit_code=p.returncode)
+        assert p.returncode==0, 'candidate preview failed'
+        plan = json.loads(output.read_text())
+        (PRIVATE/(TRANSPORT+'-plan-path')).write_text(str(output))
+        RESULT.update(plan_file=output.name,plan_id=plan['plan_id'],plan_sha256=plan['plan_sha256'],
+                      created_at=plan['created_at'],expires_at=plan['expires_at'])
+    elif ACTION == 'run':
+        assert ROLE == 'controller' and TRANSPORT in ('function','mcp') and len(sys.argv)==4
+        output = Path((PRIVATE/(TRANSPORT+'-plan-path')).read_text())
+        plan = json.loads(output.read_text())
+        # The digest must be provided by the caller after separate plan review.
+        confirmation = sys.argv[3]
+        assert confirmation == plan['plan_sha256'], 'reviewed digest differs'
+        p = cli(['-m','controller.candidate_execution','run','--input','examples/openapi/records.json',
+                 '--registry','config/targets.records.json','--plan',str(output),
+                 '--confirm-plan-sha256',confirmation,'--env-file','.env.controller'],TRANSPORT+'-run')
+        RESULT.update(transport=TRANSPORT,exit_code=p.returncode,confirmed_plan_sha256=confirmation)
+        claim_path = ROOT/'data/candidate_plans'/(plan['plan_id']+'.claimed.json')
+        assert claim_path.exists(), 'plan was not claimed'
+        claim = json.loads(claim_path.read_text())
+        run_id = claim['run_id']
+        run_dir = ROOT/'reports/runs'/run_id
+        report = json.loads((run_dir/'report.json').read_text())
+        link = json.loads((run_dir/'candidate_execution.json').read_text())
+        from common.schemas import Evidence
+        from verifier.http import verify_http_access_control
+        evidence = [Evidence.model_validate(e) for e in json.loads((run_dir/'evidence.json').read_text())]
+        verified = verify_http_access_control(evidence, run_id=run_id)
+        issued = json.loads((ROOT/'data/candidate_plans'/(plan['plan_id']+'.issued.json')).read_text())
+        binding = (issued == plan and claim['plan_sha256'] == confirmation
+            and link['plan_sha256'] == confirmation and link['plan_id'] == plan['plan_id']
+            and link['candidate_id'] == plan['candidate_id'] and link['source_sha256'] == plan['source_sha256']
+            and link['registry_sha256'] == plan['registry_sha256']
+            and link['expected_scope_policy'] == plan['policy']['scope_policy']
+            and link['actual_scope_policy'] == report['scope_policy'] == plan['policy']['scope_policy'])
+        RESULT.update(run_id=run_id, plan_id=plan['plan_id'],candidate_id=plan['candidate_id'],
+            status=report['status'],verdict=report['verdict'],verification_basis=report['verification_basis'],
+            limits_used=report['limits_used'],evidence_count=len(evidence),
+            verdict_matches=verified.verdict==report['verdict'],policy_and_identity_binding_matches=binding,
+            control_calls=link['control_calls'],scope_policy=report['scope_policy'],
+            issued_and_claimed_history_retained=True,started_at=report['started_at'],finished_at=report['finished_at'])
+        dest = PUBLIC/run_id
+        dest.mkdir(exist_ok=False)
+        for name in ('report.json','report.md','evidence.json','candidate_execution.json'):
+            shutil.copy2(run_dir/name,dest/name)
+        shutil.copy2(claim_path, PUBLIC/claim_path.name)
+        assert p.returncode==0 and binding and RESULT['verdict_matches'], 'candidate execution verification failed'
+    elif ACTION == 'final':
+        before = json.loads((PRIVATE/'baseline.json').read_text())
+        after = hashes()
+        changed = [p for p in before if before[p] != after.get(p)]
+        RESULT['preexisting_config_reports_history_unchanged'] = not changed
+        RESULT['changed_preexisting_paths'] = changed
+        RESULT['new_plan_history_files'] = sum(p not in before and p.startswith('data/candidate_plans/') for p in after)
+        RESULT['database_preservation'] = []
+        for p in (ROOT/'data').glob('*.sqlite3'):
+            old,new = db_rows(PRIVATE/p.name),db_rows(p)
+            RESULT['database_preservation'].append({'file':p.name,'quick_check':'ok',
+                'existing_rows_preserved':all(rows <= new.get(table,set()) for table,rows in old.items())})
+        assert not changed and all(x['existing_rows_preserved'] for x in RESULT['database_preservation']), 'preservation mismatch'
+    else:
+        raise ValueError('unsupported action')
+    RESULT['ok'] = True
+except Exception as exc:
+    RESULT['error_type'] = type(exc).__name__
+    RESULT['reason'] = str(exc) if type(exc) in (AssertionError,RuntimeError) else 'operation failed; inspect guest-local diagnostics'
+finally:
+    label = ROLE+'-'+ACTION+('-'+TRANSPORT if TRANSPORT else '')+'.json'
+    save(label,RESULT)
+    print(json.dumps(RESULT,indent=2))
+sys.exit(0 if RESULT['ok'] else 1)

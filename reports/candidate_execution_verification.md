@@ -1,5 +1,7 @@
 # 후보 preview/run 검증 — 2026-11-01
 
+후속 **2026-11-05 실제 VM records function/MCP 후보 경로**는 [별도 직접 실행 보고서](vm_candidate_verification_20261105.md)에 기록했다. preview 대상 요청 0회, 별도 digest 확인 실행, 정책 연결·사용량·증거 재판정 및 기존 데이터 보존을 확인했다. 아래 2026-11-01 로컬 행렬과 당시 미검증 범위는 역사 기록이며, 새 VM 증거와 합산하지 않는다.
+
 기준 원격 `codex/openapi-candidate-import`를 fetch하여 `9cca082` 최신 상태를 확인한 뒤 `codex/candidate-preview-run`에서 구현했다. 기존 RunEngine·MockModelProvider·function/MCP client·HTTP Verifier를 재사용한다. 새 운영자 정책 REST 조회는 모델 도구가 아니며 원래 네 도구 목록을 유지한다. 기존 VM/환경파일/DB는 변경하지 않았다. 새 의존성은 없다.
 
 ## 직접 실행한 새 TCP 8조합
