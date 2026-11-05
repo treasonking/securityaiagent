@@ -66,6 +66,8 @@ Linux VM에서는 `.venv/bin/python`을 사용한다.
 
 ## 설정
 
+운영자가 준비한 두 계정·두 리소스를 검증하는 별도 `operator-resource-http` CLI를 제공한다. 문자열 principal, UUID/불투명 리소스 ID, 정상 `/me`, private/owner/기대 proof를 사용하는 `operator-resource-v1` 계약이다. preview는 대상 요청 0회이고, 확인 후 run은 정상 HTTP 11회·도구 12회·증거 11개다. 기존 documents/records 및 옛 verifier 기준은 유지한다. [설치·계획 확인·실행·재판정 가이드](docs/operator_resource_runbook.md)와 [로컬 실제 TCP 검증 결과](reports/operator_resource_verification.md)를 참고한다. 새 경로는 mock·운영자 CLI 전용이며 기존 VM 환경을 자동 전환하지 않는다.
+
 후보 하나를 선택하고 Worker 정책을 확인한 뒤, digest를 명시해 기존 mock 검사를 실행하는 [후보 preview/run CLI](docs/candidate_preview_run.md)를 제공한다. 미리보기는 실행이나 취약점 판정이 아니며 [별도 검증 결과](reports/candidate_execution_verification.md)를 기록했다.
 
 로컬 OpenAPI JSON에서 접근 통제 검사 **후보를 추출**하는 오프라인 운영자 CLI를 제공한다. 후보는 취약점이나 실행 승인이 아니며 자동 실행하지 않는다. [명령과 지원 범위](docs/openapi_candidate_import.md), [검증 결과](reports/openapi_candidate_verification.md)를 참고한다.

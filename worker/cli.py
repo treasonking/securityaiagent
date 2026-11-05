@@ -17,6 +17,9 @@ def main() -> None:
     args = parser.parse_args()
     try:
         registry = load_scope_registry(args.registry, expected_origin=os.getenv("TARGET_BASE_URL") or None)
+        from worker.operator_scope import OperatorRegistry
+        if isinstance(registry, OperatorRegistry):
+            registry = registry.bind_proofs(os.environ)
         limits = limits_from_env()
         rows = []
         for target_id, target in registry.policies.items():

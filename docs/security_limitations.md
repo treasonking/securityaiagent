@@ -1,5 +1,16 @@
 # Security limitations
 
+## Operator resource v1
+
+- 별도 `operator-resource-http`는 운영자 준비 테스트 값, 두 등록 계정/리소스와 고정 읽기 흐름만 지원한다. 일반 사이트 탐지나 전체 리소스 안전성 보장이 아니다. HTTP IP literal, cookie/Bearer, object-key JSON selector만 지원한다.
+- `/me` principal 및 owner/id/private/proof 전후 제어는 정상 서버 응답을 전제로 한다. 악성 서버가 identity와 리소스를 함께 위조하는 경우까지 증명하지 못한다. session binding은 연결 메타데이터이며 인증 신원의 대체 근거가 아니다.
+- proof는 Worker 전용 고엔트로피 값이다. 길이/문자 검사로 실제 난수성을 증명하지 못한다. commitment/digest는 서명이 아니며 낮은 엔트로피 proof의 사전 공격을 막지 못한다.
+- 발급/claim ledger와 저장된 Worker 계약·증거는 운영자 로컬 신뢰 경계다. 전체 파일 변조·삭제, 분산 승인, 프로세스 crash 후 자동 복구를 보장하지 않는다. 승인 주체 `human`/`codex`는 기록이지 사람 신원 인증이 아니다.
+- 새 경로는 CLI 전용이다. operator registry Worker는 새 도구만 제공하며 기존 UI/LLM에 자동 연결하지 않는다. 기존 registry에서는 기존 도구와 판정 계약을 유지한다.
+- [새 로컬 검증](../reports/operator_resource_verification.md)은 실제 TCP loopback과 독립 메모리 API를 사용했다. 기존 VM 적용/설정/환경파일/DB 변경, 외부 서비스 검증, 유료 OpenAI/Nmap/Playwright는 수행하지 않았다. 아래 과거 검증 범위는 이 새 결과와 구분한다.
+
+## 기존 경로의 한계
+
 - 로컬 테스트는 ASGI synthetic target과 loopback Uvicorn MCP를 사용했다. 세 VM NIC·routing·firewall은 검증하지 않았다.
 - OpenAI provider 경계는 구현했지만 API key/model 권한이 없어 live 호출·품질·비용·latency를 검증하지 않았다.
 - `MODEL_MAX_CALLS`는 현재 Agents SDK의 `max_turns`로 전달되며 결제·retry·token의 엄밀한 hard cap이 아니다. provider가 응답 전에 실패하면 실제 실패 비용/usage가 완전하게 남는다고 보장하지 않는다.

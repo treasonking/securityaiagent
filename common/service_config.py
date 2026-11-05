@@ -21,11 +21,11 @@ ROOT = Path(__file__).resolve().parents[1]
 PASSWORDS = frozenset({"LAB_USER_A_PASSWORD", "LAB_USER_B_PASSWORD", "LAB_ADMIN_PASSWORD"})
 KEYS = {
     "controller": frozenset("MODEL_PROVIDER OPENAI_MODEL OPENAI_API_KEY WORKER_URL TOOL_TRANSPORT MCP_WORKER_URL DATABASE_PATH RUN_MAX_CONCURRENCY WORKER_TOKEN APP_SESSION_SECRET APP_ACCESS_TOKEN APP_SESSION_TTL_SECONDS APP_SECURE_COOKIE OFFLINE_VERIFICATION_TOKEN MODEL_MAX_CALLS CONTROLLER_RUN_TIMEOUT_SECONDS UI_ALLOWED_ORIGINS UI_ALLOWED_HOSTS CONTROLLER_ALLOWED_CLIENTS".split()),
-    "worker": PASSWORDS | frozenset("WORKER_TOKEN TARGET_BASE_URL TARGET_REGISTRY_PATH AGENT_MAX_STEPS HTTP_MAX_REQUESTS HTTP_TIMEOUT_SECONDS RUN_TIMEOUT_SECONDS HTTP_MAX_RESPONSE_BYTES HTTP_MAX_CONCURRENCY HTTP_REQUESTS_PER_SECOND WORKER_ALLOWED_CLIENTS MCP_ALLOWED_HOSTS MCP_ALLOWED_ORIGINS WORKER_MAX_RUNS WORKER_STATE_TTL_SECONDS".split()),
+    "worker": PASSWORDS | frozenset("OPERATOR_PROOF_A OPERATOR_PROOF_B WORKER_TOKEN TARGET_BASE_URL TARGET_REGISTRY_PATH AGENT_MAX_STEPS HTTP_MAX_REQUESTS HTTP_TIMEOUT_SECONDS RUN_TIMEOUT_SECONDS HTTP_MAX_RESPONSE_BYTES HTTP_MAX_CONCURRENCY HTTP_REQUESTS_PER_SECOND WORKER_ALLOWED_CLIENTS MCP_ALLOWED_HOSTS MCP_ALLOWED_ORIGINS WORKER_MAX_RUNS WORKER_STATE_TTL_SECONDS".split()),
     "target": PASSWORDS | {"TARGET_DATABASE_PATH", "TARGET_MODE", "TARGET_API_STYLE"},
 }
 ALL_KEYS = frozenset().union(*KEYS.values(), {"APP_BIND", "APP_PORT"})
-SECRETS = PASSWORDS | {"WORKER_TOKEN", "APP_SESSION_SECRET", "APP_ACCESS_TOKEN", "OFFLINE_VERIFICATION_TOKEN", "OPENAI_API_KEY"}
+SECRETS = PASSWORDS | {"OPERATOR_PROOF_A", "OPERATOR_PROOF_B", "WORKER_TOKEN", "APP_SESSION_SECRET", "APP_ACCESS_TOKEN", "OFFLINE_VERIFICATION_TOKEN", "OPENAI_API_KEY"}
 COMMANDS = {
     "controller": ["-m", "uvicorn", "--factory", "controller.api:create_app_from_env", "--host", "192.168.56.10", "--port", "8000", "--workers", "1"],
     "worker": ["-m", "uvicorn", "--factory", "worker.app:create_app_from_env", "--host", "10.77.0.20", "--port", "9000"],
@@ -105,7 +105,7 @@ def validate_config(service: str, values: dict[str, str]) -> dict:
                "configured_secrets": sorted(key for key in SECRETS if values.get(key))}
     if service in {"controller", "worker"}:
         _required(values, "WORKER_TOKEN", 16)
-    if service in {"worker", "target"}:
+    if service == "target":
         for key in sorted(PASSWORDS):
             _required(values, key)
     if service == "controller":
@@ -140,6 +140,13 @@ def validate_config(service: str, values: dict[str, str]) -> dict:
         try:
             registry = load_scope_registry(path if path.is_absolute() else ROOT / path,
                                            expected_origin=values.get("TARGET_BASE_URL") or None)
+            from worker.operator_scope import OperatorRegistry
+            if isinstance(registry, OperatorRegistry):
+                registry = registry.bind_proofs(values)
+            else:
+                for key in sorted(PASSWORDS):
+                    _required(values, key)
+            registry.credentials(values)
             limits = limits_from_env(values)
             summary["scope_policies"] = [registry.snapshot(target, scenario, limits).record().model_dump(mode="json")
                                          for target in registry.policies for scenario in sorted(registry.profile(target).scenarios)]

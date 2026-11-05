@@ -224,6 +224,10 @@ def _analyse(input_path, registry_path, target_id):
     if not isinstance(paths, dict):
         raise ImportFailure('INVALID_PATHS')
     registry = load_scope_registry(local_path(registry_path))
+    from worker.operator_scope import OperatorRegistry
+    if isinstance(registry, OperatorRegistry):
+        from controller.operator_candidates import analyse_document
+        return analyse_document(doc, raw, registry, target_id)
     profile, adapter = registry.profile(target_id), registry.adapter(target_id)
     origin = registry.policies[target_id].base_url
     config_hash = registry.config_digest(target_id)

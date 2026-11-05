@@ -76,6 +76,11 @@ def build_worker_app(
     allowed_mcp_hosts: set[str] | None = None,
     allowed_mcp_origins: set[str] | None = None,
 ):
+    from worker.operator_service import OperatorService
+    if isinstance(service, OperatorService):
+        from worker.operator_app import build_operator_app
+        return build_operator_app(service, worker_token=worker_token, allowed_clients=allowed_clients,
+            allowed_mcp_hosts=allowed_mcp_hosts, allowed_mcp_origins=allowed_mcp_origins)
     if not worker_token:
         raise RuntimeError("WORKER_TOKEN must be configured")
     allowed = allowed_clients or {"127.0.0.1", "::1", "testclient"}
@@ -186,12 +191,17 @@ def create_app_from_env():
         str(__import__("pathlib").Path(__file__).resolve().parents[1] / "config" / "targets.json"),
     )
     registry = load_scope_registry(registry_path, expected_origin=os.getenv("TARGET_BASE_URL") or None)
+    from worker.operator_scope import OperatorRegistry
+    if isinstance(registry, OperatorRegistry):
+        registry = registry.bind_proofs(os.environ)
     accounts = registry.credentials(os.environ)
     try:
         limits = limits_from_env()
     except (ValueError, OverflowError):
         raise ScopeViolation("SCOPE_INVALID", "invalid global worker limits") from None
-    service = ToolService(registry=registry, accounts=accounts, limits=limits)
+    from worker.operator_service import OperatorService
+    service_type = OperatorService if isinstance(registry, OperatorRegistry) else ToolService
+    service = service_type(registry=registry, accounts=accounts, limits=limits)
     allowed = {
         item.strip()
         for item in os.getenv("WORKER_ALLOWED_CLIENTS", "10.77.0.10,127.0.0.1,::1").split(",")

@@ -90,6 +90,12 @@ def _nonfinite(_value):
 def load_scope_registry(path: str | Path = DEFAULT_REGISTRY, *, expected_origin: str | None = None) -> ScopeRegistry:
     try:
         payload = json.loads(Path(path).read_text(encoding="utf-8"), object_pairs_hook=_unique_object, parse_constant=_nonfinite)
+        if (isinstance(payload, dict) and isinstance(payload.get('targets'), dict)
+                and isinstance(payload['targets'].get('lab-web'), dict)
+                and isinstance(payload['targets']['lab-web'].get('adapter'), dict)
+                and payload['targets']['lab-web']['adapter'].get('contract_version') == 'operator-resource-v1'):
+            from worker.operator_scope import parse_operator_registry
+            return parse_operator_registry(payload, expected_origin)
         registry = RegistryFile.model_validate(payload)
         if not registry.targets:
             raise ValueError("empty registry")
