@@ -1,0 +1,49 @@
+{
+  "schema_version": "operator-link-v1",
+  "run_id": "run_dde4075db32146fd8481392a3919e0c6",
+  "plan_id": "opplan_0459e2c3689948068c5a1c546c85b7c8",
+  "plan_sha256": "98e456179406d707ca4e042ab538866e578b7265c6a20f5feb66ee29bce090d8",
+  "candidate_id": "55575ccb0fb727ddbf0ec58f6562f93f3c449167b593cb460b648d6d1e6ade41",
+  "source_sha256": "48465f7345601a24a922de146d5f77b21fe9c1bb0aa07d9b27ed51b5854b6637",
+  "registry_sha256": "39a4a6800726a72faa863dc267505f768210f0dd3fb7e038b1ab16d2b81240cf",
+  "approval_actor": "codex",
+  "approval_identity_authenticated": false,
+  "expected_scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "ff68b85108f4f8feada4e576ac6bb75f3cf0a653b22da0d103560167f15a99ce",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "actual_scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "ff68b85108f4f8feada4e576ac6bb75f3cf0a653b22da0d103560167f15a99ce",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "control_calls": {
+    "preview_policy": 1,
+    "run_policy": 1
+  },
+  "status": "COMPLETED",
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL"
+}

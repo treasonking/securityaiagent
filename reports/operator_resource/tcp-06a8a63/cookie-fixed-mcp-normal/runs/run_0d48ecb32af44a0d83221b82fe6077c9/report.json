@@ -1,0 +1,50 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_0d48ecb32af44a0d83221b82fe6077c9",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "mcp",
+  "started_at": "2026-11-05T18:47:17.339142+00:00",
+  "status": "COMPLETED",
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+  "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "0760c6fb8e89af81437498873d50f959d23bd314b8c9c2a722a2e371ab33b094",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "limits_used": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_ids": [
+    "61fb7f7bb09cd0efcabe5221e954be4c90db40ccb454b3a6f816420411ea975d",
+    "c487afed7bd76a75d9fdd4ac9af6a7827307c4452bbe71a1e8715510e7f56be1",
+    "f9df8905dc61aa3308259c0560bcfb79efbb1a46534a6e4897c0870940bedef8",
+    "c9f53ff3f6ba2d277cf9150d92559373a5c75458c8da7f79eb5d542e306ce086",
+    "7855f1404e2f542e393febc9f6bbd3f6ff1abfee38df66b2aa92921f633724ed",
+    "4b0e104f0d103b90a33f1350701f9f7a04c35a4901c8dd1efb9162a9b977ff40",
+    "f5f948b061504e18b59d60532a5feb18154d56e52d122efec46386d7747be8e2",
+    "8cb92b5dd5dd24ef1faf69aeed4458018b5258ffea06828a253252f16c7173e2",
+    "73d790e706559436da7fd2ecbcf2cb9306b64948c4035384950700a76ef0f6bc",
+    "9ec79bab4572a2f9a316c09366917b83438e30e08fdf3d403061f92758fd3e25",
+    "ed687250c6ebd76620faf4ba30a79b834254dc62e1eabe8bd9d6155525d42127"
+  ],
+  "finished_at": "2026-11-05T18:47:17.982143+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

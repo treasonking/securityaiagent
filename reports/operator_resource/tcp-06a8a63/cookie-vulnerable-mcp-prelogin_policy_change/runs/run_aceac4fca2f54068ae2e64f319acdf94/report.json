@@ -1,0 +1,23 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_aceac4fca2f54068ae2e64f319acdf94",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "mcp",
+  "started_at": "2026-11-05T18:47:28.710659+00:00",
+  "status": "FAILED",
+  "verdict": "INCONCLUSIVE",
+  "reason_code": "CANDIDATE_POLICY_CHANGED",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": null,
+  "limits_used": {
+    "http_requests": 0,
+    "tool_calls": 0
+  },
+  "evidence_ids": [],
+  "finished_at": "2026-11-05T18:47:28.805657+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

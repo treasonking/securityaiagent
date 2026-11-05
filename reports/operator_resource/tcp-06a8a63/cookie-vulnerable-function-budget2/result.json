@@ -1,0 +1,29 @@
+{
+  "auth": "cookie",
+  "mode": "vulnerable",
+  "transport": "function",
+  "case": "budget2",
+  "run_id": "run_37c6869026644d81b2063e9b1b703bef",
+  "status": "FAILED",
+  "expected_verdict": "INCONCLUSIVE",
+  "actual_verdict": "INCONCLUSIVE",
+  "reason_code": "SCOPE_LIMIT_EXCEEDED",
+  "preview_target_requests": 0,
+  "observed_target_http_requests": 2,
+  "expected_target_http_requests": 2,
+  "worker_usage": {
+    "http_requests": 2,
+    "tool_calls": 3
+  },
+  "evidence_count": 2,
+  "replay": {
+    "verdict": "INCONCLUSIVE",
+    "reason_code": "INCOMPLETE_WORKFLOW",
+    "run_id": "run_37c6869026644d81b2063e9b1b703bef",
+    "verdict_matches": true,
+    "evidence_count": 2
+  },
+  "scope_matches_plan": true,
+  "path": "cookie-vulnerable-function-budget2",
+  "passed": true
+}

@@ -1,0 +1,73 @@
+{
+  "contract_version": "operator-resource-v1",
+  "target_id": "lab-web",
+  "scenario_id": "operator-resource-http",
+  "registry_sha256": "6b9ddde404e7482033fd81ebdafe059b9093e6d93ace0d7a09e97bfd0d227df9",
+  "origin": "http://127.0.0.1:61286",
+  "adapter": {
+    "contract_version": "operator-resource-v1",
+    "adapter_id": "operator-json-tickets",
+    "routes": {
+      "login_path": "/session",
+      "me_path": "/me",
+      "detail_path": "/tickets/{resource_id}"
+    },
+    "accounts": {
+      "user_a": {
+        "username": "alice_17",
+        "password_env": "LAB_USER_A_PASSWORD"
+      },
+      "user_b": {
+        "username": "bob_2048",
+        "password_env": "LAB_USER_B_PASSWORD"
+      }
+    },
+    "login_user_field": "username",
+    "login_password_field": "password",
+    "auth_mode": "cookie",
+    "cookie_name": "session_key",
+    "token_field": null,
+    "principal_field": "user.id",
+    "resource_id_field": "id",
+    "owner_field": "owner",
+    "visibility_field": "private",
+    "private_value": true,
+    "public_value": false,
+    "proof_field": "memo",
+    "denial_status": 404,
+    "denial_field": "error.code",
+    "denial_value": "denied"
+  },
+  "accounts": {
+    "user_a": {
+      "principal_id": "alice-17",
+      "resource_id": "95a8a830-f123-4f62-b38b-004d428ecab1",
+      "proof_env": "OPERATOR_PROOF_A"
+    },
+    "user_b": {
+      "principal_id": "2048",
+      "resource_id": "ticket_2048",
+      "proof_env": "OPERATOR_PROOF_B"
+    }
+  },
+  "proof_commitments": {
+    "user_a": "912e47813e7a0f26fbf9f4847fea998eab95fd2a8b01a00f89501d557b274b6a",
+    "user_b": "abafc2767ebe581a70009e410e38533896ba360e7d54a4c350fbfe62f8f06b00"
+  },
+  "scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "6146498c5408bfac6d113c039ed7347cf82b9748d3281a28f9cfc8964b51eae1",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  }
+}

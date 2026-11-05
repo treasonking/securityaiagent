@@ -1,5 +1,11 @@
 # Evidence index
 
+## Codex 직접 실행 — 운영자 지정 리소스, 2026-11-06
+
+`055abf1`에서 분기한 새 `codex/operator-resource-verification`의 코드 `06a8a63fba47a8a527a15a9cd3032f3f24d7ee0f`로 독립 메모리 API와 Worker의 실제 TCP 검증을 실행했다. [상세 보고서](operator_resource_verification.md), [16건 행렬](operator_resource/tcp-06a8a63/matrix.json), [회귀·보존 확인](operator_resource/verification_summary.json)을 참고한다. cookie/Bearer × vulnerable/fixed × function/MCP 정상 8건은 preview 대상 요청 0회, run HTTP 11회/도구 12회/증거 11개, 실제 Worker 정책 연결 및 재판정 일치다. 추가 예산·로그인 전 정책 변경·redirect·public 8건은 기대대로 INCONCLUSIVE이며 실패 run도 보존했다.
+
+전체 pytest **706 passed**(새 160개 포함), 프런트엔드 build 성공이다. 기존 546개 통과 기록을 재사용한 수치가 아니다. 기존 저장 documents/records 증거 8건의 재판정도 일치했다. 모두 mock이며 새 경로의 모델 호출은 0회다. 기존 VM/환경파일/DB는 변경하지 않았고 main에 병합하지 않았다. 이 결과는 로컬 검증이며 VM 배포나 일반 외부 사이트 검증으로 해석하지 않는다.
+
 ## Codex 직접 VM 후보 preview/run — 2026-11-05
 
 [records 후보 VM 검증](vm_candidate_verification_20261105.md)은 `controller.candidate_execution`의 preview → 별도 plan 검토 → digest 명시 run을 function/MCP에서 각각 실제 실행한 증거다. 기존 `controller.cli` 결과로 대체하지 않았다. 두 preview 모두 지정 구간 target 방향 패킷 0·socket drop 0이며, run은 각각 COMPLETED / VULNERABLE, HTTP 9회·도구 10회·증거 7개, 정책 연결·재판정 일치다. 기존 환경·정책·DB 행·이력을 보존하고 새 issued/claimed 4개를 남겼다. 원본 plan·claim·실행 연결·정제 증거·수동 계수 결과를 함께 보관한다.
