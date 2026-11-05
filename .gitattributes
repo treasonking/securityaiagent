@@ -7,3 +7,5 @@
 *.js text eol=lf
 *.mjs text eol=lf
 *.css text eol=lf
+# Evidence includes raw source-byte hashes. Preserve recorded bytes on every OS.
+reports/operator_resource/** -text

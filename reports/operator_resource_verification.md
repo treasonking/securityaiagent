@@ -68,6 +68,7 @@ cd ..
 - fixture 비밀번호/토큰/proof는 실행 중 무작위 생성했다. 각 파일을 당시 실제 비밀값과 대조해 원문이 없음을 확인했다. 저장된 proof는 commitment 또는 일치한 run별 digest뿐이다. 본문 전체/대상 상태/정답은 verifier에 전달하지 않았다.
 - 앱/테스트의 예기치 않은 실패는 이번 실행에서 없었다. 초기 개발 TCP smoke 및 16건의 성공 기록과 원래 테스트 로그는 로컬 `verification_tmp/operator-development-20261106`에 보존하고, GitHub에는 위 코드 커밋으로 실행한 최종 정제 기록을 싣는다.
 - 게시 전 CLI 재판정 확인 중 첫 명령에 `run_`을 중복 붙여 존재하지 않는 경로를 전달했다. CLI는 `REPLAY_INPUT_INVALID`(exit 2)로 거절했고 실제 run 경로로 고친 호출은 `VULNERABLE`, `verdict_matches=true`(exit 0)였다. 대상 요청이나 저장 증거 변경은 없었다. [두 호출 기록](operator_resource/replay_cli_checks.json)을 보존했다.
+- 첫 게시 후 Git blob 검증에서 자동 줄바꿈 정규화 때문에 241개 중 223개 파일의 원본 바이트 SHA-256이 달라진 것을 확인했다. `.gitattributes`에 증거 폴더 `-text` 규칙을 추가해 원래 실행 산출물 바이트를 보존했다. 최종 게시 blob 241개는 manifest와 일치하고, 16건의 OpenAPI 원본 바이트 해시도 각 계획과 일치한다. 실행/증거 내용이나 판정 알고리즘은 바꾸지 않았다.
 
 ```powershell
 .\.venv\Scripts\python.exe -m verifier.operator --run-dir reports/operator_resource/tcp-06a8a63/cookie-vulnerable-function-normal/runs/run_5c413526c9f04a2f84d59fc3b6465b8b
