@@ -4,6 +4,7 @@
 !.env.controller.example
 !.env.worker.example
 !.env.target.example
+!.env.operator-target.example
 .venv/
 __pycache__/
 *.py[cod]

@@ -10,6 +10,7 @@ import ipaddress
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -23,6 +24,7 @@ KEYS = {
     "controller": frozenset("MODEL_PROVIDER OPENAI_MODEL OPENAI_API_KEY WORKER_URL TOOL_TRANSPORT MCP_WORKER_URL DATABASE_PATH RUN_MAX_CONCURRENCY WORKER_TOKEN APP_SESSION_SECRET APP_ACCESS_TOKEN APP_SESSION_TTL_SECONDS APP_SECURE_COOKIE OFFLINE_VERIFICATION_TOKEN MODEL_MAX_CALLS CONTROLLER_RUN_TIMEOUT_SECONDS UI_ALLOWED_ORIGINS UI_ALLOWED_HOSTS CONTROLLER_ALLOWED_CLIENTS".split()),
     "worker": PASSWORDS | frozenset("OPERATOR_PROOF_A OPERATOR_PROOF_B WORKER_TOKEN TARGET_BASE_URL TARGET_REGISTRY_PATH AGENT_MAX_STEPS HTTP_MAX_REQUESTS HTTP_TIMEOUT_SECONDS RUN_TIMEOUT_SECONDS HTTP_MAX_RESPONSE_BYTES HTTP_MAX_CONCURRENCY HTTP_REQUESTS_PER_SECOND WORKER_ALLOWED_CLIENTS MCP_ALLOWED_HOSTS MCP_ALLOWED_ORIGINS WORKER_MAX_RUNS WORKER_STATE_TTL_SECONDS".split()),
     "target": PASSWORDS | {"TARGET_DATABASE_PATH", "TARGET_MODE", "TARGET_API_STYLE"},
+    "operator-target": frozenset({"LAB_USER_A_PASSWORD", "LAB_USER_B_PASSWORD", "OPERATOR_PROOF_A", "OPERATOR_PROOF_B", "OPERATOR_TARGET_MODE"}),
 }
 ALL_KEYS = frozenset().union(*KEYS.values(), {"APP_BIND", "APP_PORT"})
 SECRETS = PASSWORDS | {"OPERATOR_PROOF_A", "OPERATOR_PROOF_B", "WORKER_TOKEN", "APP_SESSION_SECRET", "APP_ACCESS_TOKEN", "OFFLINE_VERIFICATION_TOKEN", "OPENAI_API_KEY"}
@@ -30,6 +32,7 @@ COMMANDS = {
     "controller": ["-m", "uvicorn", "--factory", "controller.api:create_app_from_env", "--host", "192.168.56.10", "--port", "8000", "--workers", "1"],
     "worker": ["-m", "uvicorn", "--factory", "worker.app:create_app_from_env", "--host", "10.77.0.20", "--port", "9000"],
     "target": ["-m", "uvicorn", "target.app:app", "--host", "10.78.0.30", "--port", "8080"],
+    "operator-target": ["-m", "uvicorn", "--factory", "scripts.operator_vm_target:create_app_from_env", "--host", "10.78.0.30", "--port", "8080", "--workers", "1"],
 }
 
 
@@ -154,6 +157,14 @@ def validate_config(service: str, values: dict[str, str]) -> dict:
             raise ServiceConfigError(exc.code) from None
         except (ValueError, OverflowError):
             raise ServiceConfigError("invalid global worker limits") from None
+    elif service == "operator-target":
+        for key in ("LAB_USER_A_PASSWORD", "LAB_USER_B_PASSWORD"):
+            _required(values, key)
+        proofs = [values.get(key, "") for key in ("OPERATOR_PROOF_A", "OPERATOR_PROOF_B")]
+        if any(not re.fullmatch(r"[A-Za-z0-9_-]{32,128}", value) for value in proofs) or proofs[0] == proofs[1]:
+            raise ServiceConfigError("distinct high-entropy operator proof references required")
+        if values.get("OPERATOR_TARGET_MODE") not in {"vulnerable", "fixed"}:
+            raise ServiceConfigError("OPERATOR_TARGET_MODE must be vulnerable or fixed")
     elif values.get("TARGET_MODE", "vulnerable") not in {"vulnerable", "fixed"}:
         raise ServiceConfigError("TARGET_MODE must be vulnerable or fixed")
     if service == "target" and values.get("TARGET_API_STYLE", "documents") not in {"documents", "records"}:
