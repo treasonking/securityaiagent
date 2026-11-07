@@ -1,0 +1,48 @@
+"""Temporary operator command delivery with enumerated actions; no shell payloads."""
+import json
+import os
+from pathlib import Path
+import socket
+import subprocess
+import time
+
+role = socket.gethostname().removeprefix('security-')
+assert role in ('controller', 'worker', 'target') and os.getuid() == 1000
+exchange = Path('/mnt/securityai-operator-20261106')
+private = Path('/home/ubuntu/securityaiagent-operator-vm-state-20261106/private')
+last = private / 'last-dispatch-sequence'
+seen = last.read_text() if last.exists() else ''
+actions = {'inspect', 'backup', 'baseline-start', 'stage', 'switch', 'counter', 'preview', 'run', 'restore', 'final', 'stop-dispatcher'}
+allowed = {'mode': {'vulnerable', 'fixed'}, 'transport': {'function', 'mcp'}, 'phase': {'before-preview', 'after-preview', 'after-run'}}
+started = time.time()
+(exchange / 'public/dispatcher-ready.json').write_text(json.dumps({'role': role, 'pid': os.getpid(), 'started_epoch': started}))
+while time.time() - started < 3600:
+    try:
+        job = json.loads((exchange / 'job.json').read_text())
+        assert set(job) <= {'sequence', 'action', 'mode', 'transport', 'phase', 'confirm'}
+        sequence = job['sequence']
+        assert isinstance(sequence, str) and len(sequence) == 32 and all(x in '0123456789abcdef' for x in sequence)
+        if sequence == seen:
+            time.sleep(.2)
+            continue
+        assert job['action'] in actions
+        args = [job['action']]
+        for key, choices in allowed.items():
+            if key in job:
+                assert job[key] in choices
+                args += ['--' + key, job[key]]
+        if 'confirm' in job:
+            assert len(job['confirm']) == 64 and all(x in '0123456789abcdef' for x in job['confirm'])
+            args += ['--confirm', job['confirm']]
+    except (OSError, ValueError, KeyError, AssertionError, TypeError):
+        time.sleep(.2)
+        continue
+    seen = sequence
+    last.write_text(sequence)
+    if job['action'] == 'stop-dispatcher': break
+    with (private / 'dispatcher.log').open('ab') as log:
+        result = subprocess.run(['/home/ubuntu/securityaiagent/.venv/bin/python', str(exchange / 'vm_ops.py'), *args],
+                                stdout=log, stderr=log, timeout=300)
+    receipt = {'sequence': sequence, 'action': job['action'], 'exit_code': result.returncode, 'finished_epoch': time.time()}
+    (exchange / 'public/dispatch-receipt.json').write_text(json.dumps(receipt))
+(exchange / 'public/dispatcher-stopped.json').write_text(json.dumps({'role': role, 'stopped_epoch': time.time()}))

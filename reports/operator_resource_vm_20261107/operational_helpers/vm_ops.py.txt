@@ -1,0 +1,334 @@
+"""One-off fixed-action VM operator; private backups never leave this guest."""
+import argparse
+import contextlib
+from datetime import datetime, timezone
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import signal
+import socket
+import sqlite3
+import subprocess
+import sys
+import time
+
+OLD = Path('/home/ubuntu/securityaiagent')
+NEW = Path('/home/ubuntu/securityaiagent-operator-vm-20261106')
+STATE = Path('/home/ubuntu/securityaiagent-operator-vm-state-20261106')
+EXCHANGE = Path('/mnt/securityai-operator-20261106')
+PUBLIC = EXCHANGE / 'public'
+PRIVATE = STATE / 'private'
+ROLE = socket.gethostname().removeprefix('security-')
+assert ROLE in ('controller', 'worker', 'target') and os.getuid() == 1000
+STATE.mkdir(mode=0o700, exist_ok=True)
+PRIVATE.mkdir(mode=0o700, exist_ok=True)
+PUBLIC.mkdir(exist_ok=True)
+PY = str(OLD / '.venv/bin/python')
+HOST, PORT = {'controller': ('192.168.56.10', 8000), 'worker': ('10.77.0.20', 9000), 'target': ('10.78.0.30', 8080)}[ROLE]
+MODULE = {'controller': 'controller.api:create_app_from_env', 'worker': 'worker.app:create_app_from_env', 'target': 'target.app:app'}[ROLE]
+
+
+def stamp(): return datetime.now(timezone.utc).isoformat()
+def save(path, value): path.write_text(json.dumps(value, indent=2), encoding='utf-8')
+def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
+def command(args, cwd=OLD, timeout=180):
+    p = subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+    if p.returncode:
+        raise RuntimeError('FIXED_COMMAND_FAILED_' + Path(args[0]).name)
+    return p.stdout.strip()
+
+
+def service_config(root, service, filename):
+    sys.path.insert(0, str(root))
+    from common.service_config import read_config, validate_config
+    values = read_config(service, root / filename)
+    validate_config(service, values)
+    return values
+
+
+def firewall():
+    # Read existing firewall; discard packet/byte counters and generated timestamps.
+    output = command(['sudo', '-n', 'iptables-save'])
+    output = '\n'.join(re.sub(r'\[\d+:\d+\]', '[0:0]', line) for line in output.splitlines() if not line.startswith('#'))
+    return hashlib.sha256(output.encode()).hexdigest()
+
+
+def network():
+    links = json.loads(command(['ip', '-j', 'link']))
+    addresses = json.loads(command(['ip', '-j', 'address']))
+    return {'links': [{'name': r['ifname'], 'mac': r.get('address')} for r in links],
+            'addresses': [{'name': r['ifname'], 'ipv4': [x['local'] for x in r.get('addr_info', []) if x['family'] == 'inet']} for r in addresses]}
+
+
+def listener():
+    output = command(['ss', '-H', '-ltnp', 'sport = :' + str(PORT)])
+    pids = set(int(x) for x in re.findall(r'pid=(\d+)', output))
+    if output and len(pids) != 1: raise RuntimeError('LISTENER_IDENTITY_UNPROVEN')
+    if not pids: return None
+    pid = pids.pop()
+    proc = Path('/proc') / str(pid)
+    args = [x.decode() for x in (proc / 'cmdline').read_bytes().split(b'\0') if x]
+    return {'pid': pid, 'cwd': os.readlink(proc / 'cwd'), 'args': args,
+            'start_ticks': (proc / 'stat').read_text().rsplit(')', 1)[1].split()[19]}
+
+
+def checked_listener(root, module):
+    item = listener()
+    if item and (Path(item['cwd']) != root or 'uvicorn' not in item['args'] or module not in item['args']):
+        raise RuntimeError('UNKNOWN_LISTENER_NOT_STOPPED')
+    return item
+
+
+def stop(root, module):
+    item = checked_listener(root, module)
+    if not item: return {'already_stopped': True}
+    os.kill(item['pid'], signal.SIGTERM)
+    for _ in range(100):
+        if listener() is None: return {'terminated_pid': item['pid'], 'signal': 'SIGTERM', 'graceful': True}
+        time.sleep(.1)
+    raise RuntimeError('GRACEFUL_STOP_TIMEOUT_NO_FORCE_KILL')
+
+
+def start(root, service, filename, label):
+    assert listener() is None, 'PORT_IN_USE'
+    legacy_controller = (root == OLD and ROLE == 'controller' and command(['git', 'rev-parse', 'HEAD']) == 'e54d776dc6cdac642c2b6a9dbd971a9e4b470851')
+    if legacy_controller:
+        launch = [PY, '-m', 'uvicorn', '--factory', MODULE, '--env-file', filename, '--host', HOST, '--port', str(PORT), '--workers', '1']
+    else:
+        service_config(root, service, filename)
+        launch = [PY, '-m', 'common.service_config', 'serve', service, '--env-file', filename]
+    with (PRIVATE / (label + '.log')).open('ab') as log:
+        p = subprocess.Popen(launch,
+            cwd=root, stdin=subprocess.DEVNULL, stdout=log, stderr=log, start_new_session=True)
+    save(PRIVATE / (label + '.process.json'), {'launcher_pid': p.pid, 'root': str(root), 'service': service, 'env_file': filename})
+    for _ in range(100):
+        if p.poll() is not None: raise RuntimeError('SERVICE_EXITED_CHECK_GUEST_PRIVATE_LOG')
+        if listener(): return {'launcher_pid': p.pid, 'listener': listener()}
+        time.sleep(.1)
+    raise RuntimeError('SERVICE_READINESS_TIMEOUT')
+
+
+def health():
+    if ROLE == 'controller':
+        # Existing controller allowlist permits loopback and the operator host,
+        # not the guest's own external IP as a client. Keep that policy intact.
+        import http.client
+        connection = http.client.HTTPConnection(HOST, PORT, timeout=5, source_address=('127.0.0.1', 0))
+        try:
+            connection.request('GET', '/api/health')
+            response = connection.getresponse()
+            payload = json.loads(response.read())
+            assert response.status == 200 and payload['status'] == 'ok'
+            return {'status_code': response.status, 'status': payload['status'], 'path': '/api/health', 'source': '127.0.0.1'}
+        finally:
+            connection.close()
+    import urllib.request
+    path = '/api/health' if ROLE == 'controller' else '/health'
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open('http://' + HOST + ':' + str(PORT) + path, timeout=5) as response:
+        payload = json.load(response)
+        assert response.status == 200 and payload['status'] == 'ok'
+        return {'status_code': response.status, 'status': payload['status'], 'path': path}
+
+
+def protected():
+    paths = [p for p in OLD.glob('.env*') if p.is_file()]
+    for folder in ('config', 'reports/runs', 'data/candidate_plans', 'data/operator_plans'):
+        paths += [p for p in (OLD / folder).rglob('*') if p.is_file()]
+    return {str(p.relative_to(OLD)): sha(p) for p in paths}
+
+
+def database(path):
+    with contextlib.closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)) as con:
+        assert con.execute('PRAGMA quick_check').fetchone()[0] == 'ok'
+        tables = [r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
+        return {table: sorted(hashlib.sha256(repr(row).encode()).hexdigest() for row in
+            con.execute('SELECT * FROM "' + table.replace('"', '""') + '"')) for table in tables}
+
+
+def cli(args, label):
+    sys.path.insert(0, str(NEW))
+    from common.service_config import child_environment
+    env = child_environment(service_config(NEW, 'controller', '.env.controller.operator'))
+    began = stamp()
+    p = subprocess.run([PY, *args], cwd=NEW, env=env, capture_output=True, text=True, timeout=210)
+    (PRIVATE / (label + '.stdout')).write_text(p.stdout)
+    (PRIVATE / (label + '.stderr')).write_text(p.stderr)
+    return p, began, stamp()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('action', choices=('inspect', 'backup', 'baseline-start', 'stage', 'switch', 'counter', 'preview', 'run', 'restore', 'final'))
+    parser.add_argument('--mode', choices=('vulnerable', 'fixed'))
+    parser.add_argument('--transport', choices=('function', 'mcp'))
+    parser.add_argument('--phase', choices=('before-preview', 'after-preview', 'after-run'))
+    parser.add_argument('--confirm')
+    args = parser.parse_args()
+    label = '-'.join(x for x in (ROLE, args.action, args.mode, args.transport, args.phase) if x)
+    result = {'role': ROLE, 'action': args.action, 'ok': False, 'started_at': stamp()}
+    try:
+        if args.action == 'inspect':
+            result.update(head=command(['git', 'rev-parse', 'HEAD']), branch=command(['git', 'branch', '--show-current']),
+                tracked_status=command(['git', 'status', '--porcelain', '--untracked-files=no']), listener=listener(),
+                network=network(), firewall_sha256=firewall(),
+                env_files=[p.name for p in OLD.glob('.env*') if p.is_file()],
+                sqlite_files=[p.name for p in (OLD / 'data').glob('*.sqlite3')])
+            result.update(new_checkout_exists=NEW.exists(), baseline_exists=(PRIVATE / 'baseline.json').exists())
+            if (OLD / 'common/service_config.py').exists():
+                service_config(OLD, ROLE, '.env.' + ROLE)
+                result['configuration_valid'] = True
+            else:
+                assert ROLE == 'controller' and result['head'] == 'e54d776dc6cdac642c2b6a9dbd971a9e4b470851'
+                result['configuration_validation'] = 'legacy_uvicorn_launch_health_required'
+        elif args.action == 'backup':
+            assert not (PRIVATE / 'baseline.json').exists(), 'BASELINE_ALREADY_EXISTS'
+            original = listener()
+            if original: checked_listener(OLD, MODULE)
+            command(['git', 'bundle', 'create', str(PRIVATE / 'original-repository.bundle'), '--all'])
+            command(['tar', '-czf', str(PRIVATE / 'original-workspace.tar.gz'), '--exclude=./.git', '--exclude=./.venv',
+                     '--exclude=./frontend/node_modules', '--exclude=./verification_tmp', '.'])
+            dbs = []
+            for path in sorted((OLD / 'data').glob('*.sqlite3')):
+                with contextlib.closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)) as source:
+                    with contextlib.closing(sqlite3.connect(PRIVATE / path.name)) as destination: source.backup(destination)
+                dbs.append({'file': path.name, 'quick_check': 'ok', 'tables': len(database(PRIVATE / path.name))})
+            baseline = {'head': command(['git', 'rev-parse', 'HEAD']), 'protected': protected(), 'network': network(),
+                        'firewall_sha256': firewall(), 'listener': original, 'databases': dbs}
+            save(PRIVATE / 'baseline.json', baseline)
+            result.update(backup_directory=str(PRIVATE), protected_files=len(baseline['protected']), databases=dbs,
+                          original_listener_present=bool(original), code_backup=True, workspace_backup=True)
+        elif args.action == 'baseline-start':
+            assert (PRIVATE / 'baseline.json').exists()
+            if listener(): checked_listener(OLD, MODULE); result['already_running'] = True
+            else: result['service'] = start(OLD, ROLE, '.env.' + ROLE, 'baseline-service')
+            result['health'] = health()
+        elif args.action == 'stage':
+            assert (PRIVATE / 'baseline.json').exists() and not NEW.exists(), 'NEW_CHECKOUT_REQUIRED'
+            manifest = json.loads((EXCHANGE / 'deployment.json').read_text())
+            assert manifest['base_commit'] == 'b574ba4179c8413ca61a181fa6c987898faf555f'
+            bundle = EXCHANGE / 'deployment.bundle'
+            assert sha(bundle) == manifest['bundle_sha256'], 'BUNDLE_HASH_MISMATCH'
+            command(['git', 'clone', '--no-checkout', str(bundle), str(NEW)])
+            command(['git', 'checkout', '--detach', manifest['code_commit']], cwd=NEW)
+            command(['git', 'merge-base', '--is-ancestor', manifest['base_commit'], 'HEAD'], cwd=NEW)
+            (NEW / '.venv').symlink_to(OLD / '.venv', target_is_directory=True)
+            names = {'controller': ['.env.controller.operator'], 'worker': ['.env.worker.operator'],
+                     'target': ['.env.operator-target.vulnerable', '.env.operator-target.fixed']}[ROLE]
+            for name in names:
+                shutil.copyfile(EXCHANGE / name, NEW / name)
+                (NEW / name).chmod(0o600)
+            for name in names:
+                service_config(NEW, 'operator-target' if ROLE == 'target' else ROLE, name)
+            result.update(head=command(['git', 'rev-parse', 'HEAD'], cwd=NEW), checkout=str(NEW),
+                          environment_files=names, old_checkout_untouched=True, old_venv_reused_without_install=True)
+        elif args.action == 'switch':
+            assert ROLE in ('target', 'worker') and args.mode in ('vulnerable', 'fixed')
+            current = listener()
+            if current:
+                if Path(current['cwd']) == OLD: result['stopped'] = stop(OLD, MODULE)
+                elif ROLE == 'target': result['stopped'] = stop(NEW, 'scripts.operator_vm_target:create_app_from_env')
+                else: raise RuntimeError('NEW_WORKER_ALREADY_RUNNING')
+            service = 'operator-target' if ROLE == 'target' else 'worker'
+            filename = '.env.operator-target.' + args.mode if ROLE == 'target' else '.env.worker.operator'
+            result['service'] = start(NEW, service, filename, 'operator-' + args.mode)
+            result['health'] = health()
+        elif args.action == 'counter':
+            assert ROLE == 'target' and args.mode and args.transport and args.phase
+            result['counter'] = json.loads((NEW / 'verification_tmp/operator_target_counter.json').read_text())
+        elif args.action == 'preview':
+            assert ROLE == 'controller' and args.mode and args.transport
+            case = args.mode + '-' + args.transport
+            folder = NEW / 'verification_tmp/operator-vm-public' / case
+            folder.mkdir(parents=True, exist_ok=False)
+            p, began, ended = cli(['-m', 'controller.candidates', 'import-openapi', '--input', 'examples/openapi/operator-cookie.json',
+                '--registry', 'config/targets.operator.json', '--target', 'lab-web', '--output', str(folder / 'catalogue.json')], case + '-import')
+            assert p.returncode == 0, 'IMPORT_FAILED'
+            cat = json.loads((folder / 'catalogue.json').read_text())
+            row = cat['candidates'][0]
+            assert row['status'] == 'READY_FOR_REVIEW', 'CANDIDATE_NOT_READY'
+            p, began, ended = cli(['-m', 'controller.operator_execution', 'preview', '--input', 'examples/openapi/operator-cookie.json',
+                '--registry', 'config/targets.operator.json', '--env-file', '.env.controller.operator', '--candidate-id', row['candidate_id'],
+                '--transport', args.transport, '--output', str(folder / 'plan.json')], case + '-preview')
+            result.update(exit_code=p.returncode, cli_started_at=began, cli_finished_at=ended)
+            assert p.returncode == 0, 'PREVIEW_FAILED'
+            plan = json.loads((folder / 'plan.json').read_text())
+            result.update(plan_id=plan['plan_id'], plan_sha256=plan['plan_sha256'], expires_at=plan['expires_at'])
+            destination = PUBLIC / case
+            shutil.copytree(folder, destination, dirs_exist_ok=False)
+        elif args.action == 'run':
+            assert ROLE == 'controller' and args.mode and args.transport and re.fullmatch('[0-9a-f]{64}', args.confirm or '')
+            case = args.mode + '-' + args.transport
+            folder = NEW / 'verification_tmp/operator-vm-public' / case
+            plan = json.loads((folder / 'plan.json').read_text())
+            assert args.confirm == plan['plan_sha256'], 'REVIEW_DIGEST_MISMATCH'
+            save(PUBLIC / case / 'plan_review.json', {'approval_actor': 'codex', 'approval_identity_authenticated': False,
+                 'reviewed_at': stamp(), 'plan_sha256': args.confirm, 'sequence_steps_checked': 11})
+            p, began, ended = cli(['-m', 'controller.operator_execution', 'run', '--input', 'examples/openapi/operator-cookie.json',
+                '--registry', 'config/targets.operator.json', '--env-file', '.env.controller.operator', '--plan', str(folder / 'plan.json'),
+                '--confirm-plan-sha256', args.confirm, '--approved-by', 'codex'], case + '-run')
+            result.update(exit_code=p.returncode, cli_started_at=began, cli_finished_at=ended)
+            history = NEW / 'data/operator_plans'
+            claim = json.loads((history / (plan['plan_id'] + '.claimed.json')).read_text())
+            run_id = claim['run_id']
+            run_dir = NEW / 'reports/runs' / run_id
+            report = json.loads((run_dir / 'report.json').read_text())
+            link = json.loads((run_dir / 'candidate_execution.json').read_text())
+            from verifier.operator import replay
+            verified = replay(run_dir)
+            issued = json.loads((history / (plan['plan_id'] + '.issued.json')).read_text())
+            bound = (issued == plan and claim['plan_sha256'] == args.confirm and link['plan_sha256'] == args.confirm
+                and link['actual_scope_policy'] == link['expected_scope_policy'] == report['scope_policy'] == plan['policy']['scope_policy']
+                and link['source_sha256'] == plan['source_sha256'] and link['registry_sha256'] == plan['registry_sha256'])
+            result.update(run_id=run_id, status=report['status'], verdict=report['verdict'], reason_code=report['reason_code'],
+                limits_used=report['limits_used'], evidence_count=len(report['evidence_ids']), replay=verified, policy_binding_matches=bound)
+            destination = PUBLIC / case
+            shutil.copytree(run_dir, destination / run_id)
+            for suffix in ('.issued.json', '.claimed.json'):
+                shutil.copy2(history / (plan['plan_id'] + suffix), destination / (plan['plan_id'] + suffix))
+            save(destination / 'replay.json', verified)
+            expected = 'VULNERABLE' if args.mode == 'vulnerable' else 'BLOCKED_BY_ACCESS_CONTROL'
+            assert (p.returncode == 0 and report['status'] == 'COMPLETED' and report['verdict'] == expected
+                and report['limits_used'] == {'http_requests': 11, 'tool_calls': 12}
+                and len(report['evidence_ids']) == 11 and verified['verdict_matches'] and bound), 'VM_RUN_ASSERTION_FAILED'
+        elif args.action == 'restore':
+            if ROLE in ('target', 'worker') and listener() and Path(listener()['cwd']) == NEW:
+                result['stopped_test_service'] = stop(NEW, 'scripts.operator_vm_target:create_app_from_env' if ROLE == 'target' else MODULE)
+            if listener(): checked_listener(OLD, MODULE); result['original_service_already_running'] = True
+            else: result['restored_service'] = start(OLD, ROLE, '.env.' + ROLE, 'restored-service')
+            result['health'] = health()
+        elif args.action == 'final':
+            baseline = json.loads((PRIVATE / 'baseline.json').read_text())
+            now = protected()
+            changed = [p for p, value in baseline['protected'].items() if now.get(p) != value]
+            dbs = []
+            for db in baseline['databases']:
+                old, new = database(PRIVATE / db['file']), database(OLD / 'data' / db['file'])
+                dbs.append({'file': db['file'], 'quick_check': 'ok', 'existing_rows_preserved':
+                    all(set(rows) <= set(new.get(table, [])) for table, rows in old.items()), 'exact_rows_match': old == new})
+            result.update(original_head_unchanged=command(['git', 'rev-parse', 'HEAD']) == baseline['head'],
+                protected_files_unchanged=not changed, changed_paths=changed, databases=dbs,
+                network_unchanged=network() == baseline['network'], firewall_unchanged=firewall() == baseline['firewall_sha256'],
+                restored_listener=checked_listener(OLD, MODULE), health=health(),
+                new_plan_history_files=len(list((NEW / 'data/operator_plans').glob('*.json'))),
+                new_run_reports=len(list((NEW / 'reports/runs').glob('*/report.json'))))
+            assert (result['original_head_unchanged'] and not changed and result['network_unchanged'] and result['firewall_unchanged']
+                and all(d['existing_rows_preserved'] for d in dbs)), 'PRESERVATION_CHECK_FAILED'
+        result['ok'] = True
+    except Exception as exc:
+        result['error_type'] = type(exc).__name__
+        result['reason'] = str(exc) if type(exc) in (RuntimeError, AssertionError) else 'GUEST_ACTION_FAILED_SEE_PRIVATE_DIAGNOSTICS'
+        # Keep raw exception detail only on the guest for troubleshooting.
+        import traceback
+        (PRIVATE / (label + '.exception.txt')).write_text(traceback.format_exc())
+    finally:
+        result['finished_at'] = stamp()
+        save(PUBLIC / (label + '.json'), result)
+        print(json.dumps(result, indent=2))
+    return 0 if result['ok'] else 1
+
+
+if __name__ == '__main__': raise SystemExit(main())

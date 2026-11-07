@@ -1,5 +1,7 @@
 # Operator resource: 실제 VM 검증 절차
 
+[2026-11-07 실제 세 VM 결과와 복구 기록](../reports/operator_resource_vm_20261107/README.md): 네 조합 모두 기대 판정, preview 0회, run HTTP 11/도구 12/증거 11, 정책 연결 및 재판정 일치.
+
 기준은 `b574ba4`이며 새 `operator-target` launcher만 추가한다. Controller의 `controller.operator_execution` CLI, Worker의 operator-resource 계약 및 verifier 판정은 기준 구현을 유지한다. 기존 UI는 사용하지 않는다. 독립 API는 `/session`, `/me`, `/tickets/{resource_id}`와 health를 제공하며 cookie 인증으로 시작한다. 기존 TargetStore/DB/canary helper를 사용하지 않는다.
 
 ## 전용 서비스 설정

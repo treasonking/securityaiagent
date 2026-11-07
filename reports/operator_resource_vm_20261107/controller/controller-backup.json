@@ -1,0 +1,24 @@
+{
+  "role": "controller",
+  "action": "backup",
+  "ok": true,
+  "started_at": "2026-11-07T07:01:28.930759+00:00",
+  "backup_directory": "/home/ubuntu/securityaiagent-operator-vm-state-20261106/private",
+  "protected_files": 74,
+  "databases": [
+    {
+      "file": "securitylab.sqlite3",
+      "quick_check": "ok",
+      "tables": 8
+    },
+    {
+      "file": "target.sqlite3",
+      "quick_check": "ok",
+      "tables": 4
+    }
+  ],
+  "original_listener_present": false,
+  "code_backup": true,
+  "workspace_backup": true,
+  "finished_at": "2026-11-07T07:01:29.975071+00:00"
+}

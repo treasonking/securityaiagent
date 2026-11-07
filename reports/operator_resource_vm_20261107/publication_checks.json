@@ -1,0 +1,8 @@
+{
+  "fresh_secret_values_checked": 7,
+  "secret_matches": 0,
+  "exported_vm_replays_matching": 4,
+  "counter_deltas_matching": 4,
+  "preservation_checks_matching": 3,
+  "no_environment_files_or_raw_database_or_target_logs_exported": true
+}

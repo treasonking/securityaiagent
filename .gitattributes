@@ -9,3 +9,4 @@
 *.css text eol=lf
 # Evidence includes raw source-byte hashes. Preserve recorded bytes on every OS.
 reports/operator_resource/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+reports/operator_resource_vm_20261107/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

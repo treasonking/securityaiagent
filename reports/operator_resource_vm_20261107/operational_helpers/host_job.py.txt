@@ -1,0 +1,42 @@
+import argparse
+import json
+from pathlib import Path
+import time
+import uuid
+
+p=argparse.ArgumentParser()
+p.add_argument('role',choices=['controller','worker','target'])
+p.add_argument('action',choices=['inspect','backup','baseline-start','stage','switch','counter','preview','run','restore','final','stop-dispatcher'])
+p.add_argument('--mode',choices=['vulnerable','fixed'])
+p.add_argument('--transport',choices=['function','mcp'])
+p.add_argument('--phase',choices=['before-preview','after-preview','after-run'])
+p.add_argument('--confirm')
+a=p.parse_args()
+folder=Path(__file__).resolve().parent/'exchange'/a.role
+assert (folder/'public/dispatcher-ready.json').exists(), 'Guest dispatcher not ready'
+job={k:v for k,v in vars(a).items() if v is not None and k!='role'}
+job['sequence']=uuid.uuid4().hex
+temp=folder/'job.tmp'
+temp.write_text(json.dumps(job),encoding='utf-8')
+for attempt in range(100):
+    try:
+        temp.replace(folder/'job.json')
+        break
+    except PermissionError:
+        if attempt == 99: raise
+        time.sleep(.05)
+start=time.monotonic()
+while time.monotonic()-start<240:
+    path=folder/'public'/('dispatcher-stopped.json' if a.action=='stop-dispatcher' else 'dispatch-receipt.json')
+    if path.exists():
+        try:
+            receipt=json.loads(path.read_text())
+            if a.action=='stop-dispatcher' or receipt.get('sequence')==job['sequence']:
+                print(json.dumps(receipt),flush=True)
+                if a.action!='stop-dispatcher':
+                    label='-'.join(x for x in (a.role,a.action,a.mode,a.transport,a.phase) if x)
+                    print((folder/'public'/(label+'.json')).read_text(),flush=True)
+                raise SystemExit(receipt.get('exit_code',0))
+        except (OSError,ValueError): pass
+    time.sleep(.2)
+raise SystemExit('Guest job timed out; do not blindly resubmit')

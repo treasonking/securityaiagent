@@ -1,0 +1,70 @@
+{
+  "role": "controller",
+  "action": "inspect",
+  "ok": true,
+  "started_at": "2026-11-07T07:01:17.363780+00:00",
+  "head": "e54d776dc6cdac642c2b6a9dbd971a9e4b470851",
+  "branch": "codex/compact-chat-layout",
+  "tracked_status": "",
+  "listener": null,
+  "network": {
+    "links": [
+      {
+        "name": "lo",
+        "mac": "00:00:00:00:00:00"
+      },
+      {
+        "name": "enp0s3",
+        "mac": "08:00:27:e6:a1:6a"
+      },
+      {
+        "name": "enp0s8",
+        "mac": "08:00:27:fd:88:d5"
+      },
+      {
+        "name": "enp0s9",
+        "mac": "08:00:27:ee:07:59"
+      }
+    ],
+    "addresses": [
+      {
+        "name": "lo",
+        "ipv4": [
+          "127.0.0.1"
+        ]
+      },
+      {
+        "name": "enp0s3",
+        "ipv4": [
+          "10.0.2.15"
+        ]
+      },
+      {
+        "name": "enp0s8",
+        "ipv4": [
+          "10.77.0.10"
+        ]
+      },
+      {
+        "name": "enp0s9",
+        "ipv4": [
+          "192.168.56.10"
+        ]
+      }
+    ]
+  },
+  "firewall_sha256": "f5f531cfafa62994c4c818e0f6b5eb7e7051d4f57708f5f0b11e52f3e308e169",
+  "env_files": [
+    ".env.controller",
+    ".env.controller.backup-20261014-123037",
+    ".env.example"
+  ],
+  "sqlite_files": [
+    "securitylab.sqlite3",
+    "target.sqlite3"
+  ],
+  "new_checkout_exists": false,
+  "baseline_exists": false,
+  "configuration_validation": "legacy_uvicorn_launch_health_required",
+  "finished_at": "2026-11-07T07:01:17.460966+00:00"
+}
