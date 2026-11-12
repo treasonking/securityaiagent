@@ -4,6 +4,8 @@
 
 [2026-11-12 실제 VM 배포·재배포·복구 결과](../reports/vm_deployment_20261112/README.md)를 참고한다. 기존 operator-resource 기능은 변경하지 않는다.
 
+[2026-11-13 결과 연결·IPv6 검사 수정 검증](../reports/vm_deployment_fixes_20261113/README.md)은 별도 기록이다. 11월 12일의 성공 기록을 수정하거나 이번 수정의 검증 결과로 대체하지 않는다.
+
 ## 데이터와 실행 방식
 
 - 기존 `/home/ubuntu/securityaiagent`와 `.env.<role>`를 덮어쓰지 않는다. 현재 활성 release가 있으면 그 경로를 다음 배포의 기준으로 삼는다.
@@ -13,7 +15,7 @@
 - 정지 후 private Git bundle·workspace archive를 만들고 data와 기존 run report를 복사한다. SQLite online backup, quick_check, 중복 개수까지 포함한 행 비교를 수행한다. private 백업/로그/DB 내용은 보고서로 내보내지 않는다.
 - 새 DB는 별도 파일이다. 배포 중 기존 원본 DB·환경·config·report가 그대로인지, 새 DB에 기존 행이 남아 있는지 확인한다. 정상 종료 후 복사하므로 서비스 중단 시간이 있다. zero-downtime 배포가 아니다.
 - health는 고정 역할 주소의 `/health` 또는 Controller `/api/health`에서 200과 `status=ok`를 요구한다. 기존 allowlist를 유지하며 loopback source를 사용한다.
-- Worker/Target은 기본 route가 있으면 `INTERNET_ISOLATION_UNPROVEN`으로 거절한다. NIC/IP/route와 정규화한 IPv4·IPv6 방화벽 hash를 비교만 한다. 방화벽/NIC/라우팅 변경 코드는 없다. 내부망 중계 호스트까지 포괄하는 외부 도달성 공격 테스트를 의미하지 않는다.
+- IPv4는 `ip -4 -j route show table all`, IPv6는 `ip -6 -j route show table all`로 각각 수집한다. `routes_ipv4`, `routes_ipv6`를 별도 snapshot 필드로 기록한다. Worker/Target은 어느 테이블이든 기본 경로(`default`, `0.0.0.0/0`, `::/0`)가 있으면 `INTERNET_ISOLATION_UNPROVEN`으로 거절한다. NIC/IP/두 경로 테이블과 정규화한 IPv4·IPv6 방화벽 hash를 비교만 한다. 방화벽/NIC/라우팅 변경 코드는 없다. 내부망 중계 호스트까지 포괄하는 외부 도달성 공격 테스트를 의미하지 않는다.
 
 ## 오프라인 패키지와 전달
 
@@ -38,7 +40,17 @@ sudo mount -t vboxsf -o uid=1000,gid=1000,umask=077 securityai-deployment /mnt/s
 python3 /mnt/securityai-deployment/dispatcher.py --exchange /mnt/securityai-deployment
 ```
 
-전달기는 shell 문자열을 실행하지 않는다. action과 commit/plan/digest 형식만 받으며, 기존 venv로 `vm_deploy.py`를 호출한다. 서비스 작업을 transport timeout으로 강제 kill하지 않는다. 호스트 timeout은 실행 실패/미실행으로 간주할 수 없으므로 receipt와 VM journal을 확인하기 전 재전송하지 않는다. `pending.json`이 이를 차단한다. 전달기를 재시작해도 이미 소비한 sequence를 다시 실행하지 않는다.
+전달기는 shell 문자열을 실행하지 않는다. action과 commit/plan/digest 형식만 받으며, 기존 venv로 `vm_deploy.py`를 호출한다. protocol 2의 job에는 role/action/sequence가 있고 자식에게 `--sequence`를 전달한다. 결과는 `public/result-<sequence>.json`, 실제 자식 종료 코드는 `public/receipt-<sequence>.json`에 원자적으로 기록한다. job·receipt·result의 sequence/role/action이 모두 같고, receipt의 정수 exit_code가 0이며 result.ok가 정확히 true여야 성공이다. 비정상 종료를 결과 파일의 성공으로 덮지 않는다. `apply.json`, `receipt.json` 등 최신 표시용 별칭은 성공 판단에 사용하지 않는다. protocol 1의 ready 파일은 거절하므로 sender/dispatcher/guest 도구를 함께 업데이트한다.
+
+서비스 작업을 transport timeout으로 강제 kill하지 않는다. 결과 누락·이전 sequence·불일치·비정상 종료·timeout이면 `pending.json`을 유지하고 새 전송을 `PREVIOUS_JOB_UNRESOLVED`로 거절한다. receipt가 나중에 도착했다고 자동 재전송하지 않는다. 호스트의 pending 생성은 배타적이며, guest는 실행 전 sequence 소비 기록을 남기고 전달기 중복 실행을 잠금으로 차단한다. 전달기를 재시작하거나 다른 job을 거친 뒤에도 이미 소비한 sequence는 자동 재실행하지 않는다.
+
+늦게 도착한 결과는 **재전송 없이** 회수할 수 있다:
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.vm_deploy_host collect --exchange verification_tmp/vm_release/exchange --role worker --sequence <pending-sequence>
+```
+
+collect도 동일한 연결 검사를 적용하며 확실한 성공만 pending을 해제한다. 실패·불확실한 변경 작업은 receipt, 해당 sequence 결과, guest journal 및 실제 listener를 운영자가 확인해야 한다. pending이 남아 있으면 host를 통한 새 status/rollback도 자동 전송하지 않는다. 필요하면 guest 터미널에서 읽기 전용 `vm_deploy.py status --exchange ...`로 확인한다. 확인한 pending/receipt/result를 감사 기록으로 보관하고 운영자가 명시적으로 pending을 해제한 뒤에만 새 복구 작업을 결정한다. pending 파일을 timeout만 보고 삭제하거나 apply를 반복하는 절차는 지원하지 않는다.
 
 ## Inspect → plan → 검토 → apply
 
@@ -61,6 +73,8 @@ python3 /mnt/securityai-deployment/dispatcher.py --exchange /mnt/securityai-depl
 
 ## 실패 복구와 명시적 rollback
 
+IPv6가 별도 필드에 포함되면서 기존 단일 `routes` snapshot 계획과 새 inventory의 구조가 달라졌다. 이전 plan/digest/성공 이력을 자동 수정하거나 누락된 IPv6 정보로 검사를 완화하지 않는다. 새 배포는 두 경로 테이블을 기록한 새 계획으로 진행한다. 이전 계획을 이용한 복구가 필요하면 운영자가 기존 이력과 현재 IPv4/IPv6 상태를 별도로 검토해야 하며, 이 수정은 이전 계획의 자동 변환을 제공하지 않는다.
+
 배포 중 backup/start/health/보존 검사가 실패하면 `RECOVERING`으로 전환해 새 서비스만 정상 종료하고 원래 checkout/환경/실행 방법으로 돌아간다. 원래 실행 중이었다면 다시 시작해 health를 확인하고, 원래 정지 상태였다면 정지 상태로 복구한다. 성공한 자동 복구는 `ROLLED_BACK_AFTER_FAILURE`, 복구까지 실패하면 `RECOVERY_REQUIRED`로 남고 성공으로 보고하지 않는다. 프로세스 강제 종료·호스트 전원 손실로 중단된 경우 자동 재개하지 않는다. journal을 확인하고 아래 명령으로 복구한다.
 
 ```powershell
@@ -76,4 +90,4 @@ python3 /mnt/securityai-deployment/dispatcher.py --exchange /mnt/securityai-depl
 .\.venv\Scripts\python.exe -m scripts.vm_deploy_host stop --exchange verification_tmp/vm_release/exchange --role worker
 ```
 
-보고서는 `public/*.json`과 `public/history/*.json` 중 검토한 결과만 수집한다. `release.bundle`, populated 환경파일, private 로그/archive/DB를 커밋하지 않는다. 현재 도구는 서비스 시작 방식을 systemd로 바꾸거나 부팅 자동 실행을 설치하지 않는다. 재부팅 뒤 active release 참조를 읽어 새 계획을 만들 수 있지만 전원 장애 자동 재기동 관리자는 아니다.
+보고서는 `public/result-*.json`, `public/receipt-*.json`, `public/history-*.json` 등 검토한 결과만 수집한다. 이전 protocol의 `public/history/` 기록은 그대로 보존한다. `release.bundle`, populated 환경파일, private 로그/archive/DB를 커밋하지 않는다. 현재 도구는 서비스 시작 방식을 systemd로 바꾸거나 부팅 자동 실행을 설치하지 않는다. 재부팅 뒤 active release 참조를 읽어 새 계획을 만들 수 있지만 전원 장애 자동 재기동 관리자는 아니다.

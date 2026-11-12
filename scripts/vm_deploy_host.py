@@ -41,21 +41,83 @@ def package(exchange, commit):
     return {'ok': True, 'commit': commit, 'bundle_sha256': manifest['bundle_sha256']}
 
 
+def read_completion(folder, job):
+    """Only a matching receipt AND result with exit 0 and ok=true can succeed."""
+    sequence = job['sequence']
+    receipt_path = folder / 'public' / ('receipt-' + sequence + '.json')
+    if not receipt_path.exists():
+        return None
+    outcome = {'ok': False, 'job': job, 'receipt': None, 'result': None}
+    try:
+        receipt = load(receipt_path)
+    except (OSError, ValueError):
+        return dict(outcome, reason_code='RECEIPT_INVALID')
+    if not isinstance(receipt, dict) or any(receipt.get(k) != job[k] for k in ('sequence', 'action', 'role')):
+        return dict(outcome, reason_code='RECEIPT_IDENTITY_MISMATCH')
+    outcome['receipt'] = receipt
+    result_state = 'missing'
+    try:
+        result = load(folder / 'public' / ('result-' + sequence + '.json'))
+        if not isinstance(result, dict) or any(result.get(k) != job[k] for k in ('sequence', 'action', 'role')):
+            result_state = 'identity_mismatch'
+        elif type(result.get('ok')) is not bool:
+            result_state = 'invalid_status'
+        else:
+            result_state = 'matched'
+            outcome['result'] = result
+    except FileNotFoundError:
+        pass
+    except (OSError, ValueError):
+        result_state = 'invalid'
+    outcome['result_state'] = result_state
+    # Never infer a successful process exit from an application result or a default.
+    if type(receipt.get('exit_code')) is not int or receipt['exit_code'] != 0:
+        return dict(outcome, reason_code='RECEIPT_EXIT_FAILED')
+    if result_state != 'matched':
+        return dict(outcome, reason_code='RESULT_NOT_CORRELATED')
+    if outcome['result']['ok'] is not True:
+        return dict(outcome, reason_code='GUEST_OPERATION_FAILED')
+    return dict(outcome, ok=True)
+
+
+def collect(folder, sequence):
+    """Collect an existing job only. Never submit, retry or resume a guest action."""
+    require(bool(re.fullmatch('[0-9a-f]{32}', sequence or '')), 'INVALID_JOB_IDENTIFIER')
+    pending = folder / 'pending.json'
+    require(pending.exists(), 'NO_PENDING_JOB')
+    job = load(pending)
+    require(job['sequence'] == sequence, 'PENDING_SEQUENCE_MISMATCH')
+    outcome = read_completion(folder, job)
+    require(outcome is not None, 'JOB_NOT_FINISHED')
+    write(folder / 'public' / ('history-' + sequence + '.json'), outcome)
+    # Failed, incomplete, stale or conflicting results remain unresolved. An
+    # operator must inspect guest state; another send must not replace this job.
+    if outcome['ok']:
+        require(load(pending) == job, 'PENDING_JOB_CHANGED')
+        pending.unlink()
+    return outcome
+
+
 def send(folder, job, timeout=620):
     require(job.get('action') in ('inspect', 'plan', 'apply', 'rollback', 'status', 'stop'), 'INVALID_ACTION')
     require(set(job) <= {'action', 'commit', 'expected', 'plan', 'confirm'}, 'INVALID_JOB_FIELDS')
     for key, size in [('commit', 40), ('expected', 40), ('plan', 32), ('confirm', 64)]:
         if key in job:
             require(bool(re.fullmatch('[0-9a-f]{' + str(size) + '}', job[key] or '')), 'INVALID_JOB_IDENTIFIER')
+    require(folder.name in ('controller', 'worker', 'target'), 'INVALID_ROLE')
     require((folder / 'public/ready.json').exists(), 'GUEST_DISPATCHER_NOT_READY')
-    # A timed-out caller must inspect its receipt before delivering another action.
+    ready = load(folder / 'public/ready.json')
+    require(ready.get('protocol') == 2 and ready.get('role') == folder.name, 'DISPATCHER_PROTOCOL_MISMATCH')
+    # Even a matching receipt cannot automatically authorize another changing job.
     pending = folder / 'pending.json'
-    if pending.exists():
-        previous = load(pending)
-        receipt_path = folder / 'public/receipt.json'
-        require(receipt_path.exists() and load(receipt_path).get('sequence') == previous['sequence'], 'PREVIOUS_JOB_UNRESOLVED')
-    job = dict(job, sequence=uuid.uuid4().hex)
-    write(pending, job)
+    job = dict(job, sequence=uuid.uuid4().hex, role=folder.name)
+    try:
+        with pending.open('x', encoding='utf-8') as stream:
+            json.dump(job, stream)
+            stream.flush()
+            os.fsync(stream.fileno())
+    except FileExistsError:
+        raise DeployError('PREVIOUS_JOB_UNRESOLVED') from None
     temp = folder / 'delivery.tmp'
     temp.write_text(json.dumps(job), encoding='utf-8')
     for attempt in range(100):
@@ -69,36 +131,34 @@ def send(folder, job, timeout=620):
             time.sleep(.05)
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        try:
-            receipt = load(folder / 'public' / ('stopped.json' if job['action'] == 'stop' else 'receipt.json'))
-            if receipt.get('sequence') == job['sequence']:
-                result = receipt if job['action'] == 'stop' else load(folder / 'public' / (job['action'] + '.json'))
-                write(folder / 'public/history' / (job['sequence'] + '.json'), {'job': job, 'receipt': receipt, 'result': result})
-                pending.unlink()
-                return {'receipt': receipt, 'result': result}
-        except (OSError, ValueError):
-            pass
+        if (folder / 'public' / ('receipt-' + job['sequence'] + '.json')).exists():
+            return collect(folder, job['sequence'])
         time.sleep(.2)
     raise DeployError('JOB_TIMEOUT_INSPECT_RECEIPT_BEFORE_RETRY')
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('package', 'inspect', 'plan', 'apply', 'rollback', 'status', 'stop'))
+    parser.add_argument('action', choices=('package', 'inspect', 'plan', 'apply', 'rollback', 'status', 'stop', 'collect'))
     parser.add_argument('--exchange', type=Path, required=True)
     parser.add_argument('--role', choices=('controller', 'worker', 'target'))
     for name in ('commit', 'expected', 'plan', 'confirm'):
         parser.add_argument('--' + name)
+    parser.add_argument('--sequence', help='existing pending job to collect without resending')
     args = parser.parse_args()
     try:
         if args.action == 'package':
             result = package(args.exchange, args.commit)
         else:
             require(args.role is not None, 'ROLE_REQUIRED')
-            job = {k: v for k, v in vars(args).items() if v is not None and k not in ('exchange', 'role')}
-            result = send(args.exchange / args.role, job)
+            if args.action == 'collect':
+                result = collect(args.exchange / args.role, args.sequence)
+            else:
+                require(args.sequence is None, 'SEQUENCE_ONLY_FOR_COLLECT')
+                job = {k: v for k, v in vars(args).items() if v is not None and k not in ('exchange', 'role', 'sequence')}
+                result = send(args.exchange / args.role, job)
         print(json.dumps(result, indent=2))
-        return 0 if result.get('ok', result.get('result', {}).get('ok', result.get('receipt', {}).get('exit_code', 0) == 0)) else 2
+        return 0 if result.get('ok') is True else 2
     except DeployError as exc:
         print(json.dumps({'ok': False, 'reason_code': str(exc)}))
         return 2

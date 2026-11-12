@@ -181,17 +181,22 @@ class VM:
         network = [{'name': x['ifname'], 'mac': x.get('address'),
                     'addresses': sorted([a['family'], a['local'], a['prefixlen']] for a in x.get('addr_info', []))}
                    for x in addresses]
-        routes = json.loads(self.cmd(['ip', '-j', 'route', 'show', 'table', 'all']))
-        normalized_routes = [{k: v for k, v in r.items() if k not in ('expires', 'cache')}
-                             for r in routes]
+        routes_by_family = {}
+        for family in ('4', '6'):
+            routes = json.loads(self.cmd(['ip', '-' + family, '-j', 'route', 'show', 'table', 'all']))
+            routes_by_family[family] = sorted(
+                ({k: v for k, v in r.items() if k not in ('expires', 'cache')} for r in routes),
+                key=lambda row: json.dumps(row, sort_keys=True))
         if self.role != 'controller':
-            require(not any(r.get('dst') == 'default' for r in routes), 'INTERNET_ISOLATION_UNPROVEN')
+            require(not any(r.get('dst') in ('default', '0.0.0.0/0', '::/0')
+                            for routes in routes_by_family.values() for r in routes), 'INTERNET_ISOLATION_UNPROVEN')
         firewall = {}
         for command in ('iptables-save', 'ip6tables-save'):
             lines = self.cmd(['sudo', '-n', command]).splitlines()
             normalized = '\n'.join(re.sub(r'\[\d+:\d+\]', '[0:0]', x) for x in lines if not x.startswith('#'))
             firewall[command] = hashlib.sha256(normalized.encode()).hexdigest()
-        return {'interfaces': network, 'routes': normalized_routes, 'firewall': firewall,
+        return {'interfaces': network, 'routes_ipv4': routes_by_family['4'],
+                'routes_ipv6': routes_by_family['6'], 'firewall': firewall,
                 'no_default_route_required': self.role != 'controller'}
 
     def inventory(self):
@@ -486,9 +491,14 @@ def main():
     parser.add_argument('--expected')
     parser.add_argument('--plan')
     parser.add_argument('--confirm')
+    parser.add_argument('--sequence', help='transport job identity; not deployment authorization')
     args = parser.parse_args()
     role = socket.gethostname().removeprefix('security-')
     result = {'role': role, 'action': args.action, 'ok': False, 'time': time.time()}
+    if args.sequence is not None:
+        if not re.fullmatch('[0-9a-f]{32}', args.sequence):
+            parser.error('sequence must be 32 lowercase hexadecimal characters')
+        result['sequence'] = args.sequence
     os.umask(0o077)
     try:
         require(sys.platform == 'linux' and os.getuid() == 1000, 'REGISTERED_GUEST_USER_REQUIRED')
@@ -511,6 +521,9 @@ def main():
         result['reason_code'] = 'OPERATION_FAILED'
         result['error_type'] = type(exc).__name__
     # No exception text, command output, environment values, or DB rows are public.
+    if args.sequence is not None:
+        write(args.exchange / 'public' / ('result-' + args.sequence + '.json'), result)
+    # Human-readable latest alias only. Transport never reads this mutable path.
     write(args.exchange / 'public' / (args.action + '.json'), result)
     print(json.dumps(result, indent=2))
     return 0 if result['ok'] else 2

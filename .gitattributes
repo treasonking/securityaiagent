@@ -11,3 +11,4 @@
 reports/operator_resource/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 reports/operator_resource_vm_20261107/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 reports/vm_deployment_20261112/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+reports/vm_deployment_fixes_20261113/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

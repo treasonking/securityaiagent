@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "job": {
+    "action": "stop",
+    "sequence": "42fc8a5125c64471a594524cad68a16c",
+    "role": "controller"
+  },
+  "receipt": {
+    "sequence": "42fc8a5125c64471a594524cad68a16c",
+    "action": "stop",
+    "role": "controller",
+    "exit_code": 0
+  },
+  "result": {
+    "sequence": "42fc8a5125c64471a594524cad68a16c",
+    "action": "stop",
+    "role": "controller",
+    "ok": true
+  },
+  "result_state": "matched"
+}
