@@ -1,0 +1,84 @@
+{
+  "schema_version": "2.0",
+  "targets": {
+    "lab-web": {
+      "origin": "http://10.78.0.30:8080",
+      "profile": {
+        "profile_id": "lab-records-access-control",
+        "revision": 1,
+        "enabled": true,
+        "scenarios": {
+          "access-control-http": [
+            "user-a",
+            "user-b"
+          ]
+        },
+        "operations": [
+          "login",
+          "list_own_documents",
+          "fetch_document"
+        ],
+        "limits": {
+          "max_requests": 30,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 2.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "http_routes": {
+          "login_path": "/api/session",
+          "list_path": "/api/me/records",
+          "detail_path": "/api/records/{document_id}"
+        }
+      },
+      "adapter": {
+        "adapter_id": "synthetic-records",
+        "routes": {
+          "login_path": "/api/session",
+          "list_path": "/api/me/records",
+          "detail_path": "/api/records/{document_id}"
+        },
+        "accounts": {
+          "user_a": {
+            "username": "user_a",
+            "password_env": "LAB_USER_A_PASSWORD"
+          },
+          "user_b": {
+            "username": "user_b",
+            "password_env": "LAB_USER_B_PASSWORD"
+          },
+          "admin": {
+            "username": "admin",
+            "password_env": "LAB_ADMIN_PASSWORD"
+          }
+        },
+        "login_user_field": "login_name",
+        "login_password_field": "passphrase",
+        "auth_mode": "bearer",
+        "cookie_name": null,
+        "token_field": "session.access_token",
+        "identity_header": "X-Lab-Principal",
+        "list_field": "data.items",
+        "list_account_field": "principal.key",
+        "list_id_field": "key",
+        "list_owner_field": "owner.key",
+        "resource_id_field": "record.key",
+        "owner_field": "record.owner.key",
+        "visibility_field": "record.shared",
+        "private_value": false,
+        "public_value": true,
+        "content_field": "record.content.text",
+        "content_kind_field": "record.content.type",
+        "content_kind_value": "lab-private",
+        "content_container_field": "record.content",
+        "legacy_marker_field": "record.marker",
+        "denial_field": "error.code",
+        "denial_value": "record_unavailable"
+      }
+    }
+  }
+}

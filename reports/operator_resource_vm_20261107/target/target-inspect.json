@@ -1,0 +1,55 @@
+{
+  "role": "target",
+  "action": "inspect",
+  "ok": true,
+  "started_at": "2026-11-07T07:01:28.439523+00:00",
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "branch": "codex/candidate-preview-run",
+  "tracked_status": "",
+  "listener": null,
+  "network": {
+    "links": [
+      {
+        "name": "lo",
+        "mac": "00:00:00:00:00:00"
+      },
+      {
+        "name": "enp0s3",
+        "mac": "08:00:27:62:c2:a5"
+      }
+    ],
+    "addresses": [
+      {
+        "name": "lo",
+        "ipv4": [
+          "127.0.0.1"
+        ]
+      },
+      {
+        "name": "enp0s3",
+        "ipv4": [
+          "10.78.0.30"
+        ]
+      }
+    ]
+  },
+  "firewall_sha256": "f5b44519b6972c4b3b72d8024e3cab16d06ef5b49cefb7adb4278780f4bbdccd",
+  "env_files": [
+    ".env.target.example",
+    ".env.target",
+    ".env.controller.example",
+    ".env.example",
+    ".env.worker.example"
+  ],
+  "sqlite_files": [
+    "vm-target-vulnerable.sqlite3",
+    "vm-target-fixed.sqlite3",
+    "vm-target-live-vulnerable.sqlite3",
+    "vm-target.sqlite3",
+    "target.sqlite3"
+  ],
+  "new_checkout_exists": true,
+  "baseline_exists": true,
+  "configuration_valid": true,
+  "finished_at": "2026-11-07T07:01:28.624778+00:00"
+}

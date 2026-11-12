@@ -12,10 +12,12 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from starlette.routing import Mount
 
-from common.schemas import ToolResult
-from worker.policy import TargetPolicy
-from worker.registry import load_target_registry
-from worker.service import ToolService, WorkerLimits
+from common.schemas import ScenarioId, ToolResult
+from worker.registry import load_scope_registry
+from worker.limits import limits_from_env
+from worker.scope import ScopeViolation
+from worker.service import ToolService
+from worker.candidate_policy import CandidatePolicy, policy_for
 
 
 class StartSessionRequest(BaseModel):
@@ -23,6 +25,9 @@ class StartSessionRequest(BaseModel):
     run_id: str
     target_id: str
     account_ref: str
+    scenario_id: ScenarioId = "access-control"
+    expected_snapshot_sha256: str | None = None
+    candidate_contract: str | None = None
 
 
 class ListDocumentsRequest(BaseModel):
@@ -71,6 +76,11 @@ def build_worker_app(
     allowed_mcp_hosts: set[str] | None = None,
     allowed_mcp_origins: set[str] | None = None,
 ):
+    from worker.operator_service import OperatorService
+    if isinstance(service, OperatorService):
+        from worker.operator_app import build_operator_app
+        return build_operator_app(service, worker_token=worker_token, allowed_clients=allowed_clients,
+            allowed_mcp_hosts=allowed_mcp_hosts, allowed_mcp_origins=allowed_mcp_origins)
     if not worker_token:
         raise RuntimeError("WORKER_TOKEN must be configured")
     allowed = allowed_clients or {"127.0.0.1", "::1", "testclient"}
@@ -91,7 +101,15 @@ def build_worker_app(
 
     @api.post("/v1/tools/start-session", response_model=ToolResult, dependencies=[Depends(authenticate)])
     async def start_session(payload: StartSessionRequest) -> ToolResult:
-        return await service.start_session(payload.run_id, payload.target_id, payload.account_ref)
+        return await service.start_session(payload.run_id, payload.target_id, payload.account_ref, payload.scenario_id,
+            expected_snapshot_sha256=payload.expected_snapshot_sha256, candidate_contract=payload.candidate_contract)
+
+    @api.get('/v1/operator/candidate-policy', response_model=CandidatePolicy, dependencies=[Depends(authenticate)])
+    async def candidate_policy() -> CandidatePolicy:
+        try:
+            return policy_for(service)
+        except ScopeViolation:
+            raise HTTPException(status_code=409, detail='candidate policy unavailable') from None
 
     @api.post("/v1/tools/list-own-documents", response_model=ToolResult, dependencies=[Depends(authenticate)])
     async def list_own_documents(payload: ListDocumentsRequest) -> ToolResult:
@@ -129,9 +147,11 @@ def build_worker_app(
     )
 
     @mcp.tool()
-    async def start_session(run_id: str, target_id: str, account_ref: str) -> dict[str, Any]:
+    async def start_session(run_id: str, target_id: str, account_ref: str, scenario_id: ScenarioId = "access-control",
+                            expected_snapshot_sha256: str | None = None, candidate_contract: str | None = None) -> dict[str, Any]:
         """Start one opaque synthetic-account session for a registered target."""
-        return (await service.start_session(run_id, target_id, account_ref)).model_dump(mode="json")
+        return (await service.start_session(run_id, target_id, account_ref, scenario_id,
+            expected_snapshot_sha256=expected_snapshot_sha256, candidate_contract=candidate_contract)).model_dump(mode="json")
 
     @mcp.tool()
     async def list_own_documents(run_id: str, target_id: str, session_ref: str) -> dict[str, Any]:
@@ -170,35 +190,18 @@ def create_app_from_env():
         "TARGET_REGISTRY_PATH",
         str(__import__("pathlib").Path(__file__).resolve().parents[1] / "config" / "targets.json"),
     )
-    policies = load_target_registry(registry_path)
-    target_url = os.getenv("TARGET_BASE_URL")
-    if target_url:
-        from urllib.parse import urlsplit
-
-        parsed = urlsplit(target_url)
-        policies["lab-web"] = TargetPolicy(
-            target_id="lab-web",
-            scheme=parsed.scheme,
-            host=parsed.hostname or "",
-            port=parsed.port or 80,
-        )
-    accounts = {
-        "user-a": ("user_a", os.getenv("LAB_USER_A_PASSWORD") or "local-a-password"),
-        "user-b": ("user_b", os.getenv("LAB_USER_B_PASSWORD") or "local-b-password"),
-        "admin": ("admin", os.getenv("LAB_ADMIN_PASSWORD") or "local-admin-password"),
-    }
-    limits = WorkerLimits(
-        max_requests=int(os.getenv("HTTP_MAX_REQUESTS", "30")),
-        max_tool_calls=int(os.getenv("AGENT_MAX_STEPS", "12")),
-        timeout_seconds=float(os.getenv("HTTP_TIMEOUT_SECONDS", "5")),
-        run_timeout_seconds=float(os.getenv("RUN_TIMEOUT_SECONDS", "180")),
-        max_response_bytes=int(os.getenv("HTTP_MAX_RESPONSE_BYTES", "65536")),
-        requests_per_second=float(os.getenv("HTTP_REQUESTS_PER_SECOND", "2")),
-        max_concurrency=int(os.getenv("HTTP_MAX_CONCURRENCY", "1")),
-        max_runs=int(os.getenv("WORKER_MAX_RUNS", "100")),
-        state_ttl_seconds=float(os.getenv("WORKER_STATE_TTL_SECONDS", "600")),
-    )
-    service = ToolService(policies=policies, accounts=accounts, limits=limits)
+    registry = load_scope_registry(registry_path, expected_origin=os.getenv("TARGET_BASE_URL") or None)
+    from worker.operator_scope import OperatorRegistry
+    if isinstance(registry, OperatorRegistry):
+        registry = registry.bind_proofs(os.environ)
+    accounts = registry.credentials(os.environ)
+    try:
+        limits = limits_from_env()
+    except (ValueError, OverflowError):
+        raise ScopeViolation("SCOPE_INVALID", "invalid global worker limits") from None
+    from worker.operator_service import OperatorService
+    service_type = OperatorService if isinstance(registry, OperatorRegistry) else ToolService
+    service = service_type(registry=registry, accounts=accounts, limits=limits)
     allowed = {
         item.strip()
         for item in os.getenv("WORKER_ALLOWED_CLIENTS", "10.77.0.10,127.0.0.1,::1").split(",")

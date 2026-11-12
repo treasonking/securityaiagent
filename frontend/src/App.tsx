@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   authenticateSession,
   cancelRun,
@@ -36,14 +36,28 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("취약/수정 모드의 접근 통제 시나리오를 검증해줘.");
   const [transport, setTransport] = useState<"function" | "mcp">("function");
+  const [scenario, setScenario] = useState<"access-control" | "access-control-http">("access-control");
   const [provider, setProvider] = useState<"mock" | "openai">("mock");
   const [run, setRun] = useState<RunState | null>(null);
   const [events, setEvents] = useState<string[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
   const [error, setError] = useState("");
+  const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const activeConversationRef = useRef<string | null>(null);
   const activeRunRef = useRef<string | null>(null);
   const busy = useMemo(() => Boolean(run && !terminal.has(run.status)), [run]);
+
+  useLayoutEffect(() => {
+    const input = messageInputRef.current;
+    if (!input) return;
+    const resizeInput = () => {
+      input.style.height = "0px";
+      input.style.height = `${input.scrollHeight + input.offsetHeight - input.clientHeight}px`;
+    };
+    resizeInput();
+    window.addEventListener("resize", resizeInput);
+    return () => window.removeEventListener("resize", resizeInput);
+  }, [message, authenticated]);
 
   function activateConversation(conversationId: string | null) {
     activeConversationRef.current = conversationId;
@@ -204,7 +218,7 @@ export default function App() {
         activateConversation(conversationId);
         setConversations(await listConversations());
       }
-      const submitted = await submitMessage(conversationId, message, transport, provider);
+      const submitted = await submitMessage(conversationId, message, transport, provider, scenario);
       const [state, nextMessages] = await Promise.all([
         getRun(submitted.run_id), listMessages(conversationId),
       ]);
@@ -295,7 +309,7 @@ export default function App() {
       <section className="workspace">
         <header className="topbar">
           <div><span className="status-dot" /> 인증된 단일 사용자 · synthetic-only</div>
-          <div className="scope">lab-web / access-control</div>
+          <div className="scope">lab-web / {scenario}</div>
         </header>
 
         <section className="conversation" aria-live="polite">
@@ -329,7 +343,10 @@ export default function App() {
                     <div><span>Provider</span><strong>{run.report.provider_mode}</strong></div>
                     <div><span>Transport</span><strong>{run.report.tool_transport}</strong></div>
                   </div>
-                  <p className="subtle">Target log: {run.report.environment.target_server_log}</p>
+                  <p className="subtle">{run.report.scope_policy
+                    ? `정책: ${run.report.scope_policy.profile_id} r${run.report.scope_policy.revision} · HTTP ${run.report.scope_policy.effective_limits.max_requests}회 / 도구 ${run.report.scope_policy.effective_limits.max_tool_calls}회 · 응답 ${run.report.scope_policy.effective_limits.max_response_bytes}B · 요청 ${run.report.scope_policy.effective_limits.timeout_seconds}초 / 실행 ${run.report.scope_policy.effective_limits.run_timeout_seconds}초 · 초당 ${run.report.scope_policy.effective_limits.requests_per_second}회 / 동시 ${run.report.scope_policy.effective_limits.max_concurrency}개`
+                    : "정책: legacy / 미기록"}</p>
+                  <p className="subtle">{run.report.verification_basis === "http_observation" ? "판정 기준: HTTP 관측 · 서버 로그 미사용 · 테스트한 계정과 리소스에 한정" : `Target log: ${run.report.environment.target_server_log}`}</p>
                   <div className="decision-split">
                     <section><span>모델 후보 · 미확정</span>{run.report.finding_candidates.length === 0 ? <p>모델 후보 없음 · 접근 통제 판정은 별도 증거 기반입니다.</p> : run.report.finding_candidates.map((item) => <p key={item.finding_type}>{item.finding_type}: {item.rationale}</p>)}</section>
                     <section><span>Verifier · 증거 확정</span>{run.report.verified_findings.map((item) => <p key={item.finding_type}>{item.verdict}: {item.reason}</p>)}</section>
@@ -351,11 +368,11 @@ export default function App() {
           {error && <p className="error" role="alert">{error}</p>}
           <div className="controls">
             <label>대상<select disabled><option>lab-web</option></select></label>
-            <label>시나리오<select disabled><option>access-control</option></select></label>
+            <label>시나리오<select value={scenario} onChange={(event) => setScenario(event.target.value as "access-control" | "access-control-http")}><option value="access-control">access-control · 로그 대조</option><option value="access-control-http">access-control-http · HTTP 관측</option></select></label>
             <label>Provider<select value={provider} onChange={(event) => setProvider(event.target.value as "mock" | "openai")}><option value="mock">mock · 검증됨</option><option value="openai" disabled={!config?.providers.openai.configured}>OpenAI · {config?.providers.openai.configured ? "설정됨/미검증" : "미설정"}</option></select></label>
             <label>도구 연결<select value={transport} onChange={(event) => setTransport(event.target.value as "function" | "mcp")}><option value="function">function / worker API</option><option value="mcp">SDK-managed MCP</option></select></label>
           </div>
-          <div className="input-row"><textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={3} /><button disabled={busy || !message.trim()} onClick={startRun}>검증 실행</button></div>
+          <div className="input-row"><textarea ref={messageInputRef} aria-label="검증 요청" value={message} onChange={(event) => setMessage(event.target.value)} rows={1} /><button disabled={busy || !message.trim()} onClick={startRun}>검증 실행</button></div>
           <small>자유문은 실행 계획을 바꾸지 않습니다. 등록된 고정 시나리오와 도구 순서만 실행합니다.</small>
         </footer>
       </section>

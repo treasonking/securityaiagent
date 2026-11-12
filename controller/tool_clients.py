@@ -6,7 +6,7 @@ from typing import Any, AsyncIterator, Protocol
 
 import httpx
 
-from common.schemas import ToolResult
+from common.schemas import ScenarioId, ToolResult
 from worker.service import ToolService
 
 
@@ -32,7 +32,7 @@ class ToolClient(Protocol):
     async def session(self) -> AsyncIterator[None]: ...
 
     async def list_tools(self) -> list[str]: ...
-    async def start_session(self, run_id: str, target_id: str, account_ref: str) -> ToolResult: ...
+    async def start_session(self, run_id: str, target_id: str, account_ref: str, scenario_id: ScenarioId = "access-control") -> ToolResult: ...
     async def list_own_documents(self, run_id: str, target_id: str, session_ref: str) -> ToolResult: ...
     async def fetch_document(
         self, run_id: str, target_id: str, session_ref: str, document_id: str, purpose: str
@@ -54,8 +54,8 @@ class DirectToolClient:
     async def list_tools(self) -> list[str]:
         return ["start_session", "list_own_documents", "fetch_document", "finish_run"]
 
-    async def start_session(self, run_id: str, target_id: str, account_ref: str) -> ToolResult:
-        return await self.service.start_session(run_id, target_id, account_ref)
+    async def start_session(self, run_id: str, target_id: str, account_ref: str, scenario_id: ScenarioId = "access-control") -> ToolResult:
+        return await self.service.start_session(run_id, target_id, account_ref, scenario_id)
 
     async def list_own_documents(self, run_id: str, target_id: str, session_ref: str) -> ToolResult:
         return await self.service.list_own_documents(run_id, target_id, session_ref)
@@ -100,9 +100,9 @@ class FunctionWorkerClient:
         response.raise_for_status()
         return ToolResult.model_validate(response.json())
 
-    async def start_session(self, run_id: str, target_id: str, account_ref: str) -> ToolResult:
+    async def start_session(self, run_id: str, target_id: str, account_ref: str, scenario_id: ScenarioId = "access-control") -> ToolResult:
         return await self._post(
-            "/v1/tools/start-session", {"run_id": run_id, "target_id": target_id, "account_ref": account_ref}
+            "/v1/tools/start-session", {"run_id": run_id, "target_id": target_id, "account_ref": account_ref, "scenario_id": scenario_id}
         )
 
     async def list_own_documents(self, run_id: str, target_id: str, session_ref: str) -> ToolResult:
@@ -189,9 +189,9 @@ class MCPWorkerClient:
             raise RuntimeError("MCP session is not connected")
         return self._decode_result(await self._server.call_tool(name, payload))
 
-    async def start_session(self, run_id: str, target_id: str, account_ref: str) -> ToolResult:
+    async def start_session(self, run_id: str, target_id: str, account_ref: str, scenario_id: ScenarioId = "access-control") -> ToolResult:
         return await self._call(
-            "start_session", {"run_id": run_id, "target_id": target_id, "account_ref": account_ref}
+            "start_session", {"run_id": run_id, "target_id": target_id, "account_ref": account_ref, "scenario_id": scenario_id}
         )
 
     async def list_own_documents(self, run_id: str, target_id: str, session_ref: str) -> ToolResult:

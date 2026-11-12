@@ -1,0 +1,29 @@
+{
+  "auth": "cookie",
+  "mode": "vulnerable",
+  "transport": "mcp",
+  "case": "public",
+  "run_id": "run_ed695b3dd3ec4ec1a43bd92c3a33d644",
+  "status": "COMPLETED",
+  "expected_verdict": "INCONCLUSIVE",
+  "actual_verdict": "INCONCLUSIVE",
+  "reason_code": "OWNER_RESOURCE_PROOF_UNPROVEN",
+  "preview_target_requests": 0,
+  "observed_target_http_requests": 11,
+  "expected_target_http_requests": 11,
+  "worker_usage": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_count": 11,
+  "replay": {
+    "verdict": "INCONCLUSIVE",
+    "reason_code": "OWNER_RESOURCE_PROOF_UNPROVEN",
+    "run_id": "run_ed695b3dd3ec4ec1a43bd92c3a33d644",
+    "verdict_matches": true,
+    "evidence_count": 11
+  },
+  "scope_matches_plan": true,
+  "path": "cookie-vulnerable-mcp-public",
+  "passed": true
+}

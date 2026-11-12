@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "run_id": "run_cefb6dc2667c4498b7d8cb5a6564b3cd",
+  "candidate_id": "38eae30a50bfb3b8b5cebc483cd96e63b9cd712af75c798eecf59f0413273b89",
+  "plan_id": "plan_e5243896de464e56aad2a69b7500fe36",
+  "plan_sha256": "e8537021478efca54db02b9c86ecc89257ce5f8025df3657fdd04ee78eb0a25d",
+  "source_sha256": "d6233f058424e90682074f8bf9371511bc0cf9321bc05bfa6bc8a5d772d49d6a",
+  "registry_sha256": "503e1783dfde6a11ecc3c5c85ec3fc3a84077a5fb99eae15324e460581672a34",
+  "expected_scope_policy": {
+    "profile_id": "lab-records-access-control",
+    "revision": 1,
+    "snapshot_sha256": "b601a7caf7d0cde12ce688d189bcb98d240efda6d9d2f5a0af280d68476be8de",
+    "effective_limits": {
+      "max_requests": 9,
+      "max_tool_calls": 10,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "actual_scope_policy": {
+    "profile_id": "lab-records-access-control",
+    "revision": 1,
+    "snapshot_sha256": "b601a7caf7d0cde12ce688d189bcb98d240efda6d9d2f5a0af280d68476be8de",
+    "effective_limits": {
+      "max_requests": 9,
+      "max_tool_calls": 10,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "control_calls": {
+    "preview_policy": 1,
+    "run_policy": 1
+  },
+  "status": "COMPLETED",
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL"
+}

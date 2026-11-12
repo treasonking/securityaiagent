@@ -1,0 +1,45 @@
+{
+  "role": "controller",
+  "action": "run",
+  "ok": true,
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "transport": "mcp",
+  "exit_code": 0,
+  "confirmed_plan_sha256": "cf45e81976235d341fc0e526c5530bee1b418bf54e273f26fdc216e994932a1b",
+  "run_id": "run_0f312e10632045ae99aa71b22e14921c",
+  "plan_id": "plan_246cecf502c54c1aae2c26f674373ce5",
+  "candidate_id": "38eae30a50bfb3b8b5cebc483cd96e63b9cd712af75c798eecf59f0413273b89",
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE",
+  "verification_basis": "http_observation",
+  "limits_used": {
+    "http_requests": 9,
+    "tool_calls": 10
+  },
+  "evidence_count": 7,
+  "verdict_matches": true,
+  "policy_and_identity_binding_matches": true,
+  "control_calls": {
+    "preview_policy": 1,
+    "run_policy": 1
+  },
+  "scope_policy": {
+    "profile_id": "lab-records-access-control",
+    "revision": 1,
+    "snapshot_sha256": "6a4d512a0681ddfba1939075f50dd133c4a180b7b5271ef6d751b0dc9e32dfe4",
+    "effective_limits": {
+      "max_requests": 9,
+      "max_tool_calls": 10,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "issued_and_claimed_history_retained": true,
+  "started_at": "2026-11-04T17:03:00.959556+00:00",
+  "finished_at": "2026-11-04T17:03:05.138488+00:00"
+}

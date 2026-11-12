@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "source_kind": "openapi_json",
+  "source_sha256": "b3c699c9219ffc374a42d1d413965d44849f06ef142e66ca2aea26695758eda8",
+  "target_id": "lab-web",
+  "registry_sha256": "97422d1a564ad313533d84203ed5f4d733f34588711598a28155c1eb1c6d8f1f",
+  "network_requests": 0,
+  "model_calls": 0,
+  "partial": false,
+  "limits": {
+    "bytes": 2097152,
+    "depth": 64,
+    "operations": 1000,
+    "ref_chain": 16,
+    "ref_visits": 10000,
+    "candidates": 100,
+    "expanded_nodes": 100000
+  },
+  "excluded": {
+    "NOT_SINGLE_FINAL_PARAMETER": 1,
+    "NON_GET": 1
+  },
+  "candidates": [
+    {
+      "candidate_id": "6b1a0af20067f1610b3cba91f505f21b246128a85fc3099ef6315fafe72b6928",
+      "finding_type": "cross_account_document_access",
+      "method": "GET",
+      "path_template": "/documents/{document_id}",
+      "origin_source": "operator_registry",
+      "adapter_id": "synthetic-documents",
+      "status": "READY_FOR_REVIEW",
+      "reason_codes": [
+        "REGISTERED_READ_FLOW_MATCH"
+      ],
+      "verification_status": "NOT_EXECUTED"
+    }
+  ]
+}

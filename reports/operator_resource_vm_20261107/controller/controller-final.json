@@ -1,0 +1,54 @@
+{
+  "role": "controller",
+  "action": "final",
+  "ok": true,
+  "started_at": "2026-11-07T07:06:05.518958+00:00",
+  "original_head_unchanged": true,
+  "protected_files_unchanged": true,
+  "changed_paths": [],
+  "databases": [
+    {
+      "file": "securitylab.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true,
+      "exact_rows_match": true
+    },
+    {
+      "file": "target.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true,
+      "exact_rows_match": true
+    }
+  ],
+  "network_unchanged": true,
+  "firewall_unchanged": true,
+  "restored_listener": {
+    "pid": 4734,
+    "cwd": "/home/ubuntu/securityaiagent",
+    "args": [
+      "/home/ubuntu/securityaiagent/.venv/bin/python",
+      "-m",
+      "uvicorn",
+      "--factory",
+      "controller.api:create_app_from_env",
+      "--env-file",
+      ".env.controller",
+      "--host",
+      "192.168.56.10",
+      "--port",
+      "8000",
+      "--workers",
+      "1"
+    ],
+    "start_ticks": "78957"
+  },
+  "health": {
+    "status_code": 200,
+    "status": "ok",
+    "path": "/api/health",
+    "source": "127.0.0.1"
+  },
+  "new_plan_history_files": 8,
+  "new_run_reports": 4,
+  "finished_at": "2026-11-07T07:06:05.701765+00:00"
+}

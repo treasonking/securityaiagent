@@ -6,6 +6,7 @@ import secrets
 import sqlite3
 import time
 from dataclasses import dataclass
+from contextlib import contextmanager
 from pathlib import Path
 
 
@@ -50,12 +51,17 @@ class TargetStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._initialize()
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self):
         connection = sqlite3.connect(self.path, timeout=5)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys=ON")
         connection.execute("PRAGMA busy_timeout=5000")
-        return connection
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def _initialize(self) -> None:
         with self._connect() as connection:
@@ -171,11 +177,11 @@ class TargetStore:
     def list_documents(self, account: TargetAccount) -> list[dict[str, str]]:
         with self._connect() as connection:
             rows = connection.execute(
-                "SELECT document_id, title FROM documents WHERE owner_id=? ORDER BY document_id", (account.account_id,)
+                "SELECT document_id, title, owner_id FROM documents WHERE owner_id=? ORDER BY document_id", (account.account_id,)
             ).fetchall()
-            return [{"document_id": row["document_id"], "title": row["title"]} for row in rows]
+            return [{"document_id": row["document_id"], "title": row["title"], "owner_id": row["owner_id"]} for row in rows]
 
-    def fetch_document(self, account: TargetAccount, document_id: str) -> tuple[int, dict[str, str] | None]:
+    def fetch_document(self, account: TargetAccount, document_id: str) -> tuple[int, dict[str, object] | None]:
         with self._connect() as connection:
             row = connection.execute(
                 "SELECT document_id, owner_id, title, marker, body FROM documents WHERE document_id=?", (document_id,)
@@ -186,6 +192,9 @@ class TargetStore:
                 return 404, None
             return 200, {
                 "document_id": row["document_id"],
+                "owner_id": row["owner_id"],
+                "visibility": "private",
+                "canary": {"kind": "synthetic-private", "value": row["marker"]},
                 "title": row["title"],
                 "marker": row["marker"],
                 "body": row["body"],

@@ -62,7 +62,7 @@ class ConversationRequest(BaseModel):
 class MessageRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     message: str = Field(min_length=1, max_length=4000)
-    scenario_id: Literal["access-control"] = "access-control"
+    scenario_id: Literal["access-control", "access-control-http"] = "access-control"
     target_id: Literal["lab-web"] = "lab-web"
     provider: Literal["mock", "openai"] = "mock"
     tool_transport: Literal["function", "mcp"] = "function"
@@ -204,6 +204,8 @@ def create_app(
         run = repo.get_run_internal(payload.run_id)
         if run is None or run["status"] != RunStatus.COMPLETED or not run["report"]:
             raise HTTPException(status_code=409, detail="completed online run is required")
+        if run["report"].get("scenario_id") != "access-control":
+            raise HTTPException(status_code=409, detail="offline import is only for the log-based scenario")
         evidence_items = [Evidence.model_validate(item) for item in repo.list_evidence(payload.run_id)]
         if payload.evidence_count != len(evidence_items):
             raise HTTPException(status_code=409, detail="evidence count mismatch")
@@ -234,6 +236,7 @@ def create_app(
         report.environment["target_server_log"] = (
             "offline-correlated" if fully_correlated else "offline-partial"
         )
+        report.verification_basis = "target_log_correlated" if fully_correlated else "pending_target_log"
         repo.update_run_report(payload.run_id, report)
         repo.save_findings(report)
         if fully_correlated:

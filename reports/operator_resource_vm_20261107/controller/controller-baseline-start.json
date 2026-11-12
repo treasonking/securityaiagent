@@ -1,0 +1,36 @@
+{
+  "role": "controller",
+  "action": "baseline-start",
+  "ok": true,
+  "started_at": "2026-11-07T07:01:41.024544+00:00",
+  "service": {
+    "launcher_pid": 4734,
+    "listener": {
+      "pid": 4734,
+      "cwd": "/home/ubuntu/securityaiagent",
+      "args": [
+        "/home/ubuntu/securityaiagent/.venv/bin/python",
+        "-m",
+        "uvicorn",
+        "--factory",
+        "controller.api:create_app_from_env",
+        "--env-file",
+        ".env.controller",
+        "--host",
+        "192.168.56.10",
+        "--port",
+        "8000",
+        "--workers",
+        "1"
+      ],
+      "start_ticks": "78957"
+    }
+  },
+  "health": {
+    "status_code": 200,
+    "status": "ok",
+    "path": "/api/health",
+    "source": "127.0.0.1"
+  },
+  "finished_at": "2026-11-07T07:01:47.125180+00:00"
+}

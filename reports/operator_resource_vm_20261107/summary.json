@@ -1,0 +1,143 @@
+{
+  "base_commit": "b574ba4179c8413ca61a181fa6c987898faf555f",
+  "executed_commit": "aa6143245c19cb917b26e056684c498358570cba",
+  "execution_environment": "three VirtualBox Ubuntu VMs; actual TCP across guest network interfaces",
+  "provider": "mock",
+  "auth_mode": "cookie",
+  "cases": [
+    {
+      "case": "vulnerable-function",
+      "run_id": "run_41ae9903beaf49d880e8ce8183d11b04",
+      "plan_id": "opplan_16fd390aa91b462a908d3d39ab251c8c",
+      "plan_sha256": "9b458b34c3d37d3831a33a83b798cba1d5f06dd0cabf8176724b16f3a79bbfb3",
+      "verdict": "VULNERABLE",
+      "target_counter_before_preview_after_preview_after_run": [
+        1,
+        1,
+        12
+      ],
+      "preview_target_requests": 0,
+      "run_target_requests": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "policy_binding_matches": true,
+      "guest_replay_matches": true,
+      "exported_artifact_replay_matches": true
+    },
+    {
+      "case": "vulnerable-mcp",
+      "run_id": "run_54658ffb5432427789c5b16c3272c3d9",
+      "plan_id": "opplan_98cffb8bd65747448ec915bf717c6dca",
+      "plan_sha256": "393f33c47051acfb42a1a988598f6ced65a0dfb75d3fc02c8857fec35bbc6ded",
+      "verdict": "VULNERABLE",
+      "target_counter_before_preview_after_preview_after_run": [
+        12,
+        12,
+        23
+      ],
+      "preview_target_requests": 0,
+      "run_target_requests": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "policy_binding_matches": true,
+      "guest_replay_matches": true,
+      "exported_artifact_replay_matches": true
+    },
+    {
+      "case": "fixed-function",
+      "run_id": "run_11da0995bcf24b18b17aa5042c7d3bac",
+      "plan_id": "opplan_efdca2664dc5479c98ad7c3c158c8fa9",
+      "plan_sha256": "221719d06a5c6c27e5501eaf646bc5bd12c2ae3e619636209d1e144d3c2ed9ab",
+      "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "target_counter_before_preview_after_preview_after_run": [
+        1,
+        1,
+        12
+      ],
+      "preview_target_requests": 0,
+      "run_target_requests": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "policy_binding_matches": true,
+      "guest_replay_matches": true,
+      "exported_artifact_replay_matches": true
+    },
+    {
+      "case": "fixed-mcp",
+      "run_id": "run_38768d719ab04bbb95615aac5dbb5713",
+      "plan_id": "opplan_3cb335ee06f04ec3b7f8f40fc8a8ea96",
+      "plan_sha256": "1b1fcf3aac8f2cfc1bc15ad466550ed8f0e9549f228b51ae06d5abfe4caa732c",
+      "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "target_counter_before_preview_after_preview_after_run": [
+        12,
+        12,
+        23
+      ],
+      "preview_target_requests": 0,
+      "run_target_requests": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "policy_binding_matches": true,
+      "guest_replay_matches": true,
+      "exported_artifact_replay_matches": true
+    }
+  ],
+  "preservation": [
+    {
+      "role": "controller",
+      "host_vm_network_and_original_shares_unchanged": true,
+      "temporary_share_removed": true,
+      "guest_unmount_confirmed_in_console": true,
+      "databases_exact_rows_match": 2,
+      "health_status": 200
+    },
+    {
+      "role": "worker",
+      "host_vm_network_and_original_shares_unchanged": true,
+      "temporary_share_removed": true,
+      "guest_unmount_confirmed_in_console": true,
+      "databases_exact_rows_match": 1,
+      "health_status": 200
+    },
+    {
+      "role": "target",
+      "host_vm_network_and_original_shares_unchanged": true,
+      "temporary_share_removed": true,
+      "guest_unmount_confirmed_in_console": true,
+      "databases_exact_rows_match": 5,
+      "health_status": 200
+    }
+  ],
+  "retained_controller_plan_history_files": 8,
+  "retained_controller_run_reports": 4,
+  "controller_preservation_baseline": "2026-11-07 e54d776 (not previous-day ef25892)",
+  "worker_target_preservation_baseline": "2026-11-06 ef25892, re-inspected 2026-11-07",
+  "local_preparation_only": {
+    "pytest_passed": 717,
+    "pytest_warnings": 12,
+    "frontend_build": "passed"
+  },
+  "limits": [
+    "cookie only",
+    "mock only",
+    "no UI/browser test",
+    "no Nmap",
+    "no live OpenAI",
+    "request counter is not packet capture",
+    "no claim of previous-day Controller state preservation"
+  ],
+  "counter_collection_note": "fixed/mcp final counter read after test Target stopped; persisted PID/count unchanged; restored old Target does not write this counter",
+  "helper_manifest_note": "initial transfer manifest helper hash predates health/legacy-launch fixes; authoritative helper hashes are in SHA256SUMS.json"
+}

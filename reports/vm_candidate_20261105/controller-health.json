@@ -1,0 +1,16 @@
+{
+  "ui_status": 200,
+  "health_status": 200,
+  "health": {
+    "status": "ok",
+    "database_journal_mode": "wal",
+    "transports": [
+      "function",
+      "mcp"
+    ],
+    "phase_2": {
+      "nmap": "not_implemented",
+      "playwright": "not_implemented"
+    }
+  }
+}

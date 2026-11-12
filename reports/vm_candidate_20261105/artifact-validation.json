@@ -1,0 +1,26 @@
+{
+  "json_artifacts_checked": 28,
+  "checks_passed": true,
+  "runs": [
+    {
+      "transport": "function",
+      "run_id": "run_cfa57f69d5434ed3b556ae6d26e1bff4",
+      "plan_digest_valid": true,
+      "claim_link_policy_match": true,
+      "within_plan_validity": true,
+      "preview_target_requests": 0,
+      "socket_drops": 0,
+      "evidence_reverified": true
+    },
+    {
+      "transport": "mcp",
+      "run_id": "run_0f312e10632045ae99aa71b22e14921c",
+      "plan_digest_valid": true,
+      "claim_link_policy_match": true,
+      "within_plan_validity": true,
+      "preview_target_requests": 0,
+      "socket_drops": 0,
+      "evidence_reverified": true
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+[
+  {
+    "api": "documents",
+    "fixture_mode": "vulnerable",
+    "transport": "function",
+    "run_id": "run_146a70503c1c4378bd5e26e5c7329ca3",
+    "plan_id": "plan_42a8d295daea462b9e8f02ab7af556ed",
+    "plan_sha256": "abf7e1ed8435d6bd24f62051ff8164def9c03b4c1a5042b5074f7542ce3eea17",
+    "candidate_id": "6b1a0af20067f1610b3cba91f505f21b246128a85fc3099ef6315fafe72b6928",
+    "preview_target_requests": 0,
+    "run_target_requests": 9,
+    "verdict": "VULNERABLE",
+    "evidence_count": 7,
+    "verdict_matches": true,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    }
+  },
+  {
+    "api": "documents",
+    "fixture_mode": "vulnerable",
+    "transport": "mcp",
+    "run_id": "run_3d3999135d004117ba06ed29d51e468a",
+    "plan_id": "plan_613bd8edcf864102a70faa834a8212f2",
+    "plan_sha256": "23d20571a12160d765ec5ececd648ed40b8e09108b6478cf40736b6db603defe",
+    "candidate_id": "6b1a0af20067f1610b3cba91f505f21b246128a85fc3099ef6315fafe72b6928",
+    "preview_target_requests": 0,
+    "run_target_requests": 9,
+    "verdict": "VULNERABLE",
+    "evidence_count": 7,
+    "verdict_matches": true,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    }
+  },
+  {
+    "api": "documents",
+    "fixture_mode": "fixed",
+    "transport": "function",
+    "run_id": "run_687bc87608be49c4bb2c2f0d83153b88",
+    "plan_id": "plan_8ee3e6043c814baaae024723064c6aa4",
+    "plan_sha256": "4f2b9977e0ca9190ad57fcb20f5274c1320970863ba49928195cab62184f84a2",
+    "candidate_id": "6b1a0af20067f1610b3cba91f505f21b246128a85fc3099ef6315fafe72b6928",
+    "preview_target_requests": 0,
+    "run_target_requests": 9,
+    "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "evidence_count": 7,
+    "verdict_matches": true,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    }
+  },
+  {
+    "api": "documents",
+    "fixture_mode": "fixed",
+    "transport": "mcp",
+    "run_id": "run_dd8478ae7d664d23bbf9e88023405854",
+    "plan_id": "plan_b7bb428e18b644fd8f1e0a56b35cfedb",
+    "plan_sha256": "3341909ad3855838b29353490a948c48c329c9526027a94d789c133036d2ed25",
+    "candidate_id": "6b1a0af20067f1610b3cba91f505f21b246128a85fc3099ef6315fafe72b6928",
+    "preview_target_requests": 0,
+    "run_target_requests": 9,
+    "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "evidence_count": 7,
+    "verdict_matches": true,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    }
+  },
+  {
+    "api": "records",
+    "fixture_mode": "vulnerable",
+    "transport": "function",
+    "run_id": "run_fff4fc4a76004601ae175e0a905b1034",
+    "plan_id": "plan_287df54eda724652adb2708037f8a769",
+    "plan_sha256": "ec8edaea27e7361695a24654cfc6ec40fa1efe38f2126ed239e8e6d4f1992237",
+    "candidate_id": "38eae30a50bfb3b8b5cebc483cd96e63b9cd712af75c798eecf59f0413273b89",
+    "preview_target_requests": 0,
+    "run_target_requests": 9,
+    "verdict": "VULNERABLE",
+    "evidence_count": 7,
+    "verdict_matches": true,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    }
+  },
+  {
+    "api": "records",
+    "fixture_mode": "vulnerable",
+    "transport": "mcp",
+    "run_id": "run_2ac82f15ce0f46dea94dd11a4e8471a6",
+    "plan_id": "plan_67637abbc3a840308154759c46631dd8",
+    "plan_sha256": "742f5f092483920c8f45fd7f8aa1dd2b34d312ea609ae7540807f451bc92c884",
+    "candidate_id": "38eae30a50bfb3b8b5cebc483cd96e63b9cd712af75c798eecf59f0413273b89",
+    "preview_target_requests": 0,
+    "run_target_requests": 9,
+    "verdict": "VULNERABLE",
+    "evidence_count": 7,
+    "verdict_matches": true,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    }
+  },
+  {
+    "api": "records",
+    "fixture_mode": "fixed",
+    "transport": "function",
+    "run_id": "run_cefb6dc2667c4498b7d8cb5a6564b3cd",
+    "plan_id": "plan_e5243896de464e56aad2a69b7500fe36",
+    "plan_sha256": "e8537021478efca54db02b9c86ecc89257ce5f8025df3657fdd04ee78eb0a25d",
+    "candidate_id": "38eae30a50bfb3b8b5cebc483cd96e63b9cd712af75c798eecf59f0413273b89",
+    "preview_target_requests": 0,
+    "run_target_requests": 9,
+    "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "evidence_count": 7,
+    "verdict_matches": true,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    }
+  },
+  {
+    "api": "records",
+    "fixture_mode": "fixed",
+    "transport": "mcp",
+    "run_id": "run_c1268198c0f24ef8bc977e38457c1401",
+    "plan_id": "plan_5c0b481a102c4f6c8f6b141fdd109652",
+    "plan_sha256": "3d548ae822b068b0b72e46c3839117e49d3c05ae40f5296ac3702c14eb17d48b",
+    "candidate_id": "38eae30a50bfb3b8b5cebc483cd96e63b9cd712af75c798eecf59f0413273b89",
+    "preview_target_requests": 0,
+    "run_target_requests": 9,
+    "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "evidence_count": 7,
+    "verdict_matches": true,
+    "limits_used": {
+      "http_requests": 9,
+      "tool_calls": 10
+    }
+  }
+]

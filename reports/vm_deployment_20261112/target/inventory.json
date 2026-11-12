@@ -1,0 +1,154 @@
+{
+  "role": "target",
+  "checkout": "/home/ubuntu/securityaiagent",
+  "commit": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "tracked_clean": true,
+  "environment_reference": "/home/ubuntu/securityaiagent/.env.target",
+  "environment_exists": true,
+  "service_config_available": true,
+  "listeners": [],
+  "links": [
+    {
+      "ifindex": 1,
+      "ifname": "lo",
+      "flags": [
+        "LOOPBACK",
+        "UP",
+        "LOWER_UP"
+      ],
+      "mtu": 65536,
+      "qdisc": "noqueue",
+      "operstate": "UNKNOWN",
+      "group": "default",
+      "txqlen": 1000,
+      "link_type": "loopback",
+      "address": "00:00:00:00:00:00",
+      "broadcast": "00:00:00:00:00:00",
+      "addr_info": [
+        {
+          "family": "inet",
+          "local": "127.0.0.1",
+          "prefixlen": 8,
+          "scope": "host",
+          "label": "lo",
+          "valid_life_time": 4294967295,
+          "preferred_life_time": 4294967295
+        },
+        {
+          "family": "inet6",
+          "local": "::1",
+          "prefixlen": 128,
+          "scope": "host",
+          "noprefixroute": true,
+          "valid_life_time": 4294967295,
+          "preferred_life_time": 4294967295
+        }
+      ]
+    },
+    {
+      "ifindex": 2,
+      "ifname": "enp0s3",
+      "flags": [
+        "BROADCAST",
+        "MULTICAST",
+        "UP",
+        "LOWER_UP"
+      ],
+      "mtu": 1500,
+      "qdisc": "fq_codel",
+      "operstate": "UP",
+      "group": "default",
+      "txqlen": 1000,
+      "link_type": "ether",
+      "address": "08:00:27:62:c2:a5",
+      "broadcast": "ff:ff:ff:ff:ff:ff",
+      "addr_info": [
+        {
+          "family": "inet",
+          "local": "10.78.0.30",
+          "prefixlen": 24,
+          "broadcast": "10.78.0.255",
+          "scope": "global",
+          "noprefixroute": true,
+          "label": "enp0s3",
+          "valid_life_time": 4294967295,
+          "preferred_life_time": 4294967295
+        }
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "dst": "10.78.0.0/24",
+      "dev": "enp0s3",
+      "protocol": "kernel",
+      "scope": "link",
+      "prefsrc": "10.78.0.30",
+      "metric": 100,
+      "flags": []
+    },
+    {
+      "type": "local",
+      "dst": "10.78.0.30",
+      "dev": "enp0s3",
+      "table": "local",
+      "protocol": "kernel",
+      "scope": "host",
+      "prefsrc": "10.78.0.30",
+      "flags": []
+    },
+    {
+      "type": "broadcast",
+      "dst": "10.78.0.255",
+      "dev": "enp0s3",
+      "table": "local",
+      "protocol": "kernel",
+      "scope": "link",
+      "prefsrc": "10.78.0.30",
+      "flags": []
+    },
+    {
+      "type": "local",
+      "dst": "127.0.0.0/8",
+      "dev": "lo",
+      "table": "local",
+      "protocol": "kernel",
+      "scope": "host",
+      "prefsrc": "127.0.0.1",
+      "flags": []
+    },
+    {
+      "type": "local",
+      "dst": "127.0.0.1",
+      "dev": "lo",
+      "table": "local",
+      "protocol": "kernel",
+      "scope": "host",
+      "prefsrc": "127.0.0.1",
+      "flags": []
+    },
+    {
+      "type": "broadcast",
+      "dst": "127.255.255.255",
+      "dev": "lo",
+      "table": "local",
+      "protocol": "kernel",
+      "scope": "link",
+      "prefsrc": "127.0.0.1",
+      "flags": []
+    },
+    {
+      "type": "local",
+      "dst": "::1",
+      "dev": "lo",
+      "table": "local",
+      "protocol": "kernel",
+      "metric": 0,
+      "flags": [],
+      "pref": "medium"
+    }
+  ],
+  "iptables_sha256": "f5b44519b6972c4b3b72d8024e3cab16d06ef5b49cefb7adb4278780f4bbdccd",
+  "ip6tables_sha256": "a8c1e82573b3b0eeb53f0980dfb83d6262fdf5f6da668291c3cd55bbd03e501c",
+  "ok": true
+}

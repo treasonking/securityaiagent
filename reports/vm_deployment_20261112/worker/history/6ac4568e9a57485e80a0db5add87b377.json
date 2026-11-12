@@ -1,0 +1,14 @@
+{
+  "job": {
+    "action": "stop",
+    "sequence": "6ac4568e9a57485e80a0db5add87b377"
+  },
+  "receipt": {
+    "role": "worker",
+    "sequence": "6ac4568e9a57485e80a0db5add87b377"
+  },
+  "result": {
+    "role": "worker",
+    "sequence": "6ac4568e9a57485e80a0db5add87b377"
+  }
+}

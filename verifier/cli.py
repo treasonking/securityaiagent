@@ -27,6 +27,9 @@ def main() -> None:
     parser.add_argument("--import-token")
     args = parser.parse_args()
     evidence_path = args.run_dir / "evidence.json"
+    report_path = args.run_dir / "report.json"
+    if report_path.exists() and json.loads(report_path.read_text(encoding="utf-8")).get("scenario_id") != "access-control":
+        raise SystemExit("offline evaluation is only for the log-based scenario")
     database_path = _resolve_database(args.local_evidence)
     if not evidence_path.exists():
         raise SystemExit(f"missing sanitized controller evidence: {evidence_path}")

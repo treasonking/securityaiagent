@@ -75,7 +75,7 @@ def test_agents_sdk_managed_mcp_lists_and_calls_bounded_tools(tmp_path, monkeypa
             assert fetched.ok
             assert fetched.evidence.synthetic_document_marker == "SYN-B-PRIVATE-001"
             rejected = await client.start_session("run-outside", "outside", "user-a")
-            assert rejected.error_code == "POLICY_REJECTED"
+            assert rejected.error_code == "SCOPE_TARGET_DENIED"
 
             cancel_session = await client.start_session("run-cancel", "lab-web", "user-a")
             assert cancel_session.ok

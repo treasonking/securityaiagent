@@ -1,0 +1,13 @@
+{
+  "role": "controller",
+  "action": "preview",
+  "ok": true,
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "transport": "function",
+  "exit_code": 0,
+  "plan_file": "function-plan-a52ac851.json",
+  "plan_id": "plan_51d2d6a7e6fc494e9f285a80efe29416",
+  "plan_sha256": "326874f1f924d748a1a0247a6953629cfe5745932affba48cf4e10e358e1f71c",
+  "created_at": 1793811678,
+  "expires_at": 1793811978
+}

@@ -1,0 +1,74 @@
+{
+  "code_commit": "06a8a63fba47a8a527a15a9cd3032f3f24d7ee0f",
+  "base_commit": "055abf1d9b1a83184bff9455b881015a8e2c00d4",
+  "pytest": {
+    "command": ".\\.venv\\Scripts\\python.exe -m pytest -o addopts= --tb=short",
+    "passed": 706,
+    "failed": 0,
+    "new_tests": 160,
+    "existing_tests": 546,
+    "warnings": 12,
+    "seconds": 210.97,
+    "started_at_utc": "2026-11-05T18:41:27Z",
+    "finished_at_utc": "2026-11-05T18:44:59Z",
+    "timestamp_source": "command log creation and last-write timestamps",
+    "source_note": "Same application and tests committed after successful execution; no code edits between test execution and code commit",
+    "warnings_summary": {
+      "pydantic_forward_reference": 1,
+      "deprecated_mcp_helper": 10,
+      "pytest_cache_write_permission": 1
+    }
+  },
+  "frontend_build": {
+    "command": "npm run build",
+    "cwd": "frontend",
+    "exit_code": 0,
+    "vite": "8.3.4",
+    "modules": 18,
+    "bundle_seconds": 0.39,
+    "source_changed": false
+  },
+  "tcp": {
+    "cases": 16,
+    "normal_cases": 8,
+    "negative_cases": 8,
+    "passed": 16,
+    "replay_matches": 16,
+    "matrix": "tcp-06a8a63/matrix.json"
+  },
+  "unchanged_git_objects": {
+    "config/targets.json": {
+      "base": "ad45a1b3577ba94b1a12f3ba3c262424cea53fc4",
+      "tested": "ad45a1b3577ba94b1a12f3ba3c262424cea53fc4"
+    },
+    "config/targets.records.json": {
+      "base": "d3a8f2370262404aae5f654bee9c8edcc1deddef",
+      "tested": "d3a8f2370262404aae5f654bee9c8edcc1deddef"
+    },
+    "common/api_contract.py": {
+      "base": "bd7cfdead0cf9fcd2dd937e6aec407cf5f8dd0e7",
+      "tested": "bd7cfdead0cf9fcd2dd937e6aec407cf5f8dd0e7"
+    },
+    "common/schemas.py": {
+      "base": "7d981fae0d052ca3a0b7f537a10dd0645c77fea6",
+      "tested": "7d981fae0d052ca3a0b7f537a10dd0645c77fea6"
+    },
+    "verifier/http.py": {
+      "base": "fb386ba6a61d6f9611d57099b677b0dc1b497e12",
+      "tested": "fb386ba6a61d6f9611d57099b677b0dc1b497e12"
+    },
+    "target": {
+      "base": "962268075ce0f7527e69a03d93bc065d6fd7ea46",
+      "tested": "962268075ce0f7527e69a03d93bc065d6fd7ea46"
+    },
+    "frontend": {
+      "base": "75fd7d4481c309563bceab27f34370dc0f5e4a4c",
+      "tested": "75fd7d4481c309563bceab27f34370dc0f5e4a4c"
+    }
+  },
+  "vm_actions": [],
+  "live_openai_calls": 0,
+  "model_calls_in_operator_path": 0,
+  "known_secret_scan": "Every generated artifact checked at runtime against generated fixture passwords, session tokens, proof values and worker token; no matches",
+  "limits": "Local trust only; object IDs and file SHA-256 are not signatures"
+}

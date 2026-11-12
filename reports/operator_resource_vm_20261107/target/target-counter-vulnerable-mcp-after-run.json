@@ -1,0 +1,14 @@
+{
+  "role": "target",
+  "action": "counter",
+  "ok": true,
+  "started_at": "2026-11-07T07:03:43.554085+00:00",
+  "counter": {
+    "schema_version": "operator-target-counter-v1",
+    "pid": 4206,
+    "started_at": "2026-11-07T07:01:58.660090+00:00",
+    "updated_at": "2026-11-07T07:03:40.013843+00:00",
+    "received_http_requests": 23
+  },
+  "finished_at": "2026-11-07T07:03:43.554288+00:00"
+}

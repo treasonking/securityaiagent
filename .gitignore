@@ -1,6 +1,10 @@
 .env
 .env.*
 !.env.example
+!.env.controller.example
+!.env.worker.example
+!.env.target.example
+!.env.operator-target.example
 .venv/
 __pycache__/
 *.py[cod]
@@ -14,3 +18,7 @@ frontend/*.tsbuildinfo
 frontend/vite.config.js
 frontend/vite.config.d.ts
 reports/runs/
+
+verification_tmp/
+data/candidate_plans/
+data/operator_plans/

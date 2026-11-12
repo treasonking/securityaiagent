@@ -1,0 +1,24 @@
+[
+  {
+    "path": "/",
+    "status_code": 200,
+    "content_type": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/api/health",
+    "status_code": 200,
+    "content_type": "application/json",
+    "health": {
+      "status": "ok",
+      "database_journal_mode": "wal",
+      "transports": [
+        "function",
+        "mcp"
+      ],
+      "phase_2": {
+        "nmap": "not_implemented",
+        "playwright": "not_implemented"
+      }
+    }
+  }
+]

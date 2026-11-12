@@ -1,0 +1,56 @@
+{
+  "observer_pid": 3976,
+  "interface": "enp0s8",
+  "source": "10.78.0.20",
+  "target": "10.78.0.30",
+  "target_port": 8080,
+  "capture": "passive Ethernet/IP/TCP header counters; no payload output",
+  "started_at_epoch": 1793811634.9800265,
+  "updated_at_epoch": 1793811829.9760377,
+  "active_phase": "stop",
+  "socket_received_packets": 226,
+  "socket_dropped_packets": 0,
+  "phases": {
+    "idle": {
+      "started_at_epoch": 1793811634.9830244,
+      "target_tcp_packets": 0,
+      "target_payload_packets": 0,
+      "target_payload_bytes": 0,
+      "ended_at_epoch": 1793811671.9781954
+    },
+    "function-preview": {
+      "started_at_epoch": 1793811671.9781976,
+      "target_tcp_packets": 0,
+      "target_payload_packets": 0,
+      "target_payload_bytes": 0,
+      "ended_at_epoch": 1793811704.3226953
+    },
+    "function-run": {
+      "started_at_epoch": 1793811704.3226972,
+      "target_tcp_packets": 65,
+      "target_payload_packets": 11,
+      "target_payload_bytes": 3189,
+      "ended_at_epoch": 1793811739.295109
+    },
+    "mcp-preview": {
+      "started_at_epoch": 1793811739.2951105,
+      "target_tcp_packets": 0,
+      "target_payload_packets": 0,
+      "target_payload_bytes": 0,
+      "ended_at_epoch": 1793811771.192986
+    },
+    "mcp-run": {
+      "started_at_epoch": 1793811771.1929877,
+      "target_tcp_packets": 65,
+      "target_payload_packets": 11,
+      "target_payload_bytes": 3189,
+      "ended_at_epoch": 1793811829.9760137
+    },
+    "stop": {
+      "started_at_epoch": 1793811829.976015,
+      "target_tcp_packets": 0,
+      "target_payload_packets": 0,
+      "target_payload_bytes": 0
+    }
+  }
+}

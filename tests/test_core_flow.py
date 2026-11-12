@@ -191,7 +191,7 @@ def test_tool_call_limit_is_cumulative_for_a_run(tmp_path):
         rejected = await service.list_own_documents(
             "run-tool-limit", "lab-web", started.data["session_ref"]
         )
-        assert rejected.error_code == "POLICY_REJECTED"
+        assert rejected.error_code == "SCOPE_LIMIT_EXCEEDED"
         assert "tool call limit" in rejected.message
 
     asyncio.run(execute())

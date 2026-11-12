@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.1",
+  "verification_basis": "http_observation",
+  "run_id": "http-fe541702a2e54e00af0dbb7593fc9436",
+  "scenario_id": "access-control-http",
+  "target_id": "lab-web",
+  "mode": "unknown",
+  "provider_mode": "mock",
+  "model_id": null,
+  "tool_transport": "function",
+  "started_at": "2026-10-15T14:02:08.392181+00:00",
+  "finished_at": "2026-10-15T14:02:09.733026+00:00",
+  "status": "COMPLETED",
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+  "finding_candidates": [
+    {
+      "finding_type": "cross_account_document_access",
+      "rationale": "Published scenario asks whether user-a can retrieve user-b's synthetic private document.",
+      "source": "mock_provider"
+    }
+  ],
+  "verified_findings": [
+    {
+      "finding_type": "cross_account_document_access",
+      "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "evidence_ids": [
+        "ev_6e957d9e3b75436fa6a57908dd11e501",
+        "ev_0576fba6e37d418bab83617d99ddbc3d",
+        "ev_1d4360c01ab9476e9ec39fbe827d1914",
+        "ev_a76370a3ec0f4b5ba1602f81106951cb",
+        "ev_8be5a4ed699a43f382ea8f650a751cf4",
+        "ev_70ddfe41fda34541a23295183c570676",
+        "ev_baf7b8a235474512b60c9c93a6f89e5f"
+      ],
+      "reason": "The authenticated cross-account request was denied; owner and requester controls remained valid before and after it."
+    }
+  ],
+  "evidence_ids": [
+    "ev_6e957d9e3b75436fa6a57908dd11e501",
+    "ev_0576fba6e37d418bab83617d99ddbc3d",
+    "ev_1d4360c01ab9476e9ec39fbe827d1914",
+    "ev_a76370a3ec0f4b5ba1602f81106951cb",
+    "ev_8be5a4ed699a43f382ea8f650a751cf4",
+    "ev_70ddfe41fda34541a23295183c570676",
+    "ev_baf7b8a235474512b60c9c93a6f89e5f"
+  ],
+  "limits_used": {
+    "http_requests": 9,
+    "tool_calls": 10
+  },
+  "model_usage": {
+    "calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0
+  },
+  "warnings": [
+    "Limited to these synthetic accounts, resource, and observation time; not a site-wide safety claim."
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Windows",
+    "target_data": "synthetic-only",
+    "target_server_log": "not_used"
+  },
+  "recommendations": [
+    "Rerun the same bounded HTTP scenario after changes; results apply only to the tested accounts and resource."
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "operator-link-v1",
+  "run_id": "run_8e966854da564a60a00f3435252c3bd8",
+  "plan_id": "opplan_3464dad996e24daeb3af001afd9bc021",
+  "plan_sha256": "6d24c180a5400f5312f7ba8e97fdda6a6a2c7513b13bcbde6b2b37ff712d5c7e",
+  "candidate_id": "55575ccb0fb727ddbf0ec58f6562f93f3c449167b593cb460b648d6d1e6ade41",
+  "source_sha256": "b5895426b0877129dcf3d7ad8f94396ba9f75a71dd964b8701d7388e52ebd431",
+  "registry_sha256": "38ef8a6fcc60ac77c2398bd72205f5328de76f708953800a8872df74744fa8dd",
+  "approval_actor": "codex",
+  "approval_identity_authenticated": false,
+  "expected_scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "da2081d75fb52d5eddd809e3afae346361b410bb1edf1b1986806355772a92ad",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "actual_scope_policy": null,
+  "control_calls": {
+    "preview_policy": 1,
+    "run_policy": 1
+  },
+  "status": "FAILED",
+  "verdict": "INCONCLUSIVE"
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "operator-catalogue-v1",
+  "contract_version": "operator-resource-v1",
+  "source_sha256": "48465f7345601a24a922de146d5f77b21fe9c1bb0aa07d9b27ed51b5854b6637",
+  "registry_sha256": "b2acf50dfb410c3acf4a827d532157a10ca2654678b36ce82605dab6cbd25696",
+  "target_id": "lab-web",
+  "network_requests": 0,
+  "model_calls": 0,
+  "candidates": [
+    {
+      "candidate_id": "55575ccb0fb727ddbf0ec58f6562f93f3c449167b593cb460b648d6d1e6ade41",
+      "method": "GET",
+      "path_template": "/tickets/{resource_id}",
+      "adapter_id": "operator-json-tickets",
+      "status": "READY_FOR_REVIEW",
+      "reason_codes": [
+        "REGISTERED_RESOURCE_FLOW_MATCH"
+      ],
+      "verification_status": "NOT_EXECUTED"
+    }
+  ],
+  "partial": false
+}

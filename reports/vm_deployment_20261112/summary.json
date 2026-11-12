@@ -1,0 +1,72 @@
+{
+  "deployment_commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+  "roles": [
+    {
+      "role": "controller",
+      "before_commit": "e54d776dc6cdac642c2b6a9dbd971a9e4b470851",
+      "after_commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+      "active_checkout": "/home/ubuntu/securityaiagent-deployments/releases/2b1c96b347234d57a4a3acdb4f12af10",
+      "environment_reference": "/home/ubuntu/securityaiagent-deployments/releases/2b1c96b347234d57a4a3acdb4f12af10/.env.controller",
+      "deployments_healthy": 2,
+      "rollback_health": 200,
+      "idempotent_apply": "ALREADY_HEALTHY",
+      "original_database_count": 2,
+      "original_env_config_reports_db_preserved": true,
+      "network_firewall_preserved": true,
+      "host_nic_settings_preserved": true,
+      "temporary_share_removed": true,
+      "secret_matches": 0
+    },
+    {
+      "role": "worker",
+      "before_commit": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+      "after_commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+      "active_checkout": "/home/ubuntu/securityaiagent-deployments/releases/3d88cb99dc5e48b3aefed13a5fda46e6",
+      "environment_reference": "/home/ubuntu/securityaiagent-deployments/releases/3d88cb99dc5e48b3aefed13a5fda46e6/.env.worker",
+      "deployments_healthy": 2,
+      "rollback_health": 200,
+      "idempotent_apply": "ALREADY_HEALTHY",
+      "original_database_count": 1,
+      "original_env_config_reports_db_preserved": true,
+      "network_firewall_preserved": true,
+      "host_nic_settings_preserved": true,
+      "temporary_share_removed": true,
+      "secret_matches": 0
+    },
+    {
+      "role": "target",
+      "before_commit": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+      "after_commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+      "active_checkout": "/home/ubuntu/securityaiagent-deployments/releases/7c6a5729e910425cb28a36653d47e54a",
+      "environment_reference": "/home/ubuntu/securityaiagent-deployments/releases/7c6a5729e910425cb28a36653d47e54a/.env.target",
+      "deployments_healthy": 2,
+      "rollback_health": 200,
+      "idempotent_apply": "ALREADY_HEALTHY",
+      "original_database_count": 5,
+      "original_env_config_reports_db_preserved": true,
+      "network_firewall_preserved": true,
+      "host_nic_settings_preserved": true,
+      "temporary_share_removed": true,
+      "secret_matches": 0
+    }
+  ],
+  "local_only": {
+    "pytest": {
+      "passed": 749,
+      "warnings": 12,
+      "seconds": 229.7
+    },
+    "frontend_build": "passed",
+    "failure_injection": "backup, health, preservation, recovery failure; running and stopped prior states",
+    "deployment_unit_tests": 32
+  },
+  "not_executed": [
+    "VM fault injection",
+    "live OpenAI",
+    "function/MCP scenario rerun",
+    "browser test",
+    "DB migration or write merge",
+    "power-loss recovery"
+  ],
+  "tool_sha256": "1bb50d44a2d8a19a4931c187ae1773b311249697aa4c908f2c2b747ec7718f35"
+}

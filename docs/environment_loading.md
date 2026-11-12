@@ -1,5 +1,7 @@
 # VM별 환경변수 로딩과 실행
 
+서비스별 예제와 검사·실행 경로는 [서비스별 API·인증 설정](service_configuration.md)에 있다. 새 `python -m common.service_config check|serve <service>`는 선택한 역할의 로컬 파일만 읽으며 다른 서비스의 키와 부모 환경의 알려진 앱 설정이 섞이는 것을 막는다. 아래 직접 Uvicorn/셸 로딩 명령은 기존 호환 경로로 유지되며 새 launcher의 필터는 적용되지 않는다.
+
 SecurityLab은 `.env`를 애플리케이션 코드에서 자동 로드하지 않는다. 비밀을 한 파일에 모아 모든 VM에 복사하지 말고 `.env.target`, `.env.worker`, `.env.controller`를 각 VM에만 만든다. 세 파일은 Git에 커밋하지 않는다.
 
 ## target VM
@@ -47,6 +49,8 @@ WORKER_STATE_TTL_SECONDS=600
 ```
 
 `MCP_ALLOWED_HOSTS`에는 실제 worker의 Host 헤더만 정확히 등록한다. `*` 전체 Host나 DNS rebinding 보호 비활성화는 사용하지 않는다. `127.0.0.1:*`와 `localhost:*`는 로컬 회귀 시험 전용이다.
+
+scope profile 적용 버전에서는 `TARGET_BASE_URL`이 `config/targets.json`의 origin과 정확히 같아야 하며 URL override로 쓰이지 않는다. `TARGET_REGISTRY_PATH`로 운영자 로컬 파일을 선택할 수 있고 schema 2.0 검증 실패 시 worker가 시작되지 않는다. 정책·전역 한도는 worker 시작 시 고정된다. 환경 파일을 로드한 `python -m worker.cli check-policy`로 전송 없이 검사한 뒤 재시작한다. [전체 정책 및 bundle 절차](scope_policy_runbook.md)를 참고한다.
 
 ## controller VM
 

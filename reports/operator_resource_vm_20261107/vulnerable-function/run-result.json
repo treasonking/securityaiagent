@@ -1,0 +1,27 @@
+{
+  "role": "controller",
+  "action": "run",
+  "ok": true,
+  "started_at": "2026-11-07T07:02:52.579724+00:00",
+  "exit_code": 0,
+  "cli_started_at": "2026-11-07T07:02:52.611165+00:00",
+  "cli_finished_at": "2026-11-07T07:02:58.135659+00:00",
+  "run_id": "run_41ae9903beaf49d880e8ce8183d11b04",
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE",
+  "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+  "limits_used": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_count": 11,
+  "replay": {
+    "verdict": "VULNERABLE",
+    "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+    "run_id": "run_41ae9903beaf49d880e8ce8183d11b04",
+    "verdict_matches": true,
+    "evidence_count": 11
+  },
+  "policy_binding_matches": true,
+  "finished_at": "2026-11-07T07:02:58.392497+00:00"
+}

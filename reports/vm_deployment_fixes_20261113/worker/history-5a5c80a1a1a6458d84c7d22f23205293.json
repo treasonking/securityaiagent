@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "job": {
+    "action": "stop",
+    "sequence": "5a5c80a1a1a6458d84c7d22f23205293",
+    "role": "worker"
+  },
+  "receipt": {
+    "sequence": "5a5c80a1a1a6458d84c7d22f23205293",
+    "action": "stop",
+    "role": "worker",
+    "exit_code": 0
+  },
+  "result": {
+    "sequence": "5a5c80a1a1a6458d84c7d22f23205293",
+    "action": "stop",
+    "role": "worker",
+    "ok": true
+  },
+  "result_state": "matched"
+}

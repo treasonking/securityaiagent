@@ -1,0 +1,14 @@
+{
+  "role": "controller",
+  "action": "restore",
+  "ok": true,
+  "started_at": "2026-11-07T07:05:33.965123+00:00",
+  "original_service_already_running": true,
+  "health": {
+    "status_code": 200,
+    "status": "ok",
+    "path": "/api/health",
+    "source": "127.0.0.1"
+  },
+  "finished_at": "2026-11-07T07:05:34.031529+00:00"
+}

@@ -1,0 +1,43 @@
+{
+  "role": "worker",
+  "action": "final",
+  "ok": true,
+  "started_at": "2026-11-07T07:06:01.498203+00:00",
+  "original_head_unchanged": true,
+  "protected_files_unchanged": true,
+  "changed_paths": [],
+  "databases": [
+    {
+      "file": "target.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true,
+      "exact_rows_match": true
+    }
+  ],
+  "network_unchanged": true,
+  "firewall_unchanged": true,
+  "restored_listener": {
+    "pid": 3986,
+    "cwd": "/home/ubuntu/securityaiagent",
+    "args": [
+      "/home/ubuntu/securityaiagent/.venv/bin/python",
+      "-m",
+      "uvicorn",
+      "--factory",
+      "worker.app:create_app_from_env",
+      "--host",
+      "10.77.0.20",
+      "--port",
+      "9000"
+    ],
+    "start_ticks": "101483"
+  },
+  "health": {
+    "status_code": 200,
+    "status": "ok",
+    "path": "/health"
+  },
+  "new_plan_history_files": 0,
+  "new_run_reports": 0,
+  "finished_at": "2026-11-07T07:06:01.753959+00:00"
+}

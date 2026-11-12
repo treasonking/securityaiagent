@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "run_id": "run_2ac82f15ce0f46dea94dd11a4e8471a6",
+  "candidate_id": "38eae30a50bfb3b8b5cebc483cd96e63b9cd712af75c798eecf59f0413273b89",
+  "plan_id": "plan_67637abbc3a840308154759c46631dd8",
+  "plan_sha256": "742f5f092483920c8f45fd7f8aa1dd2b34d312ea609ae7540807f451bc92c884",
+  "source_sha256": "d6233f058424e90682074f8bf9371511bc0cf9321bc05bfa6bc8a5d772d49d6a",
+  "registry_sha256": "5df5d083238f616e303e5f338f67d208a526056ebd12e92f8731401f85d5d0fc",
+  "expected_scope_policy": {
+    "profile_id": "lab-records-access-control",
+    "revision": 1,
+    "snapshot_sha256": "2b1da1e1dc1ffa0e8fcd18e887938e242fe74320cb5ee8c3cbb51876ce45beec",
+    "effective_limits": {
+      "max_requests": 9,
+      "max_tool_calls": 10,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "actual_scope_policy": {
+    "profile_id": "lab-records-access-control",
+    "revision": 1,
+    "snapshot_sha256": "2b1da1e1dc1ffa0e8fcd18e887938e242fe74320cb5ee8c3cbb51876ce45beec",
+    "effective_limits": {
+      "max_requests": 9,
+      "max_tool_calls": 10,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "control_calls": {
+    "preview_policy": 1,
+    "run_policy": 1
+  },
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE"
+}

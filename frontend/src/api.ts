@@ -22,7 +22,11 @@ export type Evidence = {
   server_observation: string;
 };
 
+export type ScenarioId = "access-control" | "access-control-http";
+
 export type RunReport = {
+  scope_policy?: { profile_id: string; revision: number; snapshot_sha256: string; effective_limits: Record<string, number> } | null;
+  verification_basis?: "http_observation" | "target_log_correlated" | "pending_target_log";
   run_id: string;
   status: string;
   verdict: "VULNERABLE" | "BLOCKED_BY_ACCESS_CONTROL" | "INCONCLUSIVE";
@@ -136,6 +140,7 @@ export async function submitMessage(
   message: string,
   transport: "function" | "mcp",
   provider: "mock" | "openai",
+  scenario: ScenarioId = "access-control",
 ): Promise<{ run_id: string }> {
   const response = await fetch(`/api/conversations/${encodeURIComponent(conversationId)}/messages`, {
     method: "POST",
@@ -143,7 +148,7 @@ export async function submitMessage(
     headers: writeHeaders(),
     body: JSON.stringify({
       message,
-      scenario_id: "access-control",
+      scenario_id: scenario,
       target_id: "lab-web",
       provider,
       tool_transport: transport,

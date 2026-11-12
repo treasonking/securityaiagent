@@ -34,4 +34,4 @@ def test_worker_rejects_unregistered_target_without_network_call(tmp_path):
         )
     assert response.status_code == 200
     assert response.json()["ok"] is False
-    assert response.json()["error_code"] == "POLICY_REJECTED"
+    assert response.json()["error_code"] == "SCOPE_TARGET_DENIED"

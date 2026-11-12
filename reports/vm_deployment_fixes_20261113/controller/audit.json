@@ -1,0 +1,23 @@
+{
+  "role": "controller",
+  "protected_files_unchanged": true,
+  "prior_plan_history_files_unchanged": true,
+  "network_unchanged": true,
+  "listener_unchanged": true,
+  "current_commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+  "isolated_stub_exit": 23,
+  "old_success_alias_unchanged": true,
+  "duplicate_claim_rejected": true,
+  "job": {
+    "role": "controller",
+    "action": "apply",
+    "sequence": "bf9c42041af24930933acf5a1c2f1886"
+  },
+  "receipt": {
+    "sequence": "bf9c42041af24930933acf5a1c2f1886",
+    "action": "apply",
+    "role": "controller",
+    "exit_code": 23
+  },
+  "actual_deployment_executed": false
+}
