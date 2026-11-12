@@ -1,0 +1,57 @@
+{
+  "job": {
+    "action": "apply",
+    "plan": "fb4c600846174de684dcf357409e6fa0",
+    "confirm": "c34bbe150219fb9d062779d42d3a3d389fb43e8f102e40b09ea5f2bd032cd7db",
+    "sequence": "3ab96d5fc24540fea43bf1723c4e1bf5"
+  },
+  "receipt": {
+    "role": "controller",
+    "sequence": "3ab96d5fc24540fea43bf1723c4e1bf5",
+    "exit_code": 0
+  },
+  "result": {
+    "role": "controller",
+    "action": "apply",
+    "ok": true,
+    "time": 1794474159.7875772,
+    "result": {
+      "id": "fb4c600846174de684dcf357409e6fa0",
+      "commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+      "events": [
+        {
+          "status": "STOPPING",
+          "time": 1794474160.1006482
+        },
+        {
+          "status": "STOPPED",
+          "time": 1794474160.4555683
+        },
+        {
+          "status": "BACKED_UP",
+          "time": 1794474161.1422167
+        },
+        {
+          "status": "STARTING",
+          "time": 1794474161.1455202
+        },
+        {
+          "status": "HEALTHY",
+          "time": 1794474164.0565898
+        }
+      ],
+      "status": "HEALTHY",
+      "health": {
+        "status_code": 200,
+        "status": "ok"
+      },
+      "preservation": {
+        "original_environment_config_reports_unchanged": true,
+        "original_database_rows_exact": true,
+        "deployed_database_existing_rows_preserved": true,
+        "database_count": 2,
+        "network_and_firewall_unchanged": true
+      }
+    }
+  }
+}
