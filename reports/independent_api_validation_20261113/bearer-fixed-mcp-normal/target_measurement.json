@@ -1,0 +1,62 @@
+{
+  "received": 11,
+  "events": [
+    {
+      "ordinal": 1,
+      "operation": "login",
+      "status": 200
+    },
+    {
+      "ordinal": 2,
+      "operation": "login",
+      "status": 200
+    },
+    {
+      "ordinal": 3,
+      "operation": "identity",
+      "status": 200
+    },
+    {
+      "ordinal": 4,
+      "operation": "identity",
+      "status": 200
+    },
+    {
+      "ordinal": 5,
+      "operation": "owner_attachment",
+      "status": 200
+    },
+    {
+      "ordinal": 6,
+      "operation": "owner_attachment",
+      "status": 200
+    },
+    {
+      "ordinal": 7,
+      "operation": "cross_attachment",
+      "status": 403
+    },
+    {
+      "ordinal": 8,
+      "operation": "owner_attachment",
+      "status": 200
+    },
+    {
+      "ordinal": 9,
+      "operation": "owner_attachment",
+      "status": 200
+    },
+    {
+      "ordinal": 10,
+      "operation": "identity",
+      "status": 200
+    },
+    {
+      "ordinal": 11,
+      "operation": "identity",
+      "status": 200
+    }
+  ],
+  "verifier_input": false,
+  "boundary": "HTTP handler entry"
+}
