@@ -1,0 +1,50 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_7ea8324f1c244efe8519971fdb8de25c",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "function",
+  "started_at": "2026-11-13T07:11:50.738666+00:00",
+  "status": "COMPLETED",
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+  "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "2ea3d47143d28d19572bd1da362b61069a5769b6873a1ec08d506f92a7f05d6f",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "limits_used": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_ids": [
+    "f3f1968ebf2b6c6377279709f95bb2646ae005d3bcf36cd3a8ec7352330e883c",
+    "21d961e95b136cab66186ebc2bbc924cee3d27b05015df2cf530b77d3a18245b",
+    "f54be03ba1d8d759e8864219f05a64e34cf342a39c12f46fbf1ac0bc78b5112d",
+    "bc8a1aa4c85eb06b40adeea123db5874afd3cd4fe3ab49c8bce13145ac795bda",
+    "7c6a48f5dcc5a8a7d3ff2f45c4f125a49b26904262491d7117ae4f994dd930c8",
+    "3e00ee59fba0c4dd4d8f5169315003b73102eededddd3b896ad47a8e22eb2ac3",
+    "7766552aff90182614c34dff0ab42b1c34fe09250399be4cf39109444e54b7c9",
+    "c95038905cd51818b9c96f00be923e525e2b7fbfa4ce751af64949c9035b9f2b",
+    "d272894cd76740a65165562854e92c3c54eea873d3e9400a3d45095cd4e1079d",
+    "b72baffdcd69cc64ea380ff754cf5b0b3917c0dcd625c62a2fc96f813b31b3c1",
+    "05d08dc51b3ed75117c9b9bd9e7e76ae5ccc7acd3f23fe5884a696e1041b3555"
+  ],
+  "finished_at": "2026-11-13T07:11:51.645906+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

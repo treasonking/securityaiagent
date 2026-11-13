@@ -68,6 +68,8 @@ proof 변경은 Worker에 등록한 기대 합성값과 매칭되지 않으므�
 
 case별 catalogue/OpenAPI/registry, plan 및 검토 기록, issued/claimed, 실행 연결, report/evidence/verification_contract, replay와 result를 보존한다. `target_measurement.json`은 operation/status/수신 횟수만 포함하고 run 디렉터리 밖에 둔다. verifier는 기존의 정제 evidence와 policy, run ID만 받으며 target 내부 모델·모드·원본 응답·계수·기대 verdict를 읽지 않는다.
 
+OpenAPI 원본 digest는 개행도 포함한 byte 기준이다. 전용 JSON 입력과 공개 증거는 `.gitattributes`의 `-text`로 실제 검증 byte를 보존한다. 개행을 포함한 원본이 바뀌면 이전 plan을 재사용하지 않고 새 preview를 만든다.
+
 비밀번호, 초기·재조회 proof, 발급한 모든 cookie/Bearer token, Worker token 및 정책 변경 proof는 메모리에서 추적한다. 임시 staging의 공개 후보 전체를 해당 비밀값과 대조한 후에만 output에 복사한다. 발견하면 공개를 중단한다. 공개 파일에는 raw 응답이나 credential을 저장하지 않는다. 정책 commitment와 run별 proof digest는 허용된 계약 메타데이터다. 비밀 파일이나 기존 DB는 만들지 않는다. 이전 보고서는 덮어쓰지 않는다.
 
 ## 6. 여전히 제한되는 구조와 다음 범위
@@ -75,7 +77,7 @@ case별 catalogue/OpenAPI/registry, plan 및 검토 기록, issued/claimed, 실�
 이 결과는 **한 종류의 새 JSON API가 설정만으로 연결되는지**를 검증한다. 계약은 여전히 다음에 종속된다.
 
 - HTTP IP literal origin, 고정 JSON 로그인 두 필드와 정상 identity endpoint, cookie 또는 Bearer만 지원한다. HTTPS/DNS/SSO/OAuth 갱신/CSRF 다단계 로그인은 이번 범위 밖이다.
-- 정확히 두 계정/두 리소스, 문자열 ASCII opaque ID, 마지막 하나의 `{resource_id}`만 허용한다. `/projects/{project_id}/attachments/{resource_id}` 같은 다중 동적 경로는 표현할 수 없어 고정 attachment lookup을 사용했다. 배열/JSONPath/스크립트 selector도 불가하다.
+- 정확히 두 계정/두 리소스, 로그인 이름·principal·리소스 ID의 ASCII 영숫자/밑줄/하이픈 문자열, 마지막 하나의 `{resource_id}`만 허용한다. 이메일형 로그인 이름이나 `/projects/{project_id}/attachments/{resource_id}` 같은 다중 동적 경로는 표현할 수 없어 이번 API는 지원 범위의 이름과 고정 attachment lookup을 사용했다. 배열/JSONPath/스크립트 selector도 불가하다.
 - object-key 중첩 selector는 최대 6단계다. 응답의 ID/owner/visibility/proof와 정상 identity를 명시적으로 등록해야 한다. 일반 바이너리 첨부파일이나 임의 HTML 의미를 평가하지 않는다.
 - proof는 운영자가 사전에 준비한 고엔트로피 합성값이며, 정확한 403/404 거절 객체와 안정된 소유자 대조가 필요하다. 응답 구조를 모르는 상태의 자동 추론·탐색이 아니다.
 - 고정 11 HTTP/12-tool 흐름은 A→B 교차 접근 하나를 검증한다. 임의 리소스 열거, 역방향 B→A, 모든 프로젝트/권한 조합의 포괄 검사는 아니다.
