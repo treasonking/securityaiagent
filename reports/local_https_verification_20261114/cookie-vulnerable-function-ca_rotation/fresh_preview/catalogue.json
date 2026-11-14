@@ -1,0 +1,23 @@
+{
+  "schema_version": "operator-catalogue-v1",
+  "contract_version": "operator-resource-v1",
+  "source_sha256": "f855b06eed211cd713dd2e94edf7b34140aada34cc039c21850918e974e6cfb8",
+  "registry_sha256": "1f9eac3716fded94ed520c09fad6f2a5790f98d722ebc25b7c46b33ab91001e7",
+  "target_id": "lab-web",
+  "network_requests": 0,
+  "model_calls": 0,
+  "candidates": [
+    {
+      "candidate_id": "4de747ebc5fb1215d6fb04bd39018e8aa84aab8b3f0beb9e83b9ed1f2d6a1dcc",
+      "method": "GET",
+      "path_template": "/workspace/attachments/{resource_id}",
+      "adapter_id": "project-attachment-json",
+      "status": "READY_FOR_REVIEW",
+      "reason_codes": [
+        "REGISTERED_RESOURCE_FLOW_MATCH"
+      ],
+      "verification_status": "NOT_EXECUTED"
+    }
+  ],
+  "partial": false
+}

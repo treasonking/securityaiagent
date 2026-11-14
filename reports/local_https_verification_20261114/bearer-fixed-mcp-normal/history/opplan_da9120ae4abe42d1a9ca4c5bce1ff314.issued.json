@@ -1,0 +1,152 @@
+{
+  "schema_version": "operator-plan-v1",
+  "plan_id": "opplan_da9120ae4abe42d1a9ca4c5bce1ff314",
+  "created_at": 1794637280,
+  "expires_at": 1794637580,
+  "candidate_id": "4de747ebc5fb1215d6fb04bd39018e8aa84aab8b3f0beb9e83b9ed1f2d6a1dcc",
+  "source_sha256": "d84547153e0608b42d2c171befd0ace416c701e80519ad6f2f1beeab0e4cd8a3",
+  "registry_sha256": "c2c368504d1582b3cb2298afcf93d563674e1ecbfca9376bc93ff560c70bf9d9",
+  "worker_origin": "http://127.0.0.1:54156",
+  "policy": {
+    "contract_version": "operator-resource-v1",
+    "target_id": "lab-web",
+    "scenario_id": "operator-resource-http",
+    "registry_sha256": "c2c368504d1582b3cb2298afcf93d563674e1ecbfca9376bc93ff560c70bf9d9",
+    "origin": "https://127.0.0.1:54155",
+    "adapter": {
+      "contract_version": "operator-resource-v1",
+      "adapter_id": "project-attachment-json",
+      "routes": {
+        "login_path": "/gateway/authenticate",
+        "me_path": "/gateway/session/profile",
+        "detail_path": "/workspace/attachments/{resource_id}"
+      },
+      "accounts": {
+        "user_a": {
+          "username": "cedar_editor",
+          "password_env": "LAB_USER_A_PASSWORD"
+        },
+        "user_b": {
+          "username": "quartz_reviewer",
+          "password_env": "LAB_USER_B_PASSWORD"
+        }
+      },
+      "login_user_field": "handle",
+      "login_password_field": "secret",
+      "auth_mode": "bearer",
+      "cookie_name": null,
+      "token_field": "session.grant.credential",
+      "principal_field": "context.member.subject",
+      "resource_id_field": "artifact.key",
+      "owner_field": "artifact.acl.holder",
+      "visibility_field": "artifact.acl.classification",
+      "private_value": "restricted",
+      "public_value": "shared",
+      "proof_field": "content.audit.receipt",
+      "denial_status": 403,
+      "denial_field": "problem.kind",
+      "denial_value": "attachment_forbidden"
+    },
+    "accounts": {
+      "user_a": {
+        "principal_id": "member_K73",
+        "resource_id": "attachment_M4s8",
+        "proof_env": "OPERATOR_PROOF_A"
+      },
+      "user_b": {
+        "principal_id": "member_R92",
+        "resource_id": "attachment_N9t2",
+        "proof_env": "OPERATOR_PROOF_B"
+      }
+    },
+    "proof_commitments": {
+      "user_a": "fddc8f52f6908887b9cf49a7b2d4d4ea2e909ba4788727bad8c5f21b1bd3d081",
+      "user_b": "5c56eb60ea5b954cd67d8eaa7fc4cd9ff6551da8f0e79458874bff3ed9ef100f"
+    },
+    "scope_policy": {
+      "profile_id": "local-project-attachments",
+      "revision": 1,
+      "snapshot_sha256": "ba741234da39f9e413e685308476465f09176ee2e03f5649ee847e89b4a3db80",
+      "effective_limits": {
+        "max_requests": 11,
+        "max_tool_calls": 12,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 1000.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      },
+      "tls": {
+        "verification": "dedicated-ca-ip-san-v1",
+        "ca_bundle_sha256": "9a1545cd22efdf9d19a171899bdaeed24245df19ce9ea78292a159d7c8f64a13",
+        "context_ca_sha256": "c1b034653aaf2ea80ff8851d0c85d16fd9f41203a6016477a75ed7c660c9a294",
+        "minimum_version": "TLSv1.2"
+      }
+    }
+  },
+  "sequence": [
+    {
+      "account_ref": "user-a",
+      "operation": "login",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "login",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "identity",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "identity",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_M4s8"
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2"
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2"
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2"
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_M4s8"
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "identity",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "identity",
+      "resource_id": null
+    }
+  ],
+  "provider": "mock",
+  "transport": "mcp",
+  "expected_http_requests": 11,
+  "expected_tool_calls": 12,
+  "verification_status": "NOT_EXECUTED",
+  "plan_sha256": "1afd3db9245d95d6705d18e9767d98dd29bcf2fe5a5cb28b8217a592ebf604d3"
+}

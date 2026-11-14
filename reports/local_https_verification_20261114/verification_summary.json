@@ -1,0 +1,70 @@
+{
+  "base_commit": "7f2c324fcf8e32f9287d6861147e89fa8f4e261f",
+  "executed_commit": "c9b3a33a3b47736f95f3bc23091cccc5903c633d",
+  "scope": "operator-registered local HTTPS IP API; Worker-to-Target TLS",
+  "completion": "complete",
+  "conditions": {
+    "http_compatibility": true,
+    "normal_https_8": true,
+    "invalid_certificate_6_rejected": true,
+    "ca_rotation_old_plan_rejected": true,
+    "new_preview_confirmed_after_rotation": true,
+    "verification_never_disabled": true,
+    "no_http_or_ca_fallback": true,
+    "stored_verdict_replay_matches": true,
+    "publication_scan_passed": true
+  },
+  "actual_tcp": {
+    "normal_cases": 8,
+    "certificate_failure_cases": 6,
+    "ca_rotation_cases": 2,
+    "issued_plans": 18,
+    "claimed_plans": 16,
+    "replayed_runs": 16,
+    "invalid_certificate_tcp_attempts_each": 1,
+    "invalid_certificate_http_received_each": 0,
+    "normal_http_received_each": 11,
+    "normal_tool_calls_each": 12,
+    "normal_evidence_each": 11
+  },
+  "local_checks": {
+    "focused_passed": 202,
+    "added_tls_tests": 26,
+    "full_pytest_passed": 825,
+    "warnings": 28,
+    "full_seconds": 286.83,
+    "pytest_exit": 0,
+    "build_exit": 0,
+    "build_modules": 18,
+    "build_ms": 737
+  },
+  "public_scan": {
+    "secret_key_path_representations_checked": 292,
+    "matches": 0,
+    "temporary_key_directories_removed": 16
+  },
+  "provenance": {
+    "recorded_working_tree_dirty": true,
+    "all_recorded_source_bytes_match_executed_commit": true,
+    "unchanged_status_entries_bytes_equal_head_index": true,
+    "execution_digests_rewritten": false
+  },
+  "unchanged": {
+    "production_registries": true,
+    "previous_reports": true,
+    "existing_env_database": true,
+    "vms_firewall_shares": true,
+    "system_global_trust": true,
+    "full_dependency_lock": true,
+    "access_control_verifier": true
+  },
+  "not_performed": [
+    "VM deployment",
+    "main merge",
+    "DNS/domain or external service validation",
+    "browser/Nmap/Playwright",
+    "paid model calls",
+    "online revocation or organization PKI validation"
+  ],
+  "next_action": "Review Draft PR; local HTTPS support complete, no additional fixture/repeated matrix automatically proposed"
+}
