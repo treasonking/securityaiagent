@@ -1,0 +1,23 @@
+{
+  "http_received": 1,
+  "network": {
+    "tcp_accepted": 1,
+    "tls_handshake_attempts": 1,
+    "tls_handshake_failed": 0,
+    "tls_handshake_completed": 1
+  },
+  "observed_sni": [
+    "attachments.securityai.test"
+  ],
+  "observed_hosts": [
+    "attachments.securityai.test:63089"
+  ],
+  "events": [
+    {
+      "ordinal": 1,
+      "operation": "redirect",
+      "status": 302
+    }
+  ],
+  "verifier_input": false
+}

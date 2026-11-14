@@ -1,0 +1,83 @@
+{
+  "schema_version": "operator-link-v1",
+  "run_id": "run_cb12964506bc4959a6ce8c3f0c782057",
+  "plan_id": "opplan_b46b9c6cace345e9af0a5a773720f0de",
+  "plan_sha256": "da9272573c2c30070f8317aef7b4b951bd2669be5249a20dc474f8304237e968",
+  "candidate_id": "4de747ebc5fb1215d6fb04bd39018e8aa84aab8b3f0beb9e83b9ed1f2d6a1dcc",
+  "source_sha256": "d84547153e0608b42d2c171befd0ace416c701e80519ad6f2f1beeab0e4cd8a3",
+  "registry_sha256": "e1dc3e5f7dc0cadedd73929c4bfb483fe1bc084e3bfddca877d3cbc7568cfcfb",
+  "approval_actor": "codex",
+  "approval_identity_authenticated": false,
+  "expected_scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "91fc772ccb40daa37c1e9d14b53ba6d89b15e967d5662d1ad987937ab7c835e0",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-dns-san-v1",
+      "ca_bundle_sha256": "a4e0a988a076deb448bb540ee50e8b9f1d363b4bf9b268a23739cfbd4e83f2a0",
+      "context_ca_sha256": "ec037da559f68b98688402515733534cc8d8f13f90206aa231d4d22e632768e7",
+      "minimum_version": "TLSv1.2"
+    },
+    "domain": {
+      "version": "domain-network-v1",
+      "allowed_ip_ranges": [
+        "127.0.0.1/32"
+      ],
+      "allow_non_global": true,
+      "resolver": "system-a-aaaa-all-v1",
+      "connection": "numeric-peer-checked-per-request-v1",
+      "hostname": "attachments.securityai.test",
+      "port": 62675
+    }
+  },
+  "actual_scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "91fc772ccb40daa37c1e9d14b53ba6d89b15e967d5662d1ad987937ab7c835e0",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-dns-san-v1",
+      "ca_bundle_sha256": "a4e0a988a076deb448bb540ee50e8b9f1d363b4bf9b268a23739cfbd4e83f2a0",
+      "context_ca_sha256": "ec037da559f68b98688402515733534cc8d8f13f90206aa231d4d22e632768e7",
+      "minimum_version": "TLSv1.2"
+    },
+    "domain": {
+      "version": "domain-network-v1",
+      "allowed_ip_ranges": [
+        "127.0.0.1/32"
+      ],
+      "allow_non_global": true,
+      "resolver": "system-a-aaaa-all-v1",
+      "connection": "numeric-peer-checked-per-request-v1",
+      "hostname": "attachments.securityai.test",
+      "port": 62675
+    }
+  },
+  "control_calls": {
+    "preview_policy": 1,
+    "run_policy": 1
+  },
+  "status": "COMPLETED",
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL"
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62845",
+    "dns_results": [],
+    "selected_ip": null,
+    "peer_ip": null,
+    "peer_port": null,
+    "peer_verified": false,
+    "tls_server_name": null,
+    "stage": "dns",
+    "reason_code": "DNS_NO_RESULTS",
+    "tcp_attempts": 0,
+    "tls_attempts": 0,
+    "http_response_received": false
+  }
+]

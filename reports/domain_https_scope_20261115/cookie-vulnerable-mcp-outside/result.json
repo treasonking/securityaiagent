@@ -1,0 +1,153 @@
+{
+  "auth": "cookie",
+  "mode": "vulnerable",
+  "transport": "mcp",
+  "case": "outside",
+  "run_id": "run_28d8fc3c406f482999d8e0ac40b41e9a",
+  "plan_id": "opplan_0e5a6400937547e5a953aa6a5c48edef",
+  "plan_sha256": "3b386b4907a53c647de45adfdebb9a2eb8c11e4c670ae401b1b573cc87d6a621",
+  "planned_scope": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "9f6f9cd22eb7cb50aeb161ef672988d59eac14f385421d88e32cf618a9baab60",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-dns-san-v1",
+      "ca_bundle_sha256": "8cf3dbf4bbb94bcb14448e3ee44aa2a836e5c298245fe77766962a65e7c01c80",
+      "context_ca_sha256": "c7e8ab7c07b79d471b788198c17b5657a80dc0d7fe64962a2c8b703b97da4626",
+      "minimum_version": "TLSv1.2"
+    },
+    "domain": {
+      "version": "domain-network-v1",
+      "allowed_ip_ranges": [
+        "127.0.0.1/32"
+      ],
+      "allow_non_global": true,
+      "resolver": "system-a-aaaa-all-v1",
+      "connection": "numeric-peer-checked-per-request-v1",
+      "hostname": "attachments.securityai.test",
+      "port": 62750
+    }
+  },
+  "actual_scope": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "9f6f9cd22eb7cb50aeb161ef672988d59eac14f385421d88e32cf618a9baab60",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-dns-san-v1",
+      "ca_bundle_sha256": "8cf3dbf4bbb94bcb14448e3ee44aa2a836e5c298245fe77766962a65e7c01c80",
+      "context_ca_sha256": "c7e8ab7c07b79d471b788198c17b5657a80dc0d7fe64962a2c8b703b97da4626",
+      "minimum_version": "TLSv1.2"
+    },
+    "domain": {
+      "version": "domain-network-v1",
+      "allowed_ip_ranges": [
+        "127.0.0.1/32"
+      ],
+      "allow_non_global": true,
+      "resolver": "system-a-aaaa-all-v1",
+      "connection": "numeric-peer-checked-per-request-v1",
+      "hostname": "attachments.securityai.test",
+      "port": 62750
+    }
+  },
+  "preview": {
+    "http": 0,
+    "dns": 0,
+    "tcp_accepted": 0,
+    "tls_handshake_attempts": 0,
+    "tls_handshake_failed": 0,
+    "tls_handshake_completed": 0
+  },
+  "network": {
+    "tcp_accepted": 0,
+    "tls_handshake_attempts": 0,
+    "tls_handshake_failed": 0,
+    "tls_handshake_completed": 0
+  },
+  "target_http_received": 0,
+  "worker_usage": {
+    "http_requests": 1,
+    "tool_calls": 1
+  },
+  "evidence_count": 0,
+  "status": "FAILED",
+  "verdict": "INCONCLUSIVE",
+  "expected_verdict": "INCONCLUSIVE",
+  "reason_code": "DNS_ADDRESS_OUT_OF_SCOPE",
+  "replay": {
+    "verdict": "INCONCLUSIVE",
+    "reason_code": "INCOMPLETE_WORKFLOW",
+    "run_id": "run_28d8fc3c406f482999d8e0ac40b41e9a",
+    "verdict_matches": true,
+    "evidence_count": 0
+  },
+  "worker_transport_receipts": {
+    "policy": 2,
+    "function": 0,
+    "mcp": 4,
+    "cancel": 1
+  },
+  "dns_calls": [
+    {
+      "hostname": "attachments.securityai.test",
+      "port": 62750
+    }
+  ],
+  "resolver_boundary": "injected-test-answers-not-external-DNS",
+  "unexpected_os_hostname_lookups": [],
+  "observed_sni": [],
+  "observed_hosts": [],
+  "connections": [
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:62750",
+      "dns_results": [
+        "127.0.0.2"
+      ],
+      "selected_ip": null,
+      "peer_ip": null,
+      "peer_port": null,
+      "peer_verified": false,
+      "tls_server_name": null,
+      "stage": "dns",
+      "reason_code": "DNS_ADDRESS_OUT_OF_SCOPE",
+      "tcp_attempts": 0,
+      "tls_attempts": 0,
+      "http_response_received": false
+    }
+  ],
+  "tls_certificate": {
+    "reference_time_utc": "2026-11-14T17:09:54.852912+00:00",
+    "server_not_before": "2026-11-13T17:09:54+00:00",
+    "server_not_after": "2026-11-15T17:09:54+00:00",
+    "server_dns_san": "attachments.securityai.test",
+    "server_certificate_sha256": "4a7431898a01ea11c90728d039333d9dfaba950b827a46628d88356eed84aae6",
+    "private_storage": "windows-current-user-only-directory-acl"
+  },
+  "policy_change": null,
+  "plan_link_matches": true,
+  "passed": true,
+  "temporary_key_directory_removed": true
+}

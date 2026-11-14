@@ -44,7 +44,7 @@ Changing hostname/port, ranges, non-global permission or trust identity changes 
 
 Implementation uses the public [HTTPX custom transport API](https://www.python-httpx.org/advanced/transports/) and [HTTPCore network backend API](https://www.encode.io/httpcore/network-backends/) with its public `AsyncConnectionPool`, not patched private client fields or imports. Supported versions are HTTPX 0.28.1 and HTTPCore 1.0.9. HTTPCore was already in the full lock; it is now explicitly a direct dependency because the implementation uses its public types. Compatibility tests exercise those interfaces over actual TLS and verify versions. Python is the existing supported 3.12 series. Certificate generation reuses the existing cryptography development dependency.
 
-Per-stage I/O timeouts and the existing enclosing request/run deadlines apply. An OS getaddrinfo operation already running in an executor may finish after cancellation; its late result cannot initiate a Target connection. The application does not configure OS DNS servers, caches or search suffixes. This is not DNSSEC validation or an independent authoritative DNS client.
+Per-stage I/O timeouts and the existing enclosing request/run deadlines apply. If the enclosing deadline wins, the existing request/run timeout code takes precedence over a DNS-specific timeout code. An OS getaddrinfo operation already running in an executor may finish after cancellation; its late result cannot initiate a Target connection. The application does not configure OS DNS servers, caches or search suffixes. This is not DNSSEC validation or an independent authoritative DNS client.
 
 ## Failure and evidence boundaries
 

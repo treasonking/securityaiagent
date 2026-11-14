@@ -1,0 +1,13 @@
+{
+  "plan_sha256": "da9272573c2c30070f8317aef7b4b951bd2669be5249a20dc474f8304237e968",
+  "approval_actor": "codex",
+  "approval_identity_authenticated": false,
+  "provider": "mock",
+  "transport": "mcp",
+  "registered_accounts_resources_checked": true,
+  "sequence_steps_checked": 11,
+  "preview_target_requests": 0,
+  "target_counter_before": 0,
+  "target_counter_after": 0,
+  "scope_snapshot_sha256": "91fc772ccb40daa37c1e9d14b53ba6d89b15e967d5662d1ad987937ab7c835e0"
+}

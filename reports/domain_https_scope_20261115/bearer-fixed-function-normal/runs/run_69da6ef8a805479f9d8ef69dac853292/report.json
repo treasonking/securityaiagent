@@ -1,0 +1,67 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_69da6ef8a805479f9d8ef69dac853292",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "function",
+  "started_at": "2026-11-14T17:09:51.243396+00:00",
+  "status": "COMPLETED",
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+  "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "90979d94bda79266bd80513146adc131cccf9ff23bc3f57f77b0fb3f0d5b05fc",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-dns-san-v1",
+      "ca_bundle_sha256": "06f62d997308ccd3c53bb03c668d011d7548d00102cd66b69bd06627c09f8410",
+      "context_ca_sha256": "cd83224218cd5009070ff4953f53217c1d1c458adbbbd292b8ad9cb5e2f0b760",
+      "minimum_version": "TLSv1.2"
+    },
+    "domain": {
+      "version": "domain-network-v1",
+      "allowed_ip_ranges": [
+        "127.0.0.1/32"
+      ],
+      "allow_non_global": true,
+      "resolver": "system-a-aaaa-all-v1",
+      "connection": "numeric-peer-checked-per-request-v1",
+      "hostname": "attachments.securityai.test",
+      "port": 62610
+    }
+  },
+  "limits_used": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_ids": [
+    "7e2d3c387912d0008f08d2138d5a7555a0aef766bb1e38dd94477549b862d560",
+    "e03b1fe9070c5607c2f2cb71a3b5cb54aa9cc61b8fbb0e9aed513871f58df30e",
+    "3c6ee104c7c0f3105320d6d707de779946466ca543590027310bd0f6f15bbfa2",
+    "432bf3a55fa415b33b91c17d45d112d804c09e07041beb92bf8480e13ecbff7c",
+    "f24df63ea129d552cc330be9c34e07a97cec4d0bd931eeb950599dd17bcf5f50",
+    "49352517c42b89327729388a469fab50b8c0545346d84d068ce33ac77c6af735",
+    "29d3b07e7bb2ed7a62c3cb33293323c6718657c7f7f5e27517639781da58eb96",
+    "5d44cda873760a3eaa4ccd363f40cbd2aa8d90d8b6b9e2431ea63f11897863fb",
+    "a13ed5a875007230ae2a62c5b4274bc53a5bc56d857185b3dc9b3cdc14859aa1",
+    "353e623b72bbd7cbc861a489fc7ca7aa81978593848c8f1421bb0d4f8e8266f0",
+    "d68bf1aaffbd93925db4cbe6347e674423c1d57f59744e316398d84a16d519cb"
+  ],
+  "finished_at": "2026-11-14T17:09:52.024399+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}
