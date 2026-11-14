@@ -22,11 +22,12 @@ class TargetPolicy:
 
     @property
     def base_url(self) -> str:
-        return f"{self.scheme}://{self.host}:{self.port}"
+        host = f"[{self.host}]" if ':' in self.host else self.host
+        return f"{self.scheme}://{host}:{self.port}"
 
     def __post_init__(self) -> None:
-        if self.scheme != "http":
-            raise PolicyViolation("only the registered HTTP lab scheme is supported")
+        if self.scheme not in {"http", "https"}:
+            raise PolicyViolation("only registered HTTP/HTTPS lab schemes are supported")
         try:
             ipaddress.ip_address(self.host)
         except ValueError as exc:

@@ -19,6 +19,7 @@ from worker.limits import WorkerLimits
 from worker.registry import ScopeRegistry, load_scope_registry
 from worker.scope import ScopeSnapshot, ScopeViolation
 from worker.candidate_policy import CONTRACT
+from worker.tls import client_verify, tls_failure_code
 
 
 _MARKER = re.compile(r"^SYN-[A-Z]+-(?:PRIVATE-)?[0-9]{3}$")
@@ -73,6 +74,8 @@ class ToolService:
         if policies is not None:
             self.registry = self.registry.with_test_origins(policies)
         self.policies = dict(self.registry.policies)
+        for policy in self.policies.values():
+            client_verify(self.registry, policy)  # Fail HTTPS startup without dedicated trust.
         self.accounts = accounts
         self.limits = limits or WorkerLimits()
         self.transport = transport
@@ -256,6 +259,7 @@ class ToolService:
                 timeout=timeout,
                 follow_redirects=False,
                 trust_env=False,
+                verify=client_verify(self.registry, policy),
                 transport=self.transport,
                 cookies=cookies,
             ) as client:
@@ -289,6 +293,11 @@ class ToolService:
                                 request=streamed.request,
                                 extensions=streamed.extensions,
                             )
+                except httpx.ConnectError as exc:
+                    code = tls_failure_code(exc)
+                    if code:
+                        raise ScopeViolation(code, 'registered target TLS verification failed') from None
+                    raise
                 except TimeoutError as exc:
                     if self._run_seconds_remaining(state) <= 0:
                         state.cancelled = True
@@ -304,6 +313,7 @@ class ToolService:
             self._http_semaphore.release()
 
     def _authorize_request(self, state, policy, operation, method, path, account_ref, session_ref, cookies, payload):
+        client_verify(self.registry, policy)  # Check CA drift before every send, including after waits.
         if state.scope is None or state.scenario_id != state.scope.scenario_id or state.target_id != state.scope.target.target_id:
             raise ScopeViolation("SCOPE_SESSION_DENIED", "run identity differs from its scope snapshot")
         state.scope.authorize_request(policy, account_ref, operation, method, path)

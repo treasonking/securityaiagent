@@ -117,7 +117,7 @@ class AttachmentService:
 
 
 @contextmanager
-def attachment_server(service):
+def attachment_server(service, *, ssl_context=None, connection_counts=None):
     """Reserve an ephemeral loopback listener; no URL/port input and no disk DB."""
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):
@@ -141,7 +141,27 @@ def attachment_server(service):
         do_GET = respond
         do_POST = respond
 
-    server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    class Server(ThreadingHTTPServer):
+        def get_request(self):
+            connection, address = super().get_request()
+            if connection_counts is not None:
+                connection_counts['tcp_accepted'] += 1
+            if ssl_context is not None:
+                if connection_counts is not None:
+                    connection_counts['tls_handshake_attempts'] += 1
+                connection.settimeout(5)
+                try:
+                    connection = ssl_context.wrap_socket(connection, server_side=True)
+                except OSError:
+                    connection.close()
+                    if connection_counts is not None:
+                        connection_counts['tls_handshake_failed'] += 1
+                    raise
+                if connection_counts is not None:
+                    connection_counts['tls_handshake_completed'] += 1
+            return connection, address
+
+    server = Server(('127.0.0.1', 0), Handler)
     thread = threading.Thread(target=server.serve_forever, kwargs={'poll_interval': .05}, daemon=True)
     thread.start()
     try:

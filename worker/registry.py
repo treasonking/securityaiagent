@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import hashlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from types import MappingProxyType
 from typing import Literal, Mapping
@@ -38,6 +38,7 @@ class ScopeRegistry:
     # Canonical JSON prevents later mutation of nested profile mappings.
     profiles_json: Mapping[str, str]
     adapters_json: Mapping[str, str]
+    tls_trust: object = field(default=None, repr=False, compare=False)
 
     def profile(self, target_id: str) -> ScopeProfile:
         if target_id not in self.profiles_json:
@@ -46,7 +47,9 @@ class ScopeRegistry:
 
     def snapshot(self, target_id: str, scenario: str, limits: WorkerLimits) -> ScopeSnapshot:
         profile = self.profile(target_id)
-        return make_snapshot(self.policies[target_id], profile, scenario, limits, self.adapter(target_id))
+        from worker.tls import tls_metadata
+        return make_snapshot(self.policies[target_id], profile, scenario, limits, self.adapter(target_id),
+                             tls=tls_metadata(self, self.policies[target_id]))
 
     def adapter(self, target_id: str) -> ApiAdapter:
         return ApiAdapter.model_validate(json.loads(self.adapters_json[target_id]))
@@ -71,7 +74,7 @@ class ScopeRegistry:
         """Code-only synthetic test injection, never an HTTP/env URL override."""
         if set(policies) != set(self.policies) or any(key != policy.target_id for key, policy in policies.items()):
             raise ScopeViolation("SCOPE_TARGET_DENIED", "test origins must preserve registered target IDs")
-        return ScopeRegistry(MappingProxyType(dict(policies)), self.profiles_json, self.adapters_json)
+        return replace(self, policies=MappingProxyType(dict(policies)))
 
 
 def _unique_object(pairs):
@@ -102,7 +105,7 @@ def load_scope_registry(path: str | Path = DEFAULT_REGISTRY, *, expected_origin:
         policies, profiles, adapters = {}, {}, {}
         for target_id, target in registry.targets.items():
             parsed = urlsplit(target.origin)
-            policy = TargetPolicy(target_id, parsed.scheme, parsed.hostname or "", parsed.port or 80)
+            policy = TargetPolicy(target_id, parsed.scheme, parsed.hostname or "", parsed.port or (443 if parsed.scheme == 'https' else 80))
             if target.origin != policy.base_url:
                 raise ScopeViolation("SCOPE_ORIGIN_MISMATCH", "registered origin must be canonical and contain no path or credentials")
             if expected_origin is not None and expected_origin != policy.base_url:

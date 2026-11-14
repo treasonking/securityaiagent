@@ -94,10 +94,11 @@ class ScopeSnapshot:
     snapshot_sha256: str
     adapter: ApiAdapter
     http_routes: HttpRoutes
+    tls: object = None
 
     def record(self) -> PolicyRecord:
         return PolicyRecord(profile_id=self.profile_id, revision=self.revision,
-                            snapshot_sha256=self.snapshot_sha256, effective_limits=asdict(self.limits))
+                            snapshot_sha256=self.snapshot_sha256, effective_limits=asdict(self.limits), tls=self.tls)
 
     def authorize(self, account_ref: str, operation: str) -> None:
         if account_ref not in self.accounts:
@@ -128,7 +129,7 @@ class ScopeSnapshot:
             raise ScopeViolation("SCOPE_PATH_DENIED", "method/path does not match the registered operation")
 
 
-def make_snapshot(target: TargetPolicy, profile: ScopeProfile, scenario: str, global_limits: WorkerLimits, adapter: ApiAdapter | None = None) -> ScopeSnapshot:
+def make_snapshot(target: TargetPolicy, profile: ScopeProfile, scenario: str, global_limits: WorkerLimits, adapter: ApiAdapter | None = None, *, tls=None) -> ScopeSnapshot:
     adapter = adapter or ApiAdapter()
     if adapter.routes != profile.http_routes:
         raise ScopeViolation("SCOPE_ADAPTER_MISMATCH", "adapter routes are not approved by scope")
@@ -147,8 +148,11 @@ def make_snapshot(target: TargetPolicy, profile: ScopeProfile, scenario: str, gl
         values["max_requests"] = min(values["max_requests"], 9)
         values["max_tool_calls"] = min(values["max_tool_calls"], 10)
     effective = WorkerLimits(**values)
-    canonical = json.dumps({"schema_version": "2.0", "target_id": target.target_id, "origin": target.base_url,
+    binding = {"schema_version": "2.0", "target_id": target.target_id, "origin": target.base_url,
                             "profile": profile.normalized(), "scenario_id": scenario,
-                            "effective_limits": asdict(effective), "adapter": adapter.model_dump(mode="json")}, sort_keys=True, separators=(",", ":"), allow_nan=False)
+                            "effective_limits": asdict(effective), "adapter": adapter.model_dump(mode="json")}
+    if tls is not None:
+        binding['tls'] = tls.model_dump(mode='json')
+    canonical = json.dumps(binding, sort_keys=True, separators=(",", ":"), allow_nan=False)
     return ScopeSnapshot(target, scenario, tuple(sorted(profile.scenarios[scenario])), tuple(sorted(profile.operations)),
-                         effective, profile.profile_id, profile.revision, hashlib.sha256(canonical.encode()).hexdigest(), adapter, profile.http_routes)
+                         effective, profile.profile_id, profile.revision, hashlib.sha256(canonical.encode()).hexdigest(), adapter, profile.http_routes, tls)

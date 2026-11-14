@@ -159,6 +159,12 @@ class ResourcePolicy(FrozenModel):
     proof_commitments: ProofCommitments
     scope_policy: CandidateScope
 
+    @model_validator(mode='after')
+    def tls_identity(self):
+        if self.origin.startswith('https://') != (self.scope_policy.tls is not None):
+            raise ValueError('HTTPS requires versioned TLS identity; HTTP keeps its original contract')
+        return self
+
     def sequence(self):
         return steps(self.accounts)
 

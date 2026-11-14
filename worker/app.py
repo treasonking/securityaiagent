@@ -191,6 +191,8 @@ def create_app_from_env():
         str(__import__("pathlib").Path(__file__).resolve().parents[1] / "config" / "targets.json"),
     )
     registry = load_scope_registry(registry_path, expected_origin=os.getenv("TARGET_BASE_URL") or None)
+    from worker.tls import bind_registry_tls
+    registry = bind_registry_tls(registry, os.getenv('TARGET_CA_BUNDLE') or None)
     from worker.operator_scope import OperatorRegistry
     if isinstance(registry, OperatorRegistry):
         registry = registry.bind_proofs(os.environ)

@@ -17,6 +17,8 @@ def main() -> None:
     args = parser.parse_args()
     try:
         registry = load_scope_registry(args.registry, expected_origin=os.getenv("TARGET_BASE_URL") or None)
+        from worker.tls import bind_registry_tls
+        registry = bind_registry_tls(registry, os.getenv('TARGET_CA_BUNDLE') or None)
         from worker.operator_scope import OperatorRegistry
         if isinstance(registry, OperatorRegistry):
             registry = registry.bind_proofs(os.environ)
