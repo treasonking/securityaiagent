@@ -173,6 +173,11 @@ def run_case(output, auth, vulnerable, transport, case='normal'):
     return dict(row, path=name)
 
 
+def source_hashes(paths, root=None):
+    root = (root or Path.cwd()).resolve()
+    return {p.resolve().relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
@@ -188,7 +193,7 @@ def main():
         command='python -m scripts.run_domain_https_verification --output <new-directory>',
         python=platform.python_version(), platform=platform.platform(), openssl=ssl.OPENSSL_VERSION,
         resolver='test injected; OS resolver separately unit-tested; no external DNS',
-        source_sha256={p.as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}, cases=[])
+        source_sha256=source_hashes(sources), cases=[])
     for values in CASES:
         row = run_case(args.output, *values)
         matrix['cases'].append(row)

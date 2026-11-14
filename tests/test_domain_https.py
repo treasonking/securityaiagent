@@ -299,3 +299,12 @@ def test_no_address_retry_after_connect_error(monkeypatch):
         with pytest.raises(ScopeViolation) as exc:
             asyncio.run(flow())
         assert exc.value.code=='DOMAIN_CONNECTION_FAILED' and calls==[('127.0.0.1',443)]
+
+
+def test_public_source_manifest_never_exposes_absolute_paths(tmp_path):
+    source=tmp_path/'source.py'
+    source.write_text('synthetic content',encoding='utf-8')
+    result=harness.source_hashes([source.resolve()],tmp_path)
+    assert list(result)==['source.py'] and str(tmp_path) not in json.dumps(result)
+    with pytest.raises(ValueError):
+        harness.source_hashes([Path(__file__).resolve()],tmp_path)
