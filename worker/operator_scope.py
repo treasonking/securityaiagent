@@ -93,6 +93,7 @@ class OperatorRegistry:
     policies: object
     target_json: str
     proof_values: object = field(default=None, repr=False)
+    tls_trust: object = field(default=None, repr=False, compare=False)
 
     def registered(self): return OperatorTarget.model_validate(json.loads(self.target_json))
     def profile(self, target_id):
@@ -140,10 +141,14 @@ class OperatorRegistry:
         binding = dict(contract_version=CONTRACT, registry_sha256=self.config_digest(target_id),
             proof_commitments=commitments.model_dump(mode='json'), effective_limits=asdict(effective),
             sequence=[s.model_dump(mode='json') for s in steps(profile.accounts)])
+        from worker.tls import tls_metadata
+        tls = tls_metadata(self, self.policies[target_id])
+        if tls is not None:
+            binding['tls'] = tls.model_dump(mode='json')
         policy = ResourcePolicy(registry_sha256=self.config_digest(target_id), origin=self.policies[target_id].base_url,
             adapter=self.adapter(target_id), accounts=profile.accounts, proof_commitments=commitments,
             scope_policy=CandidateScope(profile_id=profile.profile_id,revision=profile.revision,
-                snapshot_sha256=digest(canonical(binding)),effective_limits=profile.limits.model_validate(asdict(effective))))
+                snapshot_sha256=digest(canonical(binding)),effective_limits=profile.limits.model_validate(asdict(effective)), tls=tls))
         return OperatorSnapshot(self.policies[target_id],policy,effective)
 
 
@@ -153,7 +158,7 @@ def parse_operator_registry(payload, expected_origin=None):
         if set(doc.targets) != {'lab-web'}: raise ValueError()
         entry = doc.targets['lab-web']
         url = urlsplit(entry.origin)
-        target = TargetPolicy('lab-web',url.scheme,url.hostname or '',url.port or 80)
+        target = TargetPolicy('lab-web',url.scheme,url.hostname or '',url.port or (443 if url.scheme == 'https' else 80))
         if entry.origin != target.base_url or expected_origin is not None and expected_origin != target.base_url:
             raise ValueError()
         return OperatorRegistry(MappingProxyType({'lab-web':target}),entry.model_dump_json())

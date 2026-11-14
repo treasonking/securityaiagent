@@ -1,0 +1,61 @@
+{
+  "schema_version": "operator-link-v1",
+  "run_id": "run_be57bfb27f064bcea5c38435edc4a91d",
+  "plan_id": "opplan_a842d7eb4e914a559e576a326371166d",
+  "plan_sha256": "25ecd7cc061c693862cd0ed40e977eec43925a5e086c4795f75c446dc789e01d",
+  "candidate_id": "4de747ebc5fb1215d6fb04bd39018e8aa84aab8b3f0beb9e83b9ed1f2d6a1dcc",
+  "source_sha256": "f855b06eed211cd713dd2e94edf7b34140aada34cc039c21850918e974e6cfb8",
+  "registry_sha256": "ab66adefb765461e2d7a0d79d40afd360166bead496e90460571fbc5cf5b89cd",
+  "approval_actor": "codex",
+  "approval_identity_authenticated": false,
+  "expected_scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "098b8e774f35b97c5a19189aee6b7d231d0f41cdc2bb841ec53ebfe3504bdc42",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-ip-san-v1",
+      "ca_bundle_sha256": "aea7a89c387f231234dd0ff59783eb95a78bca23b87cc5aa906a5774df7046f8",
+      "context_ca_sha256": "2425035b8a0d6ec88659ae349153c63fbf2ca224948eca61a2248684ed7f0138",
+      "minimum_version": "TLSv1.2"
+    }
+  },
+  "actual_scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "098b8e774f35b97c5a19189aee6b7d231d0f41cdc2bb841ec53ebfe3504bdc42",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-ip-san-v1",
+      "ca_bundle_sha256": "aea7a89c387f231234dd0ff59783eb95a78bca23b87cc5aa906a5774df7046f8",
+      "context_ca_sha256": "2425035b8a0d6ec88659ae349153c63fbf2ca224948eca61a2248684ed7f0138",
+      "minimum_version": "TLSv1.2"
+    }
+  },
+  "control_calls": {
+    "preview_policy": 1,
+    "run_policy": 1
+  },
+  "status": "FAILED",
+  "verdict": "INCONCLUSIVE"
+}

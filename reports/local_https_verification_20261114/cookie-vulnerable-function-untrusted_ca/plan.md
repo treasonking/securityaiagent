@@ -1,0 +1,31 @@
+# Operator resource preview
+
+NOT_EXECUTED; digest is identity, not a signature or human authentication.
+
+Plan: opplan_37eafeec965b432da08fc0735f110ea7
+
+Digest: 2ca6d0273dc489fc7ffe68dac5e3d39c1e6cab022a25e90cb7a7632357f8afe7
+
+Provider: mock; transport: function
+
+Created/expires: 1794637282/1794637582; target: https://127.0.0.1:54180
+
+Proof: worker-held high-entropy test values; only commitments and run digests are disclosed.
+
+Expected target HTTP: 11; tools: 12. Preview: only authenticated worker policy lookup.
+
+Worker scope: {"profile_id":"local-project-attachments","revision":1,"snapshot_sha256":"ff8b8429035ab816f909b74bdf8cc5cd33e99ef25a1d31d0f2b0fc1826c7b175","effective_limits":{"max_requests":11,"max_tool_calls":12,"timeout_seconds":5.0,"run_timeout_seconds":180.0,"max_response_bytes":65536,"requests_per_second":1000.0,"max_concurrency":1,"max_runs":100,"state_ttl_seconds":600.0},"tls":{"verification":"dedicated-ca-ip-san-v1","ca_bundle_sha256":"6ec7ec2dcd5d3514bcd3d887be5ea488e3c3e68fc3c7a3b70856f4e8d6deccd2","context_ca_sha256":"59ba409faf97ded440fd650410b22b8b31cbcc68771a846a84cec2ae648fe4f7","minimum_version":"TLSv1.2"}}
+
+Accounts/resources: {"user_a":{"principal_id":"member_K73","resource_id":"attachment_M4s8","proof_env":"OPERATOR_PROOF_A"},"user_b":{"principal_id":"member_R92","resource_id":"attachment_N9t2","proof_env":"OPERATOR_PROOF_B"}}
+
+1. user-a: login /gateway/authenticate
+2. user-b: login /gateway/authenticate
+3. user-a: identity /gateway/session/profile
+4. user-b: identity /gateway/session/profile
+5. user-a: resource /workspace/attachments/attachment_M4s8
+6. user-b: resource /workspace/attachments/attachment_N9t2
+7. user-a: resource /workspace/attachments/attachment_N9t2
+8. user-b: resource /workspace/attachments/attachment_N9t2
+9. user-a: resource /workspace/attachments/attachment_M4s8
+10. user-a: identity /gateway/session/profile
+11. user-b: identity /gateway/session/profile

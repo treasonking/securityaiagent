@@ -13,5 +13,6 @@ reports/operator_resource_vm_20261107/** -text whitespace=blank-at-eol,blank-at-
 reports/vm_deployment_20261112/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 reports/vm_deployment_fixes_20261113/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 reports/independent_api_validation_20261113/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+reports/local_https_verification_20261114/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # Preview hashes original specification bytes; preserve the executed inputs too.
 validation/independent_api/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

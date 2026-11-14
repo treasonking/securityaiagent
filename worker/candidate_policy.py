@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 from pydantic import Field
 from common.api_contract import FrozenModel, HttpRoutes, Name
 from worker.scope import ProfileLimits
+from common.tls_contract import TLSVerification
 
 CONTRACT = 'candidate-preview-v1'
 Hash = Annotated[str, Field(pattern=r'^[0-9a-f]{64}$')]
@@ -14,6 +15,7 @@ class CandidateScope(FrozenModel):
     revision: int = Field(gt=0)
     snapshot_sha256: Hash
     effective_limits: ProfileLimits
+    tls: TLSVerification | None = Field(default=None, exclude_if=lambda value: value is None)
 
 
 class CandidatePolicy(FrozenModel):

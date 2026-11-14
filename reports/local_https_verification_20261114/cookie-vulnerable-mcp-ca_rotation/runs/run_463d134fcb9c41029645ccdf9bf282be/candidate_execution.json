@@ -1,0 +1,61 @@
+{
+  "schema_version": "operator-link-v1",
+  "run_id": "run_463d134fcb9c41029645ccdf9bf282be",
+  "plan_id": "opplan_6a408afa46874411afd097686c2dd7fb",
+  "plan_sha256": "7cfb40f638e9ebbc8cfe0f233971f9dab274f6d63ed10425b1649924e1674bfa",
+  "candidate_id": "4de747ebc5fb1215d6fb04bd39018e8aa84aab8b3f0beb9e83b9ed1f2d6a1dcc",
+  "source_sha256": "f855b06eed211cd713dd2e94edf7b34140aada34cc039c21850918e974e6cfb8",
+  "registry_sha256": "0a4f6e380c7dca2d12eab713251179dd281b1cd6124e8a2354b86f253c11b1b9",
+  "approval_actor": "codex",
+  "approval_identity_authenticated": false,
+  "expected_scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "592ba355a869d7666ca639b49f502c591a295337056b03caf0d03328fea30bff",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-ip-san-v1",
+      "ca_bundle_sha256": "173726a38426c479422dc8cb47571650e4d218c679c8ac8d923d3dc0871f011d",
+      "context_ca_sha256": "9f8ef2ad2f7fc674abc786084339f73319bdc86e7a3d751cabf1e723793370e5",
+      "minimum_version": "TLSv1.2"
+    }
+  },
+  "actual_scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "592ba355a869d7666ca639b49f502c591a295337056b03caf0d03328fea30bff",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-ip-san-v1",
+      "ca_bundle_sha256": "173726a38426c479422dc8cb47571650e4d218c679c8ac8d923d3dc0871f011d",
+      "context_ca_sha256": "9f8ef2ad2f7fc674abc786084339f73319bdc86e7a3d751cabf1e723793370e5",
+      "minimum_version": "TLSv1.2"
+    }
+  },
+  "control_calls": {
+    "preview_policy": 1,
+    "run_policy": 1
+  },
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE"
+}

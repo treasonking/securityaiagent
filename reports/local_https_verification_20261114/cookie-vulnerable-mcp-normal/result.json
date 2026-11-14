@@ -1,0 +1,101 @@
+{
+  "auth": "cookie",
+  "mode": "vulnerable",
+  "transport": "mcp",
+  "case": "normal",
+  "run_id": "run_85fd2cadbbeb4a57b9b494e1a424ce84",
+  "plan_id": "opplan_3dc73817af4e4f4da804161d8bb837d2",
+  "plan_sha256": "d861a4b27a355bf4ebdedf7b1c3ff0afc29c904ba1f47383c6a899531de786c8",
+  "planned_scope": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "225284e4b9fba38b348dfdf2d2d9372696c2462aa77614cb48b37287a6ac395d",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-ip-san-v1",
+      "ca_bundle_sha256": "aaf085f09b0407a5eb0d184023de300be1407ff139b7191732ba7819a9dfa0c2",
+      "context_ca_sha256": "7ed3f6942382fbb296e71b3b0db0e3f1eb9231b01a6c21750fc275343cbbc297",
+      "minimum_version": "TLSv1.2"
+    }
+  },
+  "actual_scope": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "225284e4b9fba38b348dfdf2d2d9372696c2462aa77614cb48b37287a6ac395d",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-ip-san-v1",
+      "ca_bundle_sha256": "aaf085f09b0407a5eb0d184023de300be1407ff139b7191732ba7819a9dfa0c2",
+      "context_ca_sha256": "7ed3f6942382fbb296e71b3b0db0e3f1eb9231b01a6c21750fc275343cbbc297",
+      "minimum_version": "TLSv1.2"
+    }
+  },
+  "preview_target_http": 0,
+  "preview_network_delta": {
+    "tcp_accepted": 0,
+    "tls_handshake_attempts": 0,
+    "tls_handshake_failed": 0,
+    "tls_handshake_completed": 0
+  },
+  "network": {
+    "tcp_accepted": 11,
+    "tls_handshake_attempts": 11,
+    "tls_handshake_failed": 0,
+    "tls_handshake_completed": 11
+  },
+  "target_http_received": 11,
+  "worker_usage": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_count": 11,
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE",
+  "expected_verdict": "VULNERABLE",
+  "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+  "replay": {
+    "verdict": "VULNERABLE",
+    "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+    "run_id": "run_85fd2cadbbeb4a57b9b494e1a424ce84",
+    "verdict_matches": true,
+    "evidence_count": 11
+  },
+  "worker_transport_receipts": {
+    "policy": 2,
+    "function": 0,
+    "mcp": 15,
+    "cancel": 0
+  },
+  "plan_link_matches": true,
+  "tls_certificate": {
+    "reference_time_utc": "2026-11-14T06:21:08.475156+00:00",
+    "server_not_before": "2026-11-13T06:21:08+00:00",
+    "server_not_after": "2026-11-15T06:21:08+00:00",
+    "server_ip_san": "127.0.0.1",
+    "server_certificate_sha256": "1b1bd82cb1d88444c04b0ede9791f4b99636b89dce043f2763ce832cbe45af99",
+    "private_storage": "windows-current-user-only-directory-acl"
+  },
+  "rotation": null,
+  "passed": true,
+  "temporary_key_directory_removed": true
+}

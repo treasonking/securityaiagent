@@ -100,7 +100,7 @@ def test_invalid_registry_references_and_profiles(tmp_path, case):
     assert "never-echo-this" not in str(error.value)
 
 
-@pytest.mark.parametrize("origin", ["http://example.com:8080", "http://*.example.com:8080", "https://10.78.0.30:8080",
+@pytest.mark.parametrize("origin", ["http://example.com:8080", "http://*.example.com:8080", "https://example.com:8080",
                                     "http://u:secret@10.78.0.30:8080", "http://10.78.0.30:8080/", "http://10.78.0.30:8080?x=y",
                                     "http://10.78.0.30:8080#fragment", "http://10.78.0.30:0", "http://10.78.0.30:65536"])
 def test_origin_is_canonical_http_ip_literal(tmp_path, origin):

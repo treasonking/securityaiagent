@@ -67,12 +67,16 @@ class Evidence(BaseModel):
     created_at: str = Field(default_factory=utc_now)
 
 
+from common.tls_contract import TLSVerification
+
+
 class PolicyRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
     profile_id: str = Field(pattern=r"^[a-z][a-z0-9-]{0,63}$")
     revision: int = Field(strict=True, gt=0)
     snapshot_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     effective_limits: dict[str, int | float]
+    tls: TLSVerification | None = Field(default=None, exclude_if=lambda value: value is None)
 
 
 class ToolResult(BaseModel):
