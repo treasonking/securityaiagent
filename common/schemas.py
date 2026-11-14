@@ -68,6 +68,7 @@ class Evidence(BaseModel):
 
 
 from common.tls_contract import TLSVerification
+from common.domain_contract import DomainScope
 
 
 class PolicyRecord(BaseModel):
@@ -77,6 +78,7 @@ class PolicyRecord(BaseModel):
     snapshot_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     effective_limits: dict[str, int | float]
     tls: TLSVerification | None = Field(default=None, exclude_if=lambda value: value is None)
+    domain: DomainScope | None = Field(default=None, exclude_if=lambda value: value is None)
 
 
 class ToolResult(BaseModel):

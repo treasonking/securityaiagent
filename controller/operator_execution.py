@@ -135,6 +135,7 @@ async def execute_plan(source,registry,plan,confirmation,policy_client,history,c
     (folder/'candidate_execution.json').write_text(json.dumps(link,indent=2),encoding='utf-8')
     (folder/'verification_contract.json').write_text(policy.model_dump_json(indent=2),encoding='utf-8')
     evidence=[]
+    connections=[]
     report={'schema_version':'operator-report-v1','run_id':run_id,'scenario_id':SCENARIO,'target_id':'lab-web',
         'provider_mode':'mock','tool_transport':plan.transport,'started_at':utc_now(),'status':'INTERRUPTED',
         'verdict':'INCONCLUSIVE','reason_code':'INCOMPLETE_WORKFLOW','verification_basis':'operator_http_observation',
@@ -148,6 +149,8 @@ async def execute_plan(source,registry,plan,confirmation,policy_client,history,c
                     r=await client.step(run_id=run_id,target_id='lab-web',**step.model_dump(),
                         expected_snapshot_sha256=policy.scope_policy.snapshot_sha256,contract_version=CONTRACT)
                     report['limits_used']={'http_requests':r.request_count,'tool_calls':r.tool_count}
+                    if r.connection_observation is not None:
+                        connections.append(r.connection_observation.model_dump(mode='json'))
                     if r.scope_policy:
                         report['scope_policy']=r.scope_policy.model_dump(mode='json')
                         if r.scope_policy!=policy.scope_policy: raise CandidateError('WORKER_POLICY_CHANGED')
@@ -181,6 +184,9 @@ async def execute_plan(source,registry,plan,confirmation,policy_client,history,c
         report['evidence_ids']=[e.evidence_id for e in evidence]
         report['warnings']=['Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed.']
         link.update(status=report['status'],verdict=report['verdict'],actual_scope_policy=report['scope_policy'])
+        if policy.scope_policy.domain is not None:
+            # Stored alongside evidence, deliberately never passed to verify_operator/replay.
+            (folder/'connection_observations.json').write_text(json.dumps(connections,indent=2),encoding='utf-8')
         for name,value in [('report.json',report),('evidence.json',[e.model_dump(mode='json') for e in evidence]),('candidate_execution.json',link)]:
             (folder/name).write_text(json.dumps(value,indent=2),encoding='utf-8')
         (folder/'report.md').write_text(f"# Operator resource run {run_id}\n\n{report['status']} / {report['verdict']}\n\nReason: {report['reason_code']}\n\nUsage: {report['limits_used']}\n\nEvidence: {len(evidence)}; operator_http_observation\n\nOperator-prepared test values, not general website detection. No raw credentials, proof values or response bodies.\n",encoding='utf-8')

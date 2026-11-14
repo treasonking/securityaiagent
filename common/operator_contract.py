@@ -8,6 +8,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field, model_validator
 from common.api_contract import FrozenModel, Name, Selector
+from common.domain_contract import DomainNetworkPolicy, DomainObservation
 from worker.candidate_policy import CandidateScope
 
 CONTRACT = 'operator-resource-v1'
@@ -163,6 +164,16 @@ class ResourcePolicy(FrozenModel):
     def tls_identity(self):
         if self.origin.startswith('https://') != (self.scope_policy.tls is not None):
             raise ValueError('HTTPS requires versioned TLS identity; HTTP keeps its original contract')
+        from worker.policy import TargetPolicy
+        domain = self.scope_policy.domain
+        network = None if domain is None else DomainNetworkPolicy.model_validate(domain.model_dump(exclude={'hostname', 'port'}))
+        target = TargetPolicy.from_origin('lab-web', self.origin, network)
+        if target.domain_scope != domain:
+            raise ValueError('domain authority must match the origin')
+        if self.scope_policy.tls is not None:
+            expected = 'dedicated-ca-dns-san-v1' if domain is not None else 'dedicated-ca-ip-san-v1'
+            if self.scope_policy.tls.verification != expected:
+                raise ValueError('TLS verification identity must match the origin type')
         return self
 
     def sequence(self):
@@ -201,3 +212,5 @@ class ResourceResult(FrozenModel):
     tool_count: int = Field(default=0, ge=0)
     evidence: ResourceEvidence | None = None
     error_code: str | None = None
+    # Separate from ResourceEvidence: DNS/TLS metadata cannot determine access control.
+    connection_observation: DomainObservation | None = Field(default=None, exclude_if=lambda v: v is None)

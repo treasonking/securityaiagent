@@ -20,6 +20,7 @@ from worker.registry import ScopeRegistry, load_scope_registry
 from worker.scope import ScopeSnapshot, ScopeViolation
 from worker.candidate_policy import CONTRACT
 from worker.tls import client_verify, tls_failure_code
+from worker.domain_transport import DomainTransport, SystemResolver
 
 
 _MARKER = re.compile(r"^SYN-[A-Z]+-(?:PRIVATE-)?[0-9]{3}$")
@@ -54,6 +55,7 @@ class _RunState:
     scope: ScopeSnapshot | None = None
     failed: bool = False
     candidate_snapshot: str | None = None
+    connection_observations: list[dict] = field(default_factory=list)
 
 
 class ToolService:
@@ -79,6 +81,9 @@ class ToolService:
         self.accounts = accounts
         self.limits = limits or WorkerLimits()
         self.transport = transport
+        self._domain_resolver = SystemResolver()  # Code-only test seam; never an env/API/model option.
+        if transport is not None and any(p.network is not None for p in self.policies.values()):
+            raise ScopeViolation('DOMAIN_TRANSPORT_REQUIRED', 'domain connections require IP pinning')
         self.observation_reader = observation_reader
         self.account_ids = account_ids or {
             "user-a": "acct-a",
@@ -254,13 +259,18 @@ class ToolService:
             current_task = asyncio.current_task()
             if current_task is not None:
                 state.active_http_tasks.add(current_task)
+            transport = self.transport
+            if policy.network is not None:
+                observation = {'origin': policy.base_url}
+                state.connection_observations.append(observation)
+                transport = DomainTransport(policy, self.registry.tls_trust, self._domain_resolver, observation)
             async with httpx.AsyncClient(
                 base_url=policy.base_url,
                 timeout=timeout,
                 follow_redirects=False,
                 trust_env=False,
                 verify=client_verify(self.registry, policy),
-                transport=self.transport,
+                transport=transport,
                 cookies=cookies,
             ) as client:
                 try:

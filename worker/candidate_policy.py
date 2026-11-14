@@ -5,6 +5,7 @@ from pydantic import Field
 from common.api_contract import FrozenModel, HttpRoutes, Name
 from worker.scope import ProfileLimits
 from common.tls_contract import TLSVerification
+from common.domain_contract import DomainScope
 
 CONTRACT = 'candidate-preview-v1'
 Hash = Annotated[str, Field(pattern=r'^[0-9a-f]{64}$')]
@@ -16,6 +17,7 @@ class CandidateScope(FrozenModel):
     snapshot_sha256: Hash
     effective_limits: ProfileLimits
     tls: TLSVerification | None = Field(default=None, exclude_if=lambda value: value is None)
+    domain: DomainScope | None = Field(default=None, exclude_if=lambda value: value is None)
 
 
 class CandidatePolicy(FrozenModel):

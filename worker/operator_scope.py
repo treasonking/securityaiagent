@@ -15,6 +15,7 @@ from worker.scope import ProfileLimits, ScopeViolation
 from worker.limits import WorkerLimits
 from worker.policy import TargetPolicy, PolicyViolation
 from worker.candidate_policy import CandidateScope
+from common.domain_contract import DomainNetworkPolicy
 
 
 class ResourceProfile(FrozenModel):
@@ -36,6 +37,7 @@ class ResourceProfile(FrozenModel):
 
 class OperatorTarget(FrozenModel):
     origin: str
+    network: DomainNetworkPolicy | None = Field(default=None, exclude_if=lambda v: v is None)
     profile: ResourceProfile
     adapter: ResourceAdapter
 
@@ -145,10 +147,13 @@ class OperatorRegistry:
         tls = tls_metadata(self, self.policies[target_id])
         if tls is not None:
             binding['tls'] = tls.model_dump(mode='json')
+        domain = self.policies[target_id].domain_scope
+        if domain is not None:
+            binding['domain'] = domain.model_dump(mode='json')
         policy = ResourcePolicy(registry_sha256=self.config_digest(target_id), origin=self.policies[target_id].base_url,
             adapter=self.adapter(target_id), accounts=profile.accounts, proof_commitments=commitments,
             scope_policy=CandidateScope(profile_id=profile.profile_id,revision=profile.revision,
-                snapshot_sha256=digest(canonical(binding)),effective_limits=profile.limits.model_validate(asdict(effective)), tls=tls))
+                snapshot_sha256=digest(canonical(binding)),effective_limits=profile.limits.model_validate(asdict(effective)), tls=tls, domain=domain))
         return OperatorSnapshot(self.policies[target_id],policy,effective)
 
 
@@ -157,9 +162,8 @@ def parse_operator_registry(payload, expected_origin=None):
         doc = OperatorFile.model_validate(payload)
         if set(doc.targets) != {'lab-web'}: raise ValueError()
         entry = doc.targets['lab-web']
-        url = urlsplit(entry.origin)
-        target = TargetPolicy('lab-web',url.scheme,url.hostname or '',url.port or (443 if url.scheme == 'https' else 80))
-        if entry.origin != target.base_url or expected_origin is not None and expected_origin != target.base_url:
+        target = TargetPolicy.from_origin('lab-web', entry.origin, entry.network)
+        if expected_origin is not None and TargetPolicy.from_origin('lab-web', expected_origin, entry.network) != target:
             raise ValueError()
         return OperatorRegistry(MappingProxyType({'lab-web':target}),entry.model_dump_json())
     except (ValueError, TypeError, PolicyViolation):

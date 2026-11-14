@@ -8,7 +8,8 @@ from types import MappingProxyType
 from typing import Literal, Mapping
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError, Field
+from common.domain_contract import DomainNetworkPolicy
 
 from common.api_contract import ApiAdapter
 from worker.limits import WorkerLimits
@@ -22,6 +23,7 @@ DEFAULT_REGISTRY = Path(__file__).resolve().parents[1] / "config" / "targets.jso
 class RegisteredTarget(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     origin: str
+    network: DomainNetworkPolicy | None = Field(default=None, exclude_if=lambda v: v is None)
     profile: ScopeProfile
     adapter: ApiAdapter = ApiAdapter()
 
@@ -57,6 +59,8 @@ class ScopeRegistry:
     def config_digest(self, target_id: str) -> str:
         value = {'origin': self.policies[target_id].base_url, 'profile': self.profile(target_id).normalized(),
                  'adapter': self.adapter(target_id).model_dump(mode='json')}
+        if self.policies[target_id].network is not None:
+            value['network'] = self.policies[target_id].network.model_dump(mode='json')
         return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()).hexdigest()
 
     def credentials(self, environ) -> dict[str, tuple[str, str]]:
@@ -104,11 +108,8 @@ def load_scope_registry(path: str | Path = DEFAULT_REGISTRY, *, expected_origin:
             raise ValueError("empty registry")
         policies, profiles, adapters = {}, {}, {}
         for target_id, target in registry.targets.items():
-            parsed = urlsplit(target.origin)
-            policy = TargetPolicy(target_id, parsed.scheme, parsed.hostname or "", parsed.port or (443 if parsed.scheme == 'https' else 80))
-            if target.origin != policy.base_url:
-                raise ScopeViolation("SCOPE_ORIGIN_MISMATCH", "registered origin must be canonical and contain no path or credentials")
-            if expected_origin is not None and expected_origin != policy.base_url:
+            policy = TargetPolicy.from_origin(target_id, target.origin, target.network)
+            if expected_origin is not None and TargetPolicy.from_origin(target_id, expected_origin, target.network) != policy:
                 raise ScopeViolation("SCOPE_ORIGIN_MISMATCH", "TARGET_BASE_URL differs from the registered origin")
             if not target.profile.enabled:
                 raise ScopeViolation("SCOPE_DISABLED", "scope profile is disabled")

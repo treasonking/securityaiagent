@@ -91,7 +91,8 @@ def tls_metadata(registry, target):
         return None
     if registry.tls_trust is None:
         raise ScopeViolation('TLS_CA_REQUIRED', 'HTTPS requires a Worker-owned CA bundle')
-    return registry.tls_trust.metadata()
+    meta = registry.tls_trust.metadata()
+    return meta if target.network is None else meta.model_copy(update={'verification': 'dedicated-ca-dns-san-v1'})
 
 
 def client_verify(registry, target):
@@ -101,7 +102,7 @@ def client_verify(registry, target):
     return registry.tls_trust.checked_context()
 
 
-def tls_failure_code(error):
+def tls_failure_code(error, *, domain=False):
     """Classify structured SSL exceptions; never publish exception text/paths."""
     pending, visited = [error], set()
     ssl_seen = False
@@ -113,7 +114,7 @@ def tls_failure_code(error):
         if isinstance(exc, ssl.SSLCertVerificationError):
             return {9: 'TLS_CERT_NOT_YET_VALID', 10: 'TLS_CERT_EXPIRED',
                     18: 'TLS_CERT_UNTRUSTED', 19: 'TLS_CERT_UNTRUSTED', 20: 'TLS_CERT_UNTRUSTED',
-                    21: 'TLS_CERT_UNTRUSTED', 62: 'TLS_CERT_IP_SAN_MISMATCH',
+                    21: 'TLS_CERT_UNTRUSTED', 62: 'TLS_CERT_DOMAIN_MISMATCH' if domain else 'TLS_CERT_IP_SAN_MISMATCH',
                     64: 'TLS_CERT_IP_SAN_MISMATCH'}.get(exc.verify_code, 'TLS_CERT_VERIFY_FAILED')
         ssl_seen |= isinstance(exc, ssl.SSLError)
         pending.extend([exc.__cause__, exc.__context__])

@@ -117,13 +117,15 @@ class AttachmentService:
 
 
 @contextmanager
-def attachment_server(service, *, ssl_context=None, connection_counts=None):
+def attachment_server(service, *, ssl_context=None, connection_counts=None, observed_hosts=None):
     """Reserve an ephemeral loopback listener; no URL/port input and no disk DB."""
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):
             pass  # Never print authorization headers or response bodies.
 
         def respond(self):
+            if observed_hosts is not None:
+                observed_hosts.append(self.headers.get('Host'))
             length = int(self.headers.get('Content-Length', '0'))
             if not 0 <= length <= 4096:
                 self.send_error(413)

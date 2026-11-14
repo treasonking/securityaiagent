@@ -20,7 +20,8 @@ class OperatorService(ToolService):
     def _result(self, state, **kwargs):
         return ResourceResult(ok=kwargs['ok'],run_id=state.run_id,scope_policy=state.scope.record(),
             request_count=state.request_count,tool_count=state.tool_count,
-            evidence=kwargs.get('evidence'),error_code=kwargs.get('error_code'))
+            evidence=kwargs.get('evidence'),error_code=kwargs.get('error_code'),
+            connection_observation=state.connection_observations[-1] if state.connection_observations else None)
 
     def _error(self, run_id, exc):
         code = exc.code if isinstance(exc,ScopeViolation) else 'TRANSPORT_OR_RESPONSE_ERROR'

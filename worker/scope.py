@@ -95,10 +95,11 @@ class ScopeSnapshot:
     adapter: ApiAdapter
     http_routes: HttpRoutes
     tls: object = None
+    domain: object = None
 
     def record(self) -> PolicyRecord:
         return PolicyRecord(profile_id=self.profile_id, revision=self.revision,
-                            snapshot_sha256=self.snapshot_sha256, effective_limits=asdict(self.limits), tls=self.tls)
+                            snapshot_sha256=self.snapshot_sha256, effective_limits=asdict(self.limits), tls=self.tls, domain=self.domain)
 
     def authorize(self, account_ref: str, operation: str) -> None:
         if account_ref not in self.accounts:
@@ -153,6 +154,8 @@ def make_snapshot(target: TargetPolicy, profile: ScopeProfile, scenario: str, gl
                             "effective_limits": asdict(effective), "adapter": adapter.model_dump(mode="json")}
     if tls is not None:
         binding['tls'] = tls.model_dump(mode='json')
+    if target.domain_scope is not None:
+        binding['domain'] = target.domain_scope.model_dump(mode='json')
     canonical = json.dumps(binding, sort_keys=True, separators=(",", ":"), allow_nan=False)
     return ScopeSnapshot(target, scenario, tuple(sorted(profile.scenarios[scenario])), tuple(sorted(profile.operations)),
-                         effective, profile.profile_id, profile.revision, hashlib.sha256(canonical.encode()).hexdigest(), adapter, profile.http_routes, tls)
+                         effective, profile.profile_id, profile.revision, hashlib.sha256(canonical.encode()).hexdigest(), adapter, profile.http_routes, tls, target.domain_scope)

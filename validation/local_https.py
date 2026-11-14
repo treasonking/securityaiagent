@@ -47,10 +47,12 @@ def authority(label, now):
 
 
 @contextmanager
-def certificates(case='normal'):
+def certificates(case='normal', *, dns_name=None):
     if case not in ('normal', 'untrusted_ca', 'wrong_san', 'expired', 'ca_rotation'):
         raise ValueError('unknown TLS experiment')
     now = datetime.now(timezone.utc)
+    if dns_name is not None and dns_name != 'attachments.securityai.test':
+        raise ValueError('only the fixed synthetic test hostname is supported')
     with tempfile.TemporaryDirectory(prefix='securityai-local-tls-') as directory:
         root = Path(directory)
         permissions = restrict_directory(root)
@@ -58,14 +60,16 @@ def certificates(case='normal'):
         _, alternate = authority('Temporary alternate validation CA', now)
         server_key = ec.generate_private_key(ec.SECP256R1())
         # CN deliberately matches the access IP even in wrong-SAN tests: SAN must win.
-        name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, '127.0.0.1')])
+        name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, dns_name or '127.0.0.1')])
+        san = (x509.DNSName('other.securityai.test' if case == 'wrong_san' else dns_name) if dns_name else
+               x509.IPAddress(ipaddress.ip_address('127.0.0.2' if case == 'wrong_san' else '127.0.0.1')))
         leaf = (x509.CertificateBuilder().subject_name(name).issuer_name(ca.subject).public_key(server_key.public_key())
                 .serial_number(x509.random_serial_number()).not_valid_before(now-timedelta(days=1))
                 .not_valid_after(now-timedelta(hours=1) if case == 'expired' else now+timedelta(days=1))
                 .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
                 .add_extension(x509.KeyUsage(True, False, False, False, False, False, False, False, False), critical=True)
                 .add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]), critical=False)
-                .add_extension(x509.SubjectAlternativeName([x509.IPAddress(ipaddress.ip_address('127.0.0.2' if case == 'wrong_san' else '127.0.0.1'))]), critical=False)
+                .add_extension(x509.SubjectAlternativeName([san]), critical=False)
                 .add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_key.public_key()), critical=False)
                 .sign(ca_key, hashes.SHA256()))
         pem = lambda cert: cert.public_bytes(serialization.Encoding.PEM)
@@ -85,7 +89,8 @@ def certificates(case='normal'):
                                       ''.join(key_bytes.decode().splitlines()[1:-1]), ''.join(ca_key_bytes.decode().splitlines()[1:-1]),
                                       *key_bytes.decode().splitlines()[1:-1], *ca_key_bytes.decode().splitlines()[1:-1]],
                    'public': {'reference_time_utc': now.isoformat(), 'server_not_before': leaf.not_valid_before_utc.isoformat(),
-                              'server_not_after': leaf.not_valid_after_utc.isoformat(), 'server_ip_san': '127.0.0.2' if case == 'wrong_san' else '127.0.0.1',
+                              'server_not_after': leaf.not_valid_after_utc.isoformat(),
+                              ('server_dns_san' if dns_name else 'server_ip_san'): str(san.value),
                               'server_certificate_sha256': leaf.fingerprint(hashes.SHA256()).hex(), 'private_storage': permissions}}
         finally:
             # TemporaryDirectory removes only these newly created private files.
