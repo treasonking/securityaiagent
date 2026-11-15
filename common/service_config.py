@@ -26,6 +26,7 @@ KEYS = {
     "target": PASSWORDS | {"TARGET_DATABASE_PATH", "TARGET_MODE", "TARGET_API_STYLE"},
     "operator-target": frozenset({"LAB_USER_A_PASSWORD", "LAB_USER_B_PASSWORD", "OPERATOR_PROOF_A", "OPERATOR_PROOF_B", "OPERATOR_TARGET_MODE"}),
 }
+KEYS["controller"] = KEYS["controller"] | {"OPERATOR_WORKSPACE_CONFIG", "OPERATOR_WORKSPACE_STATE_PATH"}
 ALL_KEYS = frozenset().union(*KEYS.values(), {"APP_BIND", "APP_PORT"})
 SECRETS = PASSWORDS | {"OPERATOR_PROOF_A", "OPERATOR_PROOF_B", "WORKER_TOKEN", "APP_SESSION_SECRET", "APP_ACCESS_TOKEN", "OFFLINE_VERIFICATION_TOKEN", "OPENAI_API_KEY"}
 COMMANDS = {
@@ -135,6 +136,16 @@ def validate_config(service: str, values: dict[str, str]) -> dict:
         for key in ("UI_ALLOWED_ORIGINS", "UI_ALLOWED_HOSTS", "CONTROLLER_ALLOWED_CLIENTS"):
             if key in values and (not values[key].strip() or "*" in values[key]):
                 raise ServiceConfigError(f"explicit non-wildcard allowlist required: {key}")
+        if values.get("OPERATOR_WORKSPACE_CONFIG"):
+            from controller.workspace import load_profiles
+            try:
+                configured = Path(values["OPERATOR_WORKSPACE_CONFIG"])
+                profiles = load_profiles(configured if configured.is_absolute() else ROOT / configured)
+                summary["operator_workspace_profiles"] = len(profiles)
+            except Exception:
+                raise ServiceConfigError("invalid operator workspace configuration") from None
+        elif values.get("OPERATOR_WORKSPACE_STATE_PATH"):
+            raise ServiceConfigError("workspace state requires workspace configuration")
     elif service == "worker":
         from worker.limits import limits_from_env
         from worker.registry import load_scope_registry

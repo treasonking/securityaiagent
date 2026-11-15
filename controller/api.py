@@ -73,6 +73,7 @@ def create_app(
     settings: AppSettings,
     clients: dict[str, ToolClient],
     repository: Repository | None = None,
+    workspace=None,
 ) -> FastAPI:
     repo = repository or Repository(settings.database_path)
     repo.interrupt_unfinished_runs()
@@ -99,11 +100,14 @@ def create_app(
     async def lifespan(_: FastAPI):
         yield
         await manager.shutdown()
+        if workspace is not None:
+            await workspace.shutdown()
 
     app = FastAPI(title="SecurityLab controller", docs_url=None, redoc_url=None, lifespan=lifespan)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=sorted(settings.allowed_hosts))
     app.state.repository = repo
     app.state.manager = manager
+    app.state.operator_workspace = workspace
 
     @app.middleware("http")
     async def origin_guard(request: Request, call_next):
@@ -120,6 +124,8 @@ def create_app(
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
         response.headers["Referrer-Policy"] = "no-referrer"
+        if request.url.path.startswith('/api/operator'):
+            response.headers['Cache-Control'] = 'no-store'
         return response
 
     async def owner(
@@ -377,6 +383,8 @@ def create_app(
             raise HTTPException(status_code=404, detail="run not found")
         return {"events": repo.list_events(run_id)}
 
+    from controller.workspace_api import attach_workspace
+    attach_workspace(app,workspace,owner,write_owner)
     frontend_dist = Path(__file__).resolve().parents[1] / "frontend" / "dist"
     if frontend_dist.exists():
         app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
@@ -434,4 +442,17 @@ def create_app_from_env() -> FastAPI:
         openai_configured=bool(os.getenv("OPENAI_API_KEY") and os.getenv("OPENAI_MODEL")),
         offline_import_token=os.getenv("OFFLINE_VERIFICATION_TOKEN") or None,
     )
-    return create_app(settings=settings, clients={"function": function_client, "mcp": mcp_client})
+    workspace=None
+    if os.getenv('OPERATOR_WORKSPACE_CONFIG'):
+        from controller.workspace import Workspace, load_profiles
+        from controller.operator_client import ResourceClient, ResourcePolicyClient
+        try:
+            profiles=load_profiles(resolve_path(os.environ['OPERATOR_WORKSPACE_CONFIG'],''))
+            base=os.getenv('WORKER_URL','http://10.77.0.20:9000')
+            workspace=Workspace(profiles=profiles,
+                state_path=resolve_path(os.getenv('OPERATOR_WORKSPACE_STATE_PATH',''),'data/operator_workspace'),
+                reports_path=settings.reports_path,policy_client=ResourcePolicyClient(base,token),
+                client_factory=lambda t:ResourceClient(base,token,t),timeout=settings.run_timeout_seconds)
+        except Exception:
+            raise RuntimeError('invalid operator workspace server configuration') from None
+    return create_app(settings=settings, clients={"function": function_client, "mcp": mcp_client},workspace=workspace)

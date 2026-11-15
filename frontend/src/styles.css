@@ -90,3 +90,51 @@ textarea { width: 100%; min-width: 0; resize: none; min-height: 44px; max-height
   .input-row button { padding: 10px 12px; }
   .evidence-list article { grid-template-columns: 1fr; }
 }
+
+/* Operator workspace: bounded independent scroll areas and persistent approval controls. */
+.operator-shell { height:100dvh; display:grid; grid-template-rows:auto minmax(0,1fr) auto; overflow:hidden; }
+.operator-header { padding:18px 26px; background:#102c26; color:#fffdf8; display:flex; justify-content:space-between; gap:16px; align-items:center; }
+.operator-header h1 { margin:4px 0; font-size:25px; }
+.operator-header p { margin:4px 0; font-size:13px; }
+.operator-header nav { display:flex; gap:8px; }
+.operator-shell button { border:1px solid #8fa79a; border-radius:8px; padding:9px 12px; background:#fffdf8; color:#193e30; }
+.operator-shell button:disabled { opacity:.4; cursor:not-allowed; }
+.operator-body { display:grid; grid-template-columns:280px minmax(0,1fr); min-height:0; min-width:0; }
+.operator-sidebar { padding:22px; background:#e0e9e1; overflow:auto; }
+.operator-sidebar h2 { font-size:16px; }
+.operator-sidebar label { display:block; margin:14px 0; font-size:13px; }
+.operator-sidebar select { width:100%; }
+.operator-content { overflow:auto; padding:24px clamp(18px,4vw,60px); min-width:0; overflow-wrap:anywhere; }
+.operator-content > section { max-width:1000px; margin:0 auto 28px; }
+.operator-content h2 { font-size:23px; margin-top:0; }
+.operator-content h3 { margin-bottom:8px; }
+.operator-policy { background:#fffdf8; padding:18px; border:1px solid #d1dbd3; border-radius:12px; margin:16px 0; overflow-wrap:anywhere; }
+.operator-facts { display:flex; gap:12px; }
+.operator-facts > div { background:#edf3ee; padding:12px; border-radius:8px; flex:1; min-width:0; }
+.operator-facts span { display:block; margin-top:5px; font-size:13px; }
+.operator-digest { display:block; overflow-wrap:anywhere; background:#e5ece6; padding:10px; border-radius:8px; font-size:12px; }
+.operator-limits { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; font-size:12px; }
+.operator-limits > div { display:flex; justify-content:space-between; border-bottom:1px solid #d6ded8; padding:5px 0; gap:6px; }
+.operator-limits dd { margin:0; font-weight:700; }
+.operator-note { color:#51665b; font-size:13px; line-height:1.6; }
+.operator-ready { color:#1a6343; font-weight:700; }
+.operator-history { max-height:230px; overflow:auto; display:grid; gap:7px; }
+.operator-history button { text-align:left; overflow-wrap:anywhere; }
+.operator-history small { display:block; margin-top:5px; }
+.operator-section-heading { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; align-items:center; }
+.operator-section-heading span { font-size:13px; }
+.operator-sequence { line-height:1.8; padding-left:24px; }
+.operator-sequence code { display:block; font-size:12px; overflow-wrap:anywhere; }
+.operator-job { border-left:4px solid #27774e; padding:12px; background:#e4efe6; overflow-wrap:anywhere; }
+.operator-result { border-top:2px solid #6b987e; padding-top:24px; overflow-wrap:anywhere; }
+.operator-detail-scroll { max-height:240px; overflow:auto; font-size:12px; }
+.operator-detail-scroll article { border-bottom:1px solid #ccd6ce; padding:10px 0; }
+.operator-shell pre { white-space:pre-wrap; overflow-wrap:anywhere; }
+.operator-downloads { display:flex; flex-wrap:wrap; gap:14px; padding:16px 0; }
+.operator-downloads a { color:#16583c; font-weight:700; }
+.operator-actions { padding:14px 22px; border-top:1px solid #b6c9bb; background:#fffdf8; display:flex; align-items:center; gap:12px; box-shadow:0 -4px 16px #102c2610; }
+.operator-actions label { flex:1; font-size:13px; line-height:1.5; }
+.operator-actions input { accent-color:#176548; }
+.operator-actions .operator-primary { background:#176548; color:white; }
+@media(max-width:800px) { .operator-body { grid-template-columns:210px minmax(0,1fr); } .operator-actions { flex-wrap:wrap; } .operator-actions label { flex-basis:60%; } }
+@media(max-width:560px) { .operator-header { padding:12px; flex-wrap:wrap; } .operator-header h1 { font-size:21px; } .operator-body { grid-template-columns:minmax(0,1fr); overflow:auto; } .operator-sidebar { overflow:visible; padding:12px; min-width:0; } .operator-content { overflow:visible; padding:16px; } .operator-history { max-height:100px; } .operator-actions { padding:10px; gap:8px; } .operator-actions label { flex-basis:100%; order:-1; } .operator-actions button { flex:1; font-size:12px; } }

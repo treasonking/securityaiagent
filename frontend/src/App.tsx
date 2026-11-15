@@ -20,6 +20,7 @@ import {
   type RunState,
 } from "./api";
 import { refreshRunState } from "./run-refresh.js";
+import OperatorWorkspace from './OperatorWorkspace';
 
 const terminal = new Set(["COMPLETED", "CANCELLED", "TIMED_OUT", "FAILED", "INTERRUPTED"]);
 const streamEvents = [
@@ -28,6 +29,7 @@ const streamEvents = [
 ];
 
 export default function App() {
+  const [operatorMode,setOperatorMode] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [accessToken, setAccessToken] = useState("");
   const [config, setConfig] = useState<AppConfig | null>(null);
@@ -281,6 +283,8 @@ export default function App() {
     );
   }
 
+  if (operatorMode) return <OperatorWorkspace onChat={()=>setOperatorMode(false)} onLogout={()=>void logout()}/>;
+
   return (
     <main className="shell">
       <aside className="sidebar">
@@ -290,6 +294,7 @@ export default function App() {
           <p className="subtle">고정 시나리오 검증기 + LLM 후보 생성기</p>
         </div>
         <button className="new-button" onClick={newConversation}>+ 새 대화</button>
+        <button className="new-button" onClick={()=>setOperatorMode(true)}>검사 워크스페이스</button>
         <nav aria-label="대화 이력">
           {conversations.map((conversation) => (
             <button
@@ -308,6 +313,7 @@ export default function App() {
 
       <section className="workspace">
         <header className="topbar">
+          <button onClick={()=>setOperatorMode(true)}>검사 워크스페이스</button>
           <div><span className="status-dot" /> 인증된 단일 사용자 · synthetic-only</div>
           <div className="scope">lab-web / {scenario}</div>
         </header>

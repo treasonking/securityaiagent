@@ -109,12 +109,14 @@ def write_plan(plan,path):
             f.write(f'{i+1}. {step.account_ref}: {step.operation} {path}\n')
 
 
-async def execute_plan(source,registry,plan,confirmation,policy_client,history,client_factory,report_root,
-                       *,approval_actor,now=time.time,timeout=180):
+async def validate_execution(source,registry,plan,confirmation,policy_client,history,*,approval_actor,now=time.time):
+    """Shared CLI/UI preflight. No claim, Target call or UI-specific authority."""
     if approval_actor not in ('codex','human'): raise CandidateError('APPROVAL_ACTOR_REQUIRED')
     if confirmation!=plan.plan_sha256 or plan_hash(plan.model_dump(mode='json'))!=confirmation:
         raise CandidateError('PLAN_CONFIRMATION_MISMATCH')
     history.validate(plan)
+    if (history.directory/(plan.plan_id+'.claimed.json')).exists():
+        raise CandidateError('PLAN_ALREADY_CONSUMED')
     if not plan.created_at<=int(now())<plan.expires_at: raise CandidateError('PLAN_EXPIRED')
     if policy_client.base_url!=plan.worker_origin: raise CandidateError('WORKER_ORIGIN_CHANGED')
     cat=candidate(source,registry,plan.candidate_id)
@@ -123,6 +125,12 @@ async def execute_plan(source,registry,plan,confirmation,policy_client,history,c
     policy=await policy_client.read()
     if policy!=plan.policy: raise CandidateError('WORKER_POLICY_CHANGED')
     if not plan.created_at<=int(now())<plan.expires_at: raise CandidateError('PLAN_EXPIRED')
+    return policy
+
+
+async def execute_plan(source,registry,plan,confirmation,policy_client,history,client_factory,report_root,
+                       *,approval_actor,now=time.time,timeout=180):
+    policy=await validate_execution(source,registry,plan,confirmation,policy_client,history,approval_actor=approval_actor,now=now)
     run_id='run_'+uuid.uuid4().hex
     history.claim(plan,run_id)
     folder=Path(report_root)/run_id

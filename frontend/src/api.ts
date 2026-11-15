@@ -97,7 +97,7 @@ export async function logoutSession(): Promise<void> {
   csrfToken = "";
 }
 
-function writeHeaders(): HeadersInit {
+export function writeHeaders(): HeadersInit {
   return { "Content-Type": "application/json", "X-CSRF-Token": csrfToken };
 }
 
