@@ -1,0 +1,11 @@
+{
+  "source_commit_for_final_tests": "23cae0f160c4a6e79c7252c179d5084dcad40569",
+  "baseline": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+  "python": "3.12.14",
+  "os": "Windows",
+  "node": "22.18.0",
+  "npm": "10.9.3",
+  "provider": "mock",
+  "vm_deployment": false,
+  "existing_environment_or_database_changed": false
+}

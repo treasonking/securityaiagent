@@ -1,0 +1,89 @@
+{
+  "completed": true,
+  "source_commit": "23cae0f160c4a6e79c7252c179d5084dcad40569",
+  "date": "2026-11-15",
+  "timezone": "Asia/Seoul",
+  "pytest": {
+    "command": ".\\.venv\\Scripts\\python.exe -m pytest",
+    "passed": 920,
+    "failed": 0,
+    "warnings": 41,
+    "seconds": 314.77,
+    "exit_code": 0,
+    "warning_categories": [
+      "Pydantic deprecated helper",
+      "MCP streamable HTTP client deprecation",
+      "pytest cache write permission"
+    ]
+  },
+  "frontend_tests": {
+    "working_directory": "frontend",
+    "command": "npm test",
+    "passed": 16,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "frontend_build": {
+    "working_directory": "frontend",
+    "command": "npm run build",
+    "modules": 21,
+    "milliseconds": 298,
+    "exit_code": 0
+  },
+  "real_browser": {
+    "normal_flows": 2,
+    "function_verdict": "VULNERABLE",
+    "mcp_verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "http_tools_evidence_per_run": [
+      11,
+      12,
+      11
+    ],
+    "replay_matches": 2,
+    "preview_target_delta": 0,
+    "policy_change_target_delta": 0,
+    "download_formats": [
+      "markdown",
+      "json"
+    ],
+    "reload_restore": true
+  },
+  "regression": {
+    "new_pytest_cases": 10,
+    "concurrent_requests": 6,
+    "accepted_submissions": 1,
+    "rejected_duplicates": 5,
+    "at_most_once_target_http": 11,
+    "response_loss_method": "POST bodies discarded; recover by prior plan ID; no physical network interruption",
+    "expired_tampered_used_plans_rejected": true,
+    "override_rejected": true,
+    "old_cli_report_bytes_preserved": true,
+    "interrupted_receipts_not_requeued": true
+  },
+  "helper_commands": [
+    ".\\.venv\\Scripts\\python.exe -m scripts.run_operator_workspace_validation --output verification_tmp/workspace-browser --browser",
+    ".\\.venv\\Scripts\\python.exe -m scripts.run_operator_workspace_validation --output verification_tmp/workspace-cleanup-check"
+  ],
+  "privacy": {
+    "browser_generated_secret_values_checked": 23,
+    "api_generated_secret_values_checked": 23,
+    "matches": 0,
+    "original_evidence_mutated": false
+  },
+  "not_verified": [
+    "actual VM deployment",
+    "external service or live OS DNS",
+    "multi-process or multi-user operation",
+    "physical network interruption",
+    "full browser Bearer/TLS/DNS matrix",
+    "browser visual recheck after final narrow-screen CSS wrapping fix"
+  ],
+  "preserved": [
+    "existing environment files",
+    "existing databases",
+    "VMs/firewall/registries",
+    "prior reports"
+  ],
+  "no_main_merge": true,
+  "no_execution_code_change_after_full_suite": true
+}

@@ -1,0 +1,8 @@
+{
+  "initial_automatic_cleanup": false,
+  "cause": "legacy sqlite3 connection cycles retained Windows temporary DB handle",
+  "recovery": "removed exact temporary test directory after process exit",
+  "temporary_runtime_removed": true,
+  "private_handoff_file_removed": true,
+  "followup_automatic_cleanup": "../api_cleanup_validation/cleanup.json"
+}

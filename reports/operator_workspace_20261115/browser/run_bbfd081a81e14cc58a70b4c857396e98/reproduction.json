@@ -1,0 +1,656 @@
+{
+  "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+  "status": "COMPLETED",
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+  "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+  "message": null,
+  "started_at": "2026-11-15T10:14:35.948906+00:00",
+  "finished_at": "2026-11-15T10:14:39.538631+00:00",
+  "transport": "mcp",
+  "policy": {
+    "target_id": "lab-web",
+    "origin": "https://attachments.securityai.test:50893",
+    "scenario_id": "operator-resource-http",
+    "contract_version": "operator-resource-v1",
+    "auth_mode": "cookie",
+    "provider": "mock",
+    "accounts": [
+      {
+        "alias": "user-a",
+        "resource_id": "attachment_M4s8"
+      },
+      {
+        "alias": "user-b",
+        "resource_id": "attachment_N9t2"
+      }
+    ],
+    "scope_policy": {
+      "profile_id": "local-project-attachments",
+      "revision": 1,
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "effective_limits": {
+        "max_requests": 11,
+        "max_tool_calls": 12,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 1000.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      },
+      "tls": {
+        "verification": "dedicated-ca-dns-san-v1",
+        "ca_bundle_sha256": "d1153c257e5661621a7fcf7fe2857d515150a7329900e926f9052cdd05aacd54",
+        "context_ca_sha256": "9ade64a6e117e76e61a2e34ed2e23af921f86d37edcfb2ea305c3e79dfefd7f7",
+        "minimum_version": "TLSv1.2"
+      },
+      "domain": {
+        "version": "domain-network-v1",
+        "allowed_ip_ranges": [
+          "127.0.0.1/32"
+        ],
+        "allow_non_global": true,
+        "resolver": "system-a-aaaa-all-v1",
+        "connection": "numeric-peer-checked-per-request-v1",
+        "hostname": "attachments.securityai.test",
+        "port": 50893
+      }
+    }
+  },
+  "actual_scope": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-dns-san-v1",
+      "ca_bundle_sha256": "d1153c257e5661621a7fcf7fe2857d515150a7329900e926f9052cdd05aacd54",
+      "context_ca_sha256": "9ade64a6e117e76e61a2e34ed2e23af921f86d37edcfb2ea305c3e79dfefd7f7",
+      "minimum_version": "TLSv1.2"
+    },
+    "domain": {
+      "version": "domain-network-v1",
+      "allowed_ip_ranges": [
+        "127.0.0.1/32"
+      ],
+      "allow_non_global": true,
+      "resolver": "system-a-aaaa-all-v1",
+      "connection": "numeric-peer-checked-per-request-v1",
+      "hostname": "attachments.securityai.test",
+      "port": 50893
+    }
+  },
+  "usage": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "sequence": [
+    {
+      "index": 1,
+      "account_ref": "user-a",
+      "operation": "login",
+      "resource_id": null,
+      "method": "POST",
+      "path": "/gateway/authenticate"
+    },
+    {
+      "index": 2,
+      "account_ref": "user-b",
+      "operation": "login",
+      "resource_id": null,
+      "method": "POST",
+      "path": "/gateway/authenticate"
+    },
+    {
+      "index": 3,
+      "account_ref": "user-a",
+      "operation": "identity",
+      "resource_id": null,
+      "method": "GET",
+      "path": "/gateway/session/profile"
+    },
+    {
+      "index": 4,
+      "account_ref": "user-b",
+      "operation": "identity",
+      "resource_id": null,
+      "method": "GET",
+      "path": "/gateway/session/profile"
+    },
+    {
+      "index": 5,
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_M4s8",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_M4s8"
+    },
+    {
+      "index": 6,
+      "account_ref": "user-b",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_N9t2"
+    },
+    {
+      "index": 7,
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_N9t2"
+    },
+    {
+      "index": 8,
+      "account_ref": "user-b",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_N9t2"
+    },
+    {
+      "index": 9,
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_M4s8",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_M4s8"
+    },
+    {
+      "index": 10,
+      "account_ref": "user-a",
+      "operation": "identity",
+      "resource_id": null,
+      "method": "GET",
+      "path": "/gateway/session/profile"
+    },
+    {
+      "index": 11,
+      "account_ref": "user-b",
+      "operation": "identity",
+      "resource_id": null,
+      "method": "GET",
+      "path": "/gateway/session/profile"
+    }
+  ],
+  "evidence": [
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "6c19365f593485e84aa97a7f968b8820aea28e422da401f85c976092ce038f28",
+      "request_id": "c21a3fd2-8514-403b-bd32-e9cdc742f919",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 0,
+      "account_ref": "user-a",
+      "operation": "login",
+      "method": "POST",
+      "path": "/gateway/authenticate",
+      "status_code": 200,
+      "session_binding": "38966688361c2a6da0770c3ccfce58f40f6013d09359dffae6196ed9607f4662",
+      "response_kind": "login",
+      "principal_ref": null,
+      "resource_ref": null,
+      "owner_ref": null,
+      "proof_ref": null,
+      "proof_digest": null,
+      "proof_present": false,
+      "reason_code": "LOGIN_ESTABLISHED"
+    },
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "b5795c2939a72b09d2fe3ad94c093bcdc002c7563238409f4ae9e2f24ad43c6a",
+      "request_id": "0c5d4367-dc34-4c53-8c90-8af3d3dfd919",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 1,
+      "account_ref": "user-b",
+      "operation": "login",
+      "method": "POST",
+      "path": "/gateway/authenticate",
+      "status_code": 200,
+      "session_binding": "3ffdc33e52c7e3ed503e4e0d63a1a8cff7f3cd212570c669ead099de7656b817",
+      "response_kind": "login",
+      "principal_ref": null,
+      "resource_ref": null,
+      "owner_ref": null,
+      "proof_ref": null,
+      "proof_digest": null,
+      "proof_present": false,
+      "reason_code": "LOGIN_ESTABLISHED"
+    },
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "be97079841c391e91d3d5084b523f1b8d91ea55d25a243504b215b1cdd7df37d",
+      "request_id": "401656f6-6f57-4c22-b415-310059523ecd",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 2,
+      "account_ref": "user-a",
+      "operation": "identity",
+      "method": "GET",
+      "path": "/gateway/session/profile",
+      "status_code": 200,
+      "session_binding": "38966688361c2a6da0770c3ccfce58f40f6013d09359dffae6196ed9607f4662",
+      "response_kind": "identity",
+      "principal_ref": "user-a",
+      "resource_ref": null,
+      "owner_ref": null,
+      "proof_ref": null,
+      "proof_digest": null,
+      "proof_present": false,
+      "reason_code": "IDENTITY_OBSERVED"
+    },
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "3d2965e3e682c2af3d952bc0fadde4be9bbd50659863e20bac7ce9708220f8f3",
+      "request_id": "83ede45b-bbee-478a-8901-5f92cfa5130f",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 3,
+      "account_ref": "user-b",
+      "operation": "identity",
+      "method": "GET",
+      "path": "/gateway/session/profile",
+      "status_code": 200,
+      "session_binding": "3ffdc33e52c7e3ed503e4e0d63a1a8cff7f3cd212570c669ead099de7656b817",
+      "response_kind": "identity",
+      "principal_ref": "user-b",
+      "resource_ref": null,
+      "owner_ref": null,
+      "proof_ref": null,
+      "proof_digest": null,
+      "proof_present": false,
+      "reason_code": "IDENTITY_OBSERVED"
+    },
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "e9f493e52a6fce99a9724f8dcd8986e5258b68a45a3b2e7887a8c3a6501773ec",
+      "request_id": "d4f38e5d-a445-438d-b11e-64fbee9d6439",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 4,
+      "account_ref": "user-a",
+      "operation": "resource",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_M4s8",
+      "status_code": 200,
+      "session_binding": "38966688361c2a6da0770c3ccfce58f40f6013d09359dffae6196ed9607f4662",
+      "response_kind": "private_resource",
+      "principal_ref": null,
+      "resource_ref": "user-a",
+      "owner_ref": "user-a",
+      "proof_ref": "user-a",
+      "proof_digest": "bdca39f7e4d74eff1bfae49eff99414dda4a4697db5300d40d41d55d9c072d71",
+      "proof_present": true,
+      "reason_code": "PRIVATE_RESOURCE_OBSERVED"
+    },
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "5f2f4b94869cd0f42ac2d7c44c18ae017465eda16b526f9227eb6c8b61949d4a",
+      "request_id": "1a0dc7ab-357d-442b-b755-5d327096f7f0",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 5,
+      "account_ref": "user-b",
+      "operation": "resource",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_N9t2",
+      "status_code": 200,
+      "session_binding": "3ffdc33e52c7e3ed503e4e0d63a1a8cff7f3cd212570c669ead099de7656b817",
+      "response_kind": "private_resource",
+      "principal_ref": null,
+      "resource_ref": "user-b",
+      "owner_ref": "user-b",
+      "proof_ref": "user-b",
+      "proof_digest": "17adc58def4077e13558c2534ebd55acb005f79c97380c6f53fafbc595330f4a",
+      "proof_present": true,
+      "reason_code": "PRIVATE_RESOURCE_OBSERVED"
+    },
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "d597eed985168e1a6daed11069793ea931b7bd31aaabe9bbf7cba4bbbf87b209",
+      "request_id": "d8ddd9e7-9c0b-4402-a7c2-8b67ae7207e9",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 6,
+      "account_ref": "user-a",
+      "operation": "resource",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_N9t2",
+      "status_code": 403,
+      "session_binding": "38966688361c2a6da0770c3ccfce58f40f6013d09359dffae6196ed9607f4662",
+      "response_kind": "denied",
+      "principal_ref": null,
+      "resource_ref": null,
+      "owner_ref": null,
+      "proof_ref": null,
+      "proof_digest": null,
+      "proof_present": false,
+      "reason_code": "EXPLICIT_RESOURCE_DENIAL"
+    },
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "7a30cf295280fe9c0176f47be5250b6854ee914a732c65d761df22f260daa1b6",
+      "request_id": "91b6ff47-111b-4390-821d-e7d2b78cee0f",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 7,
+      "account_ref": "user-b",
+      "operation": "resource",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_N9t2",
+      "status_code": 200,
+      "session_binding": "3ffdc33e52c7e3ed503e4e0d63a1a8cff7f3cd212570c669ead099de7656b817",
+      "response_kind": "private_resource",
+      "principal_ref": null,
+      "resource_ref": "user-b",
+      "owner_ref": "user-b",
+      "proof_ref": "user-b",
+      "proof_digest": "17adc58def4077e13558c2534ebd55acb005f79c97380c6f53fafbc595330f4a",
+      "proof_present": true,
+      "reason_code": "PRIVATE_RESOURCE_OBSERVED"
+    },
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "b4ddef44b9c9b3d2fc61ec9f4de8b2d8cc0848cc0d106ac688c63ca99bac98e4",
+      "request_id": "7724aaec-9972-4c79-ab80-846c8300eb80",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 8,
+      "account_ref": "user-a",
+      "operation": "resource",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_M4s8",
+      "status_code": 200,
+      "session_binding": "38966688361c2a6da0770c3ccfce58f40f6013d09359dffae6196ed9607f4662",
+      "response_kind": "private_resource",
+      "principal_ref": null,
+      "resource_ref": "user-a",
+      "owner_ref": "user-a",
+      "proof_ref": "user-a",
+      "proof_digest": "bdca39f7e4d74eff1bfae49eff99414dda4a4697db5300d40d41d55d9c072d71",
+      "proof_present": true,
+      "reason_code": "PRIVATE_RESOURCE_OBSERVED"
+    },
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "f53f261fd60c32b468836c29d91e030ee7cfbcd93e977d6960c12dfa127dc59d",
+      "request_id": "3db239ee-8ea4-48a6-93dd-12eaf054aaf2",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 9,
+      "account_ref": "user-a",
+      "operation": "identity",
+      "method": "GET",
+      "path": "/gateway/session/profile",
+      "status_code": 200,
+      "session_binding": "38966688361c2a6da0770c3ccfce58f40f6013d09359dffae6196ed9607f4662",
+      "response_kind": "identity",
+      "principal_ref": "user-a",
+      "resource_ref": null,
+      "owner_ref": null,
+      "proof_ref": null,
+      "proof_digest": null,
+      "proof_present": false,
+      "reason_code": "IDENTITY_OBSERVED"
+    },
+    {
+      "schema_version": "operator-evidence-v1",
+      "contract_version": "operator-resource-v1",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "evidence_id": "af470cfd6c11ef7c7c3a5c9c31e3b19b0df43cdee665e67257ca74603563639b",
+      "request_id": "c5691030-0195-4eb4-9f84-dc93ddf586de",
+      "snapshot_sha256": "d754d2031654787c677316e6c12f7ab0cd47361eaa3083478af14ca5542f154d",
+      "step_index": 10,
+      "account_ref": "user-b",
+      "operation": "identity",
+      "method": "GET",
+      "path": "/gateway/session/profile",
+      "status_code": 200,
+      "session_binding": "3ffdc33e52c7e3ed503e4e0d63a1a8cff7f3cd212570c669ead099de7656b817",
+      "response_kind": "identity",
+      "principal_ref": "user-b",
+      "resource_ref": null,
+      "owner_ref": null,
+      "proof_ref": null,
+      "proof_digest": null,
+      "proof_present": false,
+      "reason_code": "IDENTITY_OBSERVED"
+    }
+  ],
+  "connections": [
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    },
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    },
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    },
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    },
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    },
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    },
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    },
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    },
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    },
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    },
+    {
+      "version": "domain-connection-v1",
+      "origin": "https://attachments.securityai.test:50893",
+      "dns_results": [
+        "127.0.0.1"
+      ],
+      "selected_ip": "127.0.0.1",
+      "peer_ip": "127.0.0.1",
+      "peer_port": 50893,
+      "peer_verified": true,
+      "tls_server_name": "attachments.securityai.test",
+      "stage": "complete",
+      "reason_code": null,
+      "tcp_attempts": 1,
+      "tls_attempts": 1,
+      "http_response_received": true
+    }
+  ],
+  "replay": {
+    "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+    "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+    "verdict_matches": true,
+    "evidence_count": 11
+  },
+  "version": {
+    "workspace": "operator-workspace-v1",
+    "component": "Controller",
+    "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+    "working_tree_dirty": true,
+    "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+  },
+  "model_candidates": [],
+  "verification_basis": "operator_http_observation",
+  "credential_placeholders": {
+    "user-a": "<ACCOUNT_A_LOGIN> / <ACCOUNT_A_PASSWORD>",
+    "user-b": "<ACCOUNT_B_LOGIN> / <ACCOUNT_B_PASSWORD>",
+    "session": "<COOKIE_OR_BEARER_FROM_LOGIN>"
+  },
+  "impact": "\uad00\uce21\ud55c \uad50\ucc28 \uc694\uccad\uc740 \uba85\uc2dc\uc801\uc73c\ub85c \uac70\uc808\ub410\uc2b5\ub2c8\ub2e4.",
+  "limitations": "\ub450 \uc900\ube44 \uacc4\uc815\u00b7\ub450 \ub9ac\uc18c\uc2a4\u00b7\ud574\ub2f9 \uad00\uce21 \uc2dc\uac01\uc5d0 \ud55c\uc815\ud569\ub2c8\ub2e4. \uc2e4\uc81c \uace0\uac1d \uc815\ubcf4 \uc720\ucd9c, \uae08\uc804 \ud53c\ud574, \uc2ec\uac01\ub3c4 \ub610\ub294 \uc0ac\uc774\ud2b8 \uc804\uccb4 \uc548\uc804\uc131\uc744 \uc8fc\uc7a5\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.",
+  "recommendation": "\uc11c\ubc84\uc5d0\uc11c \ub9e4 \ub9ac\uc18c\uc2a4 \uc694\uccad\uc758 \uc778\uc99d \uc8fc\uccb4\uc640 \uc18c\uc720\uad8c/\ud504\ub85c\uc81d\ud2b8 \uad8c\ud55c\uc744 \uac80\uc0ac\ud558\uace0 \uba85\uc2dc\uc801\uc73c\ub85c \uac70\uc808\ud558\uc138\uc694."
+}
