@@ -199,6 +199,20 @@ def test_temporary_runtime_can_be_removed_after_shutdown(tmp_path):
     assert not root.exists()
 
 
+def test_deployment_fence_blocks_preview_and_run_without_target_requests(lab):
+    from common.workspace_lifecycle import fence
+    with closing(login(lab)) as c:
+        p=preview(c)
+        with fence(lab['workspace'].root,'deployment-test'):
+            assert c.post('/api/operator/preview',json={'profile_id':'attachments','transport':'function'}).status_code==409
+            response=submit(c,p)
+            assert response.status_code==409 and response.json()['detail']['code']=='WORKSPACE_MAINTENANCE'
+            assert lab['api'].received==0
+            assert c.get('/api/operator/plans/'+p['plan_id']).json()['job'] is None
+        assert submit(c,p).status_code==202
+        assert wait(c,p)['status']=='COMPLETED'
+
+
 def test_server_only_profile_config_and_symlink_containment(tmp_path,monkeypatch):
     from controller.workspace import load_profiles
     path=tmp_path/'workspace.json'

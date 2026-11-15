@@ -18,6 +18,7 @@ from pydantic import Field
 from common.api_contract import FrozenModel
 from common.domain_contract import DomainObservation
 from common.operator_contract import ResourceEvidence, ResourcePolicy
+from common.workspace_lifecycle import admission, WorkspaceBusy
 from controller.candidate_execution import CandidateError
 from controller.candidates import analyse, read_local, unique, fail_constant
 from controller.operator_execution import ResourceHistory, execute_plan, parse_plan, preview, validate_execution
@@ -46,6 +47,8 @@ def diagnostic(code):
         'WORKER_POLICY_CHANGED': 'Worker 정책이 바뀌었습니다. 새 preview가 필요합니다.',
         'INTERRUPTED': 'Controller 실행이 중단됐습니다. 기존 증거를 확인하고 자동 재실행하지 마세요.',
         'NOT_FOUND': '요청한 기록을 찾을 수 없습니다.',
+        'WORKSPACE_MAINTENANCE': '배포 준비 중입니다. 새 제출을 중지하고 기존 검사 이력을 확인해 주세요.',
+        'WORKSPACE_BUSY': '다른 계획 작업이 진행 중입니다. 기존 상태를 먼저 확인해 주세요.',
     }
     if code in exact: return exact[code]
     if code.startswith('TLS_'): return '인증서 또는 신뢰 설정을 확인해 주세요. 안전 판정이 아니라 검사 미완료입니다.'
@@ -177,6 +180,12 @@ class Workspace:
         return {'profiles':result,'configured':bool(result),'message':None if result else diagnostic('WORKSPACE_NOT_CONFIGURED')}
 
     async def make_preview(self,key,transport):
+        try:
+            with admission(self.root):
+                return await self._make_preview(key,transport)
+        except WorkspaceBusy as exc: raise WorkspaceError(str(exc)) from None
+
+    async def _make_preview(self,key,transport):
         p=self.profile(key)
         cat=analyse(p.source_path,p.registry_path,'lab-web')
         candidates=[r for r in cat['candidates'] if r['status']=='READY_FOR_REVIEW']
@@ -209,7 +218,10 @@ class Workspace:
         await validate_execution(p.source_path,p.registry_path,plan,digest,self.pc,self.history,approval_actor='human')
         job=dict(plan_id=plan_id,profile_id=p.profile_id,plan_sha256=digest,status='QUEUED',run_id=None,
                  created_at=time.time(),updated_at=time.time(),reason_code=None,version=self.version)
-        try: write_json(receipt,job,exclusive=True)
+        try:
+            with admission(self.root):
+                write_json(receipt,job,exclusive=True)
+        except WorkspaceBusy as exc: raise WorkspaceError(str(exc)) from None
         except FileExistsError: raise WorkspaceError('PLAN_ALREADY_SUBMITTED') from None
         task=asyncio.create_task(self._execute(p,plan,job))
         self.tasks.add(task)

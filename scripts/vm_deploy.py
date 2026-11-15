@@ -24,6 +24,13 @@ import tarfile
 import time
 import uuid
 
+if __package__:
+    from scripts import vm_workspace as workspace_files
+    from common.workspace_lifecycle import fence, idle, WorkspaceBusy
+else:
+    import vm_workspace as workspace_files
+    from workspace_lifecycle import fence, idle, WorkspaceBusy
+
 ROLES = {
     'controller': ('192.168.56.10', 8000, 'controller.api:create_app_from_env', '/api/health'),
     'worker': ('10.77.0.20', 9000, 'worker.app:create_app_from_env', '/health'),
@@ -86,11 +93,12 @@ def env_values(path):
 
 
 def tree_hashes(root):
+    require(not root.is_symlink() and not getattr(root,'is_junction',lambda:False)(), 'RUNTIME_SYMLINK_REJECTED')
     if not root.exists():
         return {}
     files = {}
     for path in sorted(root.rglob('*')):
-        require(not path.is_symlink(), 'RUNTIME_SYMLINK_REJECTED')
+        require(not path.is_symlink() and not getattr(path,'is_junction',lambda:False)(), 'RUNTIME_SYMLINK_REJECTED')
         if path.is_file():
             files[path.relative_to(root).as_posix()] = file_hash(path)
     return files
@@ -161,6 +169,14 @@ class VM:
         require(root == self.original or root.parent == self.releases, 'UNREGISTERED_CHECKOUT')
         require(root.resolve() == root, 'CHECKOUT_SYMLINK_REJECTED')
 
+    def service(self,root):
+        marker=root/'.deployment-service.json'
+        if not marker.exists(): return self.role
+        require(not marker.is_symlink(),'RUNTIME_SYMLINK_REJECTED')
+        value=load(marker)
+        require(value=={'service':'operator-target'} and self.role=='target','SERVICE_PROFILE_INVALID')
+        return 'operator-target'
+
     def listener(self):
         output = self.cmd(['ss', '-H', '-ltnp', 'sport = :' + str(self.port)])
         pids = set(re.findall(r'pid=(\d+)', output))
@@ -172,9 +188,10 @@ class VM:
         args = [x.decode() for x in (proc / 'cmdline').read_bytes().split(b'\0') if x]
         root = Path(os.readlink(proc / 'cwd'))
         self.root_allowed(root)
-        require('uvicorn' in args and self.module in args, 'UNKNOWN_LISTENER')
+        module='scripts.operator_vm_target:create_app_from_env' if self.service(root)=='operator-target' else self.module
+        require('uvicorn' in args and module in args, 'UNKNOWN_LISTENER')
         start = (proc / 'stat').read_text().rsplit(')', 1)[1].split()[19]
-        return {'pid': pid, 'start_ticks': start, 'checkout': str(root), 'module': self.module}
+        return {'pid': pid, 'start_ticks': start, 'checkout': str(root), 'module': module}
 
     def network(self):
         addresses = json.loads(self.cmd(['ip', '-j', 'address']))
@@ -213,8 +230,10 @@ class VM:
             require(all(actual.get(k) == v for k, v in values.items()), 'RUNNING_ENVIRONMENT_DIFFERS')
         require(not self.cmd(['git', 'status', '--porcelain', '--untracked-files=no'], root), 'TRACKED_CHECKOUT_DIRTY')
         references = {}
+        service=self.service(root)
         for key, default in [('DATABASE_PATH', 'data/securitylab.sqlite3')] if self.role == 'controller' else (
                 [('TARGET_DATABASE_PATH', 'data/target.sqlite3')] if self.role == 'target' else [('TARGET_REGISTRY_PATH', 'config/targets.json')]):
+            if service=='operator-target': continue
             value = Path(values.get(key) or default)
             path = inside(value if value.is_absolute() else root / value, root)
             permitted = root / ('config' if key == 'TARGET_REGISTRY_PATH' else 'data')
@@ -222,13 +241,20 @@ class VM:
             require(path.is_relative_to(permitted) or (key == 'TARGET_REGISTRY_PATH' and path.is_relative_to(root / 'runtime-config')),
                     'EXTERNAL_RUNTIME_PATH_UNSUPPORTED')
             references[key] = str(path)
-        return {'role': self.role, 'commit': self.cmd(['git', 'rev-parse', 'HEAD'], root),
+        workspace=workspace_files.snapshot(root,values) if self.role=='controller' else None
+        result={'role': self.role, 'commit': self.cmd(['git', 'rev-parse', 'HEAD'], root),
                 'checkout': str(root), 'environment_reference': str(env), 'environment_sha256': file_hash(env),
                 'setting_names': sorted(values), 'runtime_references': references,
                 'runtime_config_hashes': tree_hashes(root / 'config'),
                 'preserved_config_hashes': tree_hashes(root / 'runtime-config'),
                 'launcher': 'service_config' if (root / 'common/service_config.py').exists() else 'legacy_uvicorn',
                 'listener': listener, 'network': self.network()}
+        if workspace is not None:
+            idle(Path(workspace['state']))
+            require(not (Path(workspace['state'])/'.admission.lock').exists(),'WORKSPACE_BUSY')
+            result.update(workspace=workspace,workspace_reports=tree_hashes(root/'reports/runs'))
+        if service!=self.role: result['service']=service
+        return result
 
     def stage(self, exchange, commit, before, identifier):
         manifest = load(exchange / 'release.json')
@@ -243,6 +269,7 @@ class VM:
         require(file_hash(old / 'requirements-full.lock') == file_hash(root / 'requirements-full.lock'), 'OFFLINE_DEPENDENCY_CHANGE_REQUIRES_PREPARATION')
         (root / '.venv').symlink_to(self.original / '.venv', target_is_directory=True)
         values = env_values(Path(before['environment_reference']))
+        workspace_files.prepare(old,root,values,before.get('workspace'))
         for key, reference in before['runtime_references'].items():
             source = Path(reference)
             if key == 'TARGET_REGISTRY_PATH':
@@ -251,12 +278,15 @@ class VM:
                 values[key] = str(destination / source.name)
             else:
                 values[key] = str(root / source.relative_to(old))
+        service=workspace_files.setup(root,exchange,self.role,values)
+        if not workspace_files.setup_identity(exchange) and before.get('service')=='operator-target': service='operator-target'
+        if service=='operator-target': write(root/'.deployment-service.json',{'service':service})
         new_env = root / ('.env.' + self.role)
         # Write a derived file only; the existing env remains byte-for-byte intact.
         new_env.write_text(''.join(k + "='" + v.replace('\\', '\\\\').replace("'", "\\'") + "'\n" for k, v in values.items()), encoding='utf-8')
         new_env.chmod(0o600)
         require(env_values(new_env) == values, 'ENVIRONMENT_COPY_MISMATCH')
-        self.cmd([self.python, '-m', 'common.service_config', 'check', self.role, '--env-file', new_env], root)
+        self.cmd([self.python, '-m', 'common.service_config', 'check', service, '--env-file', new_env], root)
         if self.role == 'controller':
             source = exchange / 'frontend-dist'
             require(tree_hashes(source) == manifest['frontend_dist_sha256'] and (source / 'index.html').is_file(), 'FRONTEND_ARTIFACT_MISMATCH')
@@ -277,6 +307,12 @@ class VM:
                 'frontend_hashes': tree_hashes(root / 'frontend/dist'),
                 'version_change': expected != commit,
                 'data_strategy': 'private consistent copy; originals untouched; rollback retains new data separately'}
+        if self.role=='controller':
+            staged=workspace_files.snapshot(root,env_values(root/'.env.controller'))
+            if staged is not None: plan['new_workspace']=staged
+        plan['setup_reference']=str(exchange)
+        plan['setup_hashes']=workspace_files.setup_identity(exchange)
+        plan['new_service']=self.service(root)
         plan['plan_sha256'] = digest(plan)
         write(self.state / 'plans' / (identifier + '.json'), plan)
         return plan
@@ -321,7 +357,7 @@ class VM:
     def launch(self, root, launcher, log):
         require(self.listener() is None, 'PORT_IN_USE')
         if launcher == 'service_config':
-            args = [self.python, '-m', 'common.service_config', 'serve', self.role, '--env-file', root / ('.env.' + self.role)]
+            args = [self.python, '-m', 'common.service_config', 'serve', self.service(root), '--env-file', root / ('.env.' + self.role)]
         else:
             args = [self.python, '-m', 'uvicorn']
             if self.role != 'target':
@@ -355,6 +391,30 @@ class VM:
                     raise DeployError('OWNED_PROCESS_DID_NOT_STOP') from None
             raise
 
+    def service_control(self,action,expected=None):
+        before=self.inventory()
+        if action=='status':
+            return {'inventory':before,'health':self.health() if before['listener'] else {'status':'stopped'}}
+        require(before['commit']==full_commit(expected),'VERSION_MISMATCH')
+        root=Path(before['checkout'])
+        ws=before.get('workspace')
+        with fence(ws['state'],'fixed-service-control') if ws else contextlib.nullcontext():
+            if action in ('stop','restart'): self.stop(before['listener'])
+            if action in ('start','restart') and self.listener() is None:
+                self.launch(root,before['launcher'],self.state/'service-control.log')
+            require(self.network()==before['network'],'NETWORK_OR_FIREWALL_CHANGED')
+        return {'commit':before['commit'],'checkout':str(root),'status':action,
+                'health':self.health() if self.listener() else {'status':'stopped'}}
+
+    def target_counter(self):
+        require(self.role=='target','TARGET_ROLE_REQUIRED')
+        inventory=self.inventory()
+        require(inventory.get('service')=='operator-target','OPERATOR_TARGET_REQUIRED')
+        path=Path(inventory['checkout'])/'verification_tmp/operator_target_counter.json'
+        require(path.is_file() and not path.is_symlink(),'COUNTER_NOT_AVAILABLE')
+        value=load(path)
+        return {k:value[k] for k in ('pid','started_at','received_http_requests')}
+
     def backup_copy(self, plan):
         old, new = Path(plan['before']['checkout']), Path(plan['checkout'])
         private = self.state / 'backups' / plan['id']
@@ -369,7 +429,10 @@ class VM:
             source = old / name
             tree_hashes(source)  # Reject links before copying any runtime directory.
             if source.exists():
-                shutil.copytree(source, new / name, dirs_exist_ok=True)
+                def ignore(folder,names):
+                    return [n for n in names if n in ('.admission.lock','.deployment-fence.json') and
+                            plan['before'].get('workspace',{}).get('state')==str(Path(folder))]
+                shutil.copytree(source, new / name, dirs_exist_ok=True,ignore=ignore)
         baseline = databases(old / 'data')
         for name in baseline:
             src, dst = old / 'data' / name, new / 'data' / name
@@ -378,8 +441,12 @@ class VM:
                 with contextlib.closing(sqlite3.connect(dst)) as destination:
                     source.backup(destination)
         require(databases(new / 'data') == baseline, 'DATABASE_COPY_MISMATCH')
+        old_ws=workspace_files.snapshot(old,env_values(Path(plan['before']['environment_reference']))) if self.role=='controller' else None
+        new_ws=workspace_files.snapshot(new,env_values(new/'.env.controller')) if self.role=='controller' else None
+        workspace_files.preserve(old_ws,new_ws)
         write(private / 'baseline.json', {'databases': baseline, 'env': file_hash(Path(plan['before']['environment_reference'])),
-                                        'config': tree_hashes(old / 'config'), 'reports': tree_hashes(old / 'reports/runs')})
+                                        'config': tree_hashes(old / 'config'), 'reports': tree_hashes(old / 'reports/runs'),
+                                        'workspace':old_ws})
         return private
 
     def preservation(self, plan):
@@ -390,10 +457,14 @@ class VM:
         require(tree_hashes(old / 'reports/runs') == baseline['reports'], 'ORIGINAL_REPORTS_CHANGED')
         require(databases(old / 'data') == baseline['databases'], 'ORIGINAL_DATABASE_CHANGED')
         require(rows_preserved(baseline['databases'], databases(new / 'data')), 'DEPLOYED_DATABASE_ROWS_LOST')
+        if baseline.get('workspace') is not None:
+            old_ws=workspace_files.snapshot(old,env_values(Path(plan['before']['environment_reference'])))
+            require(old_ws==baseline['workspace'],'ORIGINAL_WORKSPACE_CHANGED')
+            workspace_files.preserve(old_ws,workspace_files.snapshot(new,env_values(new/'.env.controller')))
         require(self.network() == plan['before']['network'], 'NETWORK_OR_FIREWALL_CHANGED')
         return {'original_environment_config_reports_unchanged': True, 'original_database_rows_exact': True,
                 'deployed_database_existing_rows_preserved': True, 'database_count': len(baseline['databases']),
-                'network_and_firewall_unchanged': True}
+                'network_and_firewall_unchanged': True,'workspace_history_preserved':baseline.get('workspace') is not None}
 
     def validate_recovery_source(self, plan):
         before = plan['before']
@@ -404,8 +475,35 @@ class VM:
                 tree_hashes(old / 'config') == before['runtime_config_hashes'] and
                 tree_hashes(old / 'runtime-config') == before['preserved_config_hashes'], 'RECOVERY_CONFIGURATION_CHANGED')
         require(self.network() == before['network'], 'NETWORK_OR_FIREWALL_CHANGED')
+        if before.get('workspace') is not None:
+            require(workspace_files.snapshot(old,env_values(Path(before['environment_reference'])))==before['workspace'],
+                    'RECOVERY_WORKSPACE_CHANGED')
 
     def recover(self, plan):
+        with self.workspace_boundary(plan):
+            if self.role=='controller' and plan.get('new_workspace') is not None:
+                new=Path(plan['checkout'])
+                workspace_files.rollback_safe(plan['before'].get('workspace'),
+                    workspace_files.snapshot(new,env_values(new/'.env.controller')))
+            return self._recover(plan)
+
+    @contextlib.contextmanager
+    def workspace_boundary(self,plan):
+        if getattr(self,'_workspace_fenced',False):
+            yield
+            return
+        with contextlib.ExitStack() as stack:
+            for root,ws in ((Path(plan['before']['checkout']),plan['before'].get('workspace')),
+                            (Path(plan['checkout']),plan.get('new_workspace'))):
+                if ws is not None:
+                    require((root/'common/workspace_lifecycle.py').is_file() or self.listener() is None,
+                            'WORKSPACE_DRAIN_PROTOCOL_UNSUPPORTED_STOP_FIRST')
+                    stack.enter_context(fence(Path(ws['state']),plan['id']))
+            self._workspace_fenced=True
+            try: yield
+            finally: self._workspace_fenced=False
+
+    def _recover(self, plan):
         old, new = Path(plan['before']['checkout']), Path(plan['checkout'])
         self.validate_recovery_source(plan)
         current = self.listener()
@@ -438,12 +536,24 @@ class VM:
             self.health()
             return {'status': 'ALREADY_HEALTHY', 'id': identifier, 'preservation': self.preservation(plan)}
         verify_plan(plan, confirmation, self.inventory())
+        if 'setup_reference' in plan:
+            require(workspace_files.setup_identity(Path(plan['setup_reference']))==plan['setup_hashes'],'WORKSPACE_SETUP_CHANGED_REPLAN_REQUIRED')
         new = Path(plan['checkout'])
+        require(self.service(new)==plan.get('new_service',self.role),'STAGED_SERVICE_CHANGED')
         require(self.cmd(['git', 'rev-parse', 'HEAD'], new) == plan['commit'] and
                 not self.cmd(['git', 'status', '--porcelain', '--untracked-files=no'], new), 'STAGED_CODE_CHANGED')
         require(file_hash(new / ('.env.' + self.role)) == plan['new_environment_sha256'] and
                 tree_hashes(new / 'runtime-config') == plan['new_preserved_config_hashes'] and
                 tree_hashes(new / 'frontend/dist') == plan['frontend_hashes'], 'STAGED_RUNTIME_CHANGED')
+        if plan.get('new_workspace') is not None:
+            require(workspace_files.snapshot(new,env_values(new/'.env.controller'))==plan['new_workspace'],
+                    'STAGED_WORKSPACE_CHANGED')
+        with self.workspace_boundary(plan):
+            # Admission is closed in both releases; repeat the observation before SIGTERM.
+            verify_plan(plan,confirmation,self.inventory())
+            return self._apply_quiescent(plan,new,identifier)
+
+    def _apply_quiescent(self,plan,new,identifier):
         self.journal(plan, 'STOPPING')
         try:
             self.stop(plan['before']['listener'])
@@ -485,7 +595,7 @@ class VM:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('inspect', 'plan', 'apply', 'rollback', 'status'))
+    parser.add_argument('action', choices=('inspect', 'plan', 'apply', 'rollback', 'status','service-start','service-stop','service-restart','service-status','counter'))
     parser.add_argument('--exchange', type=Path, required=True, help='operator-owned local transfer directory')
     parser.add_argument('--commit')
     parser.add_argument('--expected')
@@ -504,10 +614,16 @@ def main():
         require(sys.platform == 'linux' and os.getuid() == 1000, 'REGISTERED_GUEST_USER_REQUIRED')
         vm = VM(role)
         with vm.lock():
-            if args.action in ('inspect', 'status'):
+            if args.action.startswith('service-'):
+                result['result']=vm.service_control(args.action.removeprefix('service-'),args.expected)
+            elif args.action=='counter':
+                result['counter']=vm.target_counter()
+            elif args.action in ('inspect', 'status'):
                 result['inventory'] = vm.inventory()
                 if args.action == 'status':
                     result['history'] = [load(p) for p in sorted((vm.state / 'history').glob('*.json'))]
+                    if role=='target' and result['inventory'].get('service')=='operator-target':
+                        result['counter']=vm.target_counter()
             elif args.action == 'plan':
                 result['plan'] = vm.plan(args.exchange, args.commit, args.expected)
             elif args.action == 'apply':
@@ -515,7 +631,7 @@ def main():
             else:
                 result['result'] = vm.rollback(args.plan, args.confirm)
         result['ok'] = True
-    except DeployError as exc:
+    except (DeployError,workspace_files.WorkspaceDeploymentError,WorkspaceBusy) as exc:
         result['reason_code'] = str(exc)
     except Exception as exc:
         result['reason_code'] = 'OPERATION_FAILED'

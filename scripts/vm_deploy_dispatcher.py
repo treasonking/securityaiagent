@@ -19,7 +19,7 @@ def valid_job(job, role):
         return False
     if set(job) - {'sequence', 'action', 'role', 'commit', 'expected', 'plan', 'confirm'}:
         return False
-    if job['role'] != role or job['action'] not in ('inspect', 'plan', 'apply', 'rollback', 'status', 'stop'):
+    if job['role'] != role or job['action'] not in ('inspect', 'plan', 'apply', 'rollback', 'status', 'stop','service-start','service-stop','service-restart','service-status','counter'):
         return False
     for key, size in [('sequence', 32), ('commit', 40), ('expected', 40), ('plan', 32), ('confirm', 64)]:
         if key in job and (not isinstance(job[key], str) or not re.fullmatch('[0-9a-f]{' + str(size) + '}', job[key])):

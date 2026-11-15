@@ -9,10 +9,42 @@ import shutil
 import subprocess
 import time
 import uuid
+import secrets
 
 from scripts.vm_deploy import DeployError, full_commit, load, require, tree_hashes, write
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def prepare_workspace(exchange, fixed=False):
+    """Operator-only fixed VM profile preparation; never a model/API input."""
+    private=exchange/'private-workspace-secrets.json'
+    if fixed:
+        require(private.is_file(),'WORKSPACE_PREPARATION_REQUIRED')
+        values=load(private)
+        target=exchange/'target/workspace-setup/settings.json'
+        data=load(target)
+        require(data['environment']==dict(values,OPERATOR_TARGET_MODE='vulnerable'),'TARGET_SETUP_CHANGED')
+        data['environment']['OPERATOR_TARGET_MODE']='fixed'
+        write(target,data)
+        return {'ok':True,'role':'target','mode':'fixed','settings_sha256':hashlib.sha256(target.read_bytes()).hexdigest()}
+    require(not private.exists(),'WORKSPACE_ALREADY_PREPARED')
+    for role in ('controller','worker','target'):
+        require(not (exchange/role/'workspace-setup').exists(),'WORKSPACE_ALREADY_PREPARED')
+    values={k:secrets.token_urlsafe(32) for k in ('LAB_USER_A_PASSWORD','LAB_USER_B_PASSWORD','OPERATOR_PROOF_A','OPERATOR_PROOF_B')}
+    write(private,values)
+    for role in ('controller','worker','target'):
+        folder=exchange/role/'workspace-setup'
+        env={} if role=='controller' else dict(values)
+        if role=='target':env['OPERATOR_TARGET_MODE']='vulnerable'
+        write(folder/'settings.json',{'schema':'vm-operator-workspace-v1','role':role,'environment':env})
+        if role!='target':shutil.copyfile(ROOT/'config/targets.operator.json',folder/'registry.json')
+        if role=='controller':
+            shutil.copyfile(ROOT/'examples/openapi/operator-cookie.json',folder/'openapi.json')
+            write(folder/'workspace.json',{'schema_version':'operator-workspace-v1','profiles':[{
+                'profile_id':'vm-prepared-resources','name':'실습 VM · 준비된 두 계정과 tickets',
+                'source_path':'openapi.json','registry_path':'registry.json'}]})
+    return {'ok':True,'prepared_roles':['controller','worker','target'],'origin':'http://10.78.0.30:8080','mode':'vulnerable','secrets_published':False}
 
 
 def package(exchange, commit):
@@ -32,6 +64,8 @@ def package(exchange, commit):
         (folder / 'public').mkdir(parents=True, exist_ok=True)
         shutil.copyfile(bundle, folder / 'release.bundle')
         shutil.copyfile(ROOT / 'scripts/vm_deploy.py', folder / 'vm_deploy.py')
+        shutil.copyfile(ROOT / 'scripts/vm_workspace.py', folder / 'vm_workspace.py')
+        shutil.copyfile(ROOT / 'common/workspace_lifecycle.py', folder / 'workspace_lifecycle.py')
         shutil.copyfile(ROOT / 'scripts/vm_deploy_dispatcher.py', folder / 'dispatcher.py')
         if role == 'controller':
             dest = folder / 'frontend-dist'
@@ -99,7 +133,7 @@ def collect(folder, sequence):
 
 
 def send(folder, job, timeout=620):
-    require(job.get('action') in ('inspect', 'plan', 'apply', 'rollback', 'status', 'stop'), 'INVALID_ACTION')
+    require(job.get('action') in ('inspect', 'plan', 'apply', 'rollback', 'status', 'stop','service-start','service-stop','service-restart','service-status','counter'), 'INVALID_ACTION')
     require(set(job) <= {'action', 'commit', 'expected', 'plan', 'confirm'}, 'INVALID_JOB_FIELDS')
     for key, size in [('commit', 40), ('expected', 40), ('plan', 32), ('confirm', 64)]:
         if key in job:
@@ -139,7 +173,7 @@ def send(folder, job, timeout=620):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('package', 'inspect', 'plan', 'apply', 'rollback', 'status', 'stop', 'collect'))
+    parser.add_argument('action', choices=('package','prepare-workspace','prepare-fixed', 'inspect', 'plan', 'apply', 'rollback', 'status', 'stop', 'collect','service-start','service-stop','service-restart','service-status','counter'))
     parser.add_argument('--exchange', type=Path, required=True)
     parser.add_argument('--role', choices=('controller', 'worker', 'target'))
     for name in ('commit', 'expected', 'plan', 'confirm'):
@@ -147,7 +181,9 @@ def main():
     parser.add_argument('--sequence', help='existing pending job to collect without resending')
     args = parser.parse_args()
     try:
-        if args.action == 'package':
+        if args.action in ('prepare-workspace','prepare-fixed'):
+            result=prepare_workspace(args.exchange,args.action=='prepare-fixed')
+        elif args.action == 'package':
             result = package(args.exchange, args.commit)
         else:
             require(args.role is not None, 'ROLE_REQUIRED')
