@@ -45,8 +45,10 @@ class FakeVM(VM):
     def network(self):
         return {}
 
-    def stop(self, expected):
+    def stop(self, expected, before_change=None):
         assert self.current == expected
+        if before_change:
+            before_change()
         self.events.append('stop')
         self.current = None
 
@@ -55,7 +57,9 @@ class FakeVM(VM):
         if self.fail == 'backup':
             raise OSError('private details must not be public')
 
-    def launch(self, root, launcher, log):
+    def launch(self, root, launcher, log, before_change=None):
+        if before_change:
+            before_change()
         self.events.append('launch-old' if root == self.original else 'launch-new')
         if root != self.original and self.fail == 'health':
             raise DeployError('HEALTH_TIMEOUT')
@@ -212,3 +216,148 @@ def test_host_rejects_invalid_jobs_before_delivery(tmp_path, job):
     with pytest.raises(DeployError, match='INVALID_'):
         send(tmp_path, job, timeout=0)
     assert not list(tmp_path.iterdir())
+
+@pytest.fixture
+def rollback_release(tmp_path):
+    from scripts import vm_workspace
+
+    vm = FakeVM(tmp_path)
+    plan = plan_for(vm)
+    vm.role = plan['role'] = plan['before']['role'] = 'controller'
+    new = Path(plan['checkout'])
+    (new / 'common').mkdir()
+    (new / 'common/workspace_lifecycle.py').touch()
+    for filename in ('source.json', 'registry.json'):
+        write(new / filename, {})
+    write(new / 'workspace.json', {'schema_version': 'operator-workspace-v1', 'profiles': [
+        {'profile_id': 'prepared', 'name': 'Prepared', 'source_path': 'source.json',
+         'registry_path': 'registry.json'}]})
+    env = new / '.env.controller'
+    env.write_text('OPERATOR_WORKSPACE_CONFIG=workspace.json\n')
+    from scripts.vm_deploy import file_hash
+    plan['new_environment_sha256'] = file_hash(env)
+    plan['new_workspace'] = vm_workspace.snapshot(new, env_values(env))
+    del plan['plan_sha256']
+    plan['plan_sha256'] = digest(plan)
+    write(vm.state / 'plans' / (plan['id'] + '.json'), plan)
+    vm.journal(plan, 'HEALTHY')
+    write(vm.state / 'active.json', {'checkout': str(new)})
+    vm.current = {'pid': 202, 'checkout': str(new)}
+    return vm, plan, Path(plan['new_workspace']['state'])
+
+
+@pytest.mark.parametrize(('condition', 'reason', 'prior'), [
+    ('claim', 'WORKSPACE_NEW_HISTORY_ROLLBACK_REFUSED', 'HEALTHY'),
+    ('job', 'WORKSPACE_RUN_IN_PROGRESS', 'HEALTHY'),
+    ('claim', 'WORKSPACE_NEW_HISTORY_ROLLBACK_REFUSED', 'RECOVERY_REQUIRED'),
+    ('config', 'RECOVERY_CONFIGURATION_CHANGED', 'HEALTHY'),
+    ('admission', 'WORKSPACE_BUSY', 'HEALTHY'),
+])
+def test_manual_rollback_refusal(rollback_release, condition, reason, prior):
+    vm, plan, state = rollback_release
+    history = vm.state / 'history' / (plan['id'] + '.json')
+    if prior != 'HEALTHY':
+        vm.journal(plan, prior)
+    evidence = {
+        'claim': state / 'plans' / ('opplan_' + '2' * 32 + '.claimed.json'),
+        'job': state / 'jobs' / ('opplan_' + '2' * 32 + '.json'),
+        'config': Path(plan['checkout']) / 'registry.json',
+        'admission': state / '.admission.lock',
+    }[condition]
+    if condition == 'admission':
+        evidence.mkdir(parents=True)
+    else:
+        write(evidence, {'status': 'RUNNING'})
+    files = [history, vm.state / 'active.json']
+    if evidence.is_file():
+        files.append(evidence)
+    saved = [f.read_bytes() for f in files]
+    with pytest.raises(DeployError, match='^' + reason + '$'):
+        vm.rollback(plan['id'], plan['plan_sha256'])
+    assert [f.read_bytes() for f in files] == saved
+    assert vm.events == [] and vm.current['checkout'] == plan['checkout']
+    assert evidence.exists() and not (state / '.deployment-fence.json').exists()
+    audit, = (vm.state / 'rollback-audit' / plan['id']).glob('*.json')
+    assert load(audit)['reason_code'] == reason
+    assert load(audit)['previous_status'] == prior
+
+
+@pytest.mark.parametrize('fail', [False, True])
+def test_manual_rollback_holds_fence_through_service_change(rollback_release, monkeypatch, fail):
+    from common.workspace_lifecycle import WorkspaceBusy, admission
+
+    vm, plan, state = rollback_release
+    stop = vm.stop
+    def stop_and_check(*args, **kwargs):
+        with pytest.raises(WorkspaceBusy, match='WORKSPACE_MAINTENANCE'), admission(state):
+            pytest.fail('new submission admitted after preflight')
+        stop(*args, **kwargs)
+        if fail:
+            raise OSError('private detail')
+    monkeypatch.setattr(vm, 'stop', stop_and_check)
+    if fail:
+        with pytest.raises(DeployError, match='^RECOVERY_REQUIRED$'):
+            vm.rollback(plan['id'], plan['plan_sha256'])
+        assert vm.events == ['stop']
+        status = 'RECOVERY_REQUIRED'
+    else:
+        vm.rollback(plan['id'], plan['plan_sha256'])
+        assert vm.events == ['stop', 'launch-old']
+        assert load(vm.state / 'active.json')['checkout'] == str(vm.original)
+        status = 'ROLLED_BACK'
+    history = load(vm.state / 'history' / (plan['id'] + '.json'))
+    assert [e['status'] for e in history['events']] == ['HEALTHY', 'RECOVERING', status]
+    assert not (state / '.deployment-fence.json').exists()
+
+
+def test_manual_rollback_listener_race_before_signal(rollback_release, monkeypatch):
+    """A changed PID at stop's last check is still a refusal before any signal."""
+    import os
+
+    vm, plan, _ = rollback_release
+    history = vm.state / 'history' / (plan['id'] + '.json')
+    active = vm.state / 'active.json'
+    saved = (history.read_bytes(), active.read_bytes())
+    def replace_listener(expected, before_change):
+        vm.current = {**expected, 'pid': 303}
+        VM.stop(vm, expected, before_change)
+    monkeypatch.setattr(vm, 'stop', replace_listener)
+    monkeypatch.setattr(os, 'kill', lambda *args: pytest.fail('unexpected signal'))
+    with pytest.raises(DeployError, match='^LISTENER_CHANGED$'):
+        vm.rollback(plan['id'], plan['plan_sha256'])
+    assert saved == (history.read_bytes(), active.read_bytes())
+    assert vm.current['pid'] == 303 and vm.events == []
+
+
+def test_manual_rollback_reason_reaches_host(rollback_release, tmp_path, monkeypatch):
+    import contextlib
+    import types
+    import sys
+    from scripts import vm_deploy as guest, vm_deploy_dispatcher as dispatcher, vm_deploy_host as host
+
+    vm, plan, state = rollback_release
+    write(state / 'jobs' / ('opplan_' + '3' * 32 + '.json'), {'status': 'RUNNING'})
+    folder = tmp_path / 'exchange/controller'
+    write(folder / 'public/ready.json', {'role': 'controller', 'protocol': 2})
+    private = tmp_path / 'transport'
+    private.mkdir()
+    # Run the real guest CLI and dispatcher result/receipt writers in this process.
+    # Replace guest identity, OS lock and process spawning only.
+    monkeypatch.setattr(guest, 'os', types.SimpleNamespace(umask=lambda _: None, getuid=lambda: 1000))
+    monkeypatch.setattr(guest, 'socket', types.SimpleNamespace(gethostname=lambda: 'security-controller'))
+    monkeypatch.setattr(guest, 'sys', types.SimpleNamespace(platform='linux', argv=[]))
+    monkeypatch.setattr(guest, 'VM', lambda role: vm)
+    monkeypatch.setattr(vm, 'lock', contextlib.nullcontext)
+    def child(command, **kwargs):
+        monkeypatch.setattr(sys, 'argv', command[1:])
+        return types.SimpleNamespace(returncode=guest.main())
+    monkeypatch.setattr(dispatcher.subprocess, 'run', child)
+    monkeypatch.setattr(host.time, 'sleep', lambda _: dispatcher.execute_job(
+        'controller', folder, private, load(folder / 'job.json')))
+    result = host.send(folder, {'action': 'rollback', 'plan': plan['id'], 'confirm': plan['plan_sha256']})
+    assert result['ok'] is False and result['receipt']['exit_code'] == 2
+    assert result['result_state'] == 'matched'
+    assert result['reason_code'] == 'RECEIPT_EXIT_FAILED'
+    assert result['result']['reason_code'] == 'WORKSPACE_RUN_IN_PROGRESS'
+    assert load(folder / 'pending.json') == result['job']
+    assert vm.events == []

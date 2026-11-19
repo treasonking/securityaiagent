@@ -91,3 +91,13 @@ IPv6가 별도 필드에 포함되면서 기존 단일 `routes` snapshot 계획�
 ```
 
 보고서는 `public/result-*.json`, `public/receipt-*.json`, `public/history-*.json` 등 검토한 결과만 수집한다. 이전 protocol의 `public/history/` 기록은 그대로 보존한다. `release.bundle`, populated 환경파일, private 로그/archive/DB를 커밋하지 않는다. 현재 도구는 서비스 시작 방식을 systemd로 바꾸거나 부팅 자동 실행을 설치하지 않는다. 재부팅 뒤 active release 참조를 읽어 새 계획을 만들 수 있지만 전원 장애 자동 재기동 관리자는 아니다.
+### 수동 rollback 결과 조회
+
+| 관측 | 의미 | 운영자 조치 |
+|---|---|---|
+| `ROLLBACK_REFUSED` 감사 이벤트 | 거절됨: 기존 서비스 유지. 이전 journal 상태와 active release가 보존된다. | `reason_code`와 `previous_status`를 확인한다. 새 소비 이력은 보존하고, 실행 중 작업은 기존 제출의 완료 상태를 확인한다. |
+| `RECOVERING → RECOVERY_REQUIRED` | 복구 필요: 변경을 시작한 뒤 종료·기동·복구 확인 중 실패했다. | 현재 listener와 checkout, `active.json`, 배포 journal, 보존 데이터와 서비스 로그를 대조한다. |
+
+guest에서 `/home/ubuntu/securityaiagent-deployments` 아래의 `history/<plan-id>.json`은 배포 상태, `rollback-audit/<plan-id>/*.json`은 digest가 확인된 수동 rollback의 사전 거절 기록이다. 동일 계획을 여러 번 거절해도 별개 이벤트로 남는다. 이미 `RECOVERY_REQUIRED`였던 배포를 사전 거절하면 그 상태를 유지한다.
+
+호스트에서는 역할별 `pending.json`의 sequence를 확인하고 `public/history-<sequence>.json`의 `receipt.exit_code`, `result_state`, `result.reason_code`를 읽는다. 예를 들어 종료 코드 2이고 결과가 `matched`이면 바깥의 `RECEIPT_EXIT_FAILED`는 프로세스 실패, 안쪽의 `WORKSPACE_RUN_IN_PROGRESS`는 guest가 확인한 거절 원인이다. 회수만 필요하면 `python -m scripts.vm_deploy_host collect --exchange <exchange> --role <role> --sequence <sequence>`를 사용한다. 결과가 누락되거나 일치하지 않으면 서비스 상태를 추정하지 않는다. 실패한 pending은 자동 삭제·재전송되지 않는다.

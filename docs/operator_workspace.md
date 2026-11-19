@@ -94,7 +94,7 @@ npm run build
 
 서비스를 중지하기 전에 source/config/state/report 변경을 재검사한다. admission 경계가 새 preview/submit을 막은 상태에서 다시 검사하고 정상 SIGTERM을 수행한다. 진행 중/대기 중 작업이 있으면 `WORKSPACE_RUN_IN_PROGRESS`로 거절하며 강제 취소해 배포하지 않는다. 이전 workspace 코드에 이 경계가 없으면 실행 중 자동 배포를 거절하므로 먼저 운영자가 정상 종료해야 한다. `WORKSPACE_BUSY`/`WORKSPACE_MAINTENANCE`의 오래된 marker는 자동 제거하지 않는다. 재부팅이나 비정상 종료 후에는 원래 작업·listener·journal을 확인한 다음 운영자가 복구 경계를 결정한다.
 
-배포 후 새로 발급/제출/소비되거나 변경된 workspace 기록이 있으면 rollback을 `WORKSPACE_NEW_HISTORY_ROLLBACK_REFUSED`로 거절한다. 새 release를 유지하고 모든 데이터를 보존한다. 새로운 claim을 이전 state에 자동 병합하거나, 이전 미사용 계획이 다시 실행 가능해진다고 가정하지 않는다. 새 이력이 없는 경우에만 보존된 이전 상태로 복구할 수 있다. **rollback은 새 DB·보고서·실행 데이터를 이전 release에 자동 병합하지 않는다.** 안전한 자동 복구가 불가능하면 journal에 복구 필요 상태가 남는다.
+배포 후 새로 발급/제출/소비되거나 변경된 workspace 기록이 있으면 수동 rollback을 `WORKSPACE_NEW_HISTORY_ROLLBACK_REFUSED`로 거절한다. 기존 서비스와 마지막 배포 상태를 유지하며 별도 감사 파일에 원인을 남긴다. rollback은 새 DB·보고서·실행 데이터를 이전 release에 자동 병합하지 않는다. 실제 변경을 시작한 뒤 복구에 실패한 경우에는 `RECOVERY_REQUIRED` 상태에서 운영자가 점검한다. [상태별 조회 방법](repeatable_vm_deployment.md#수동-rollback-결과-조회)
 
 workspace가 없는 기존 배포는 같은 경로를 유지한다. 별도의 DB migration은 없다. 단일 Controller 프로세스 전제와 새 preview/digest 확인 규칙도 그대로다.
 

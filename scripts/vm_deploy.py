@@ -332,11 +332,13 @@ class VM:
         write(path, record)
         return record
 
-    def stop(self, expected):
+    def stop(self, expected, before_change=None):
         actual = self.listener()
         require(actual == expected, 'LISTENER_CHANGED')
         if not actual:
             return
+        if before_change:
+            before_change()
         os.kill(actual['pid'], signal.SIGTERM)
         for _ in range(100):
             if self.listener() is None:
@@ -354,7 +356,7 @@ class VM:
         finally:
             connection.close()
 
-    def launch(self, root, launcher, log):
+    def launch(self, root, launcher, log, before_change=None):
         require(self.listener() is None, 'PORT_IN_USE')
         if launcher == 'service_config':
             args = [self.python, '-m', 'common.service_config', 'serve', self.service(root), '--env-file', root / ('.env.' + self.role)]
@@ -366,6 +368,8 @@ class VM:
         # Strip application values inherited from the operator terminal.
         clean = {k: v for k, v in os.environ.items() if k in ('PATH', 'HOME', 'LANG', 'LC_ALL', 'USER', 'LOGNAME')}
         with log.open('ab') as stream:
+            if before_change:
+                before_change()
             process = subprocess.Popen([str(x) for x in args], cwd=root, env=clean,
                                        stdin=subprocess.DEVNULL, stdout=stream, stderr=stream, start_new_session=True)
         try:
@@ -481,11 +485,23 @@ class VM:
 
     def recover(self, plan):
         with self.workspace_boundary(plan):
-            if self.role=='controller' and plan.get('new_workspace') is not None:
-                new=Path(plan['checkout'])
-                workspace_files.rollback_safe(plan['before'].get('workspace'),
-                    workspace_files.snapshot(new,env_values(new/'.env.controller')))
-            return self._recover(plan)
+            current = self.recovery_preflight(plan)
+            return self._recover(plan, current)
+
+    def recovery_preflight(self, plan):
+        self.validate_recovery_source(plan)
+        planned = plan.get('new_workspace')
+        if self.role == 'controller' and planned is not None:
+            new = Path(plan['checkout'])
+            current = workspace_files.snapshot(new, env_values(new / '.env.controller'))
+            require(current is not None and all(current[key] == value for key, value in planned.items()
+                    if key != 'state_hashes'), 'RECOVERY_CONFIGURATION_CHANGED')
+            workspace_files.rollback_safe(plan['before'].get('workspace'), current)
+        listener = self.listener()
+        if listener and listener['checkout'] != plan['checkout']:
+            require(listener['checkout'] == plan['before']['checkout'], 'UNKNOWN_LISTENER_NOT_STOPPED')
+            require(plan['before']['listener'] is not None, 'ORIGINAL_STOPPED_STATE_NOT_RESTORED')
+        return listener
 
     @contextlib.contextmanager
     def workspace_boundary(self,plan):
@@ -503,22 +519,24 @@ class VM:
             try: yield
             finally: self._workspace_fenced=False
 
-    def _recover(self, plan):
+    def _recover(self, plan, current, before_change=None):
         old, new = Path(plan['before']['checkout']), Path(plan['checkout'])
-        self.validate_recovery_source(plan)
-        current = self.listener()
         if current and current['checkout'] == str(new):
-            self.stop(current)
-        elif current:
-            require(current['checkout'] == str(old), 'UNKNOWN_LISTENER_NOT_STOPPED')
-        restored = self.listener()
+            self.stop(current, before_change)
+            restored = self.listener()
+            require(restored is None, 'LISTENER_CHANGED')
+        else:
+            restored = self.listener()
+            require(restored == current, 'LISTENER_CHANGED')
         if plan['before']['listener']:
             if not restored:
-                restored = self.launch(old, plan['before']['launcher'], self.state / 'rollback.log')
+                restored = self.launch(old, plan['before']['launcher'], self.state / 'rollback.log', before_change)
             health = self.health()
         else:
             require(restored is None, 'ORIGINAL_STOPPED_STATE_NOT_RESTORED')
             health = {'status': 'originally_stopped'}
+        if before_change:
+            before_change()
         write(self.state / 'active.json', {'checkout': str(old)})
         require(self.network() == plan['before']['network'], 'NETWORK_OR_FIREWALL_CHANGED')
         return {'restored_checkout': str(old), 'health': health, 'new_data_retained_at': str(new / 'data')}
@@ -578,19 +596,41 @@ class VM:
     def rollback(self, identifier, confirmation):
         plan = self.plan_read(identifier, confirmation)
         history = load(self.state / 'history' / (identifier + '.json'))
-        require(history['status'] in ('HEALTHY', 'STOPPING', 'STOPPED', 'BACKED_UP', 'STARTING', 'RECOVERING',
-                                     'RECOVERY_REQUIRED', 'ROLLED_BACK', 'ROLLED_BACK_AFTER_FAILURE'), 'INVALID_RECOVERY_STATE')
-        # Refuse to roll back over a different, newer deployment.
-        active = self.state / 'active.json'
-        if active.exists():
-            require(load(active)['checkout'] in (plan['checkout'], plan['before']['checkout']), 'NEWER_DEPLOYMENT_ACTIVE')
-        self.journal(plan, 'RECOVERING')
+        previous_status = history['status']
+        started = False
+
+        def begin_changes():
+            nonlocal started
+            if not started:
+                self.journal(plan, 'RECOVERING')
+                started = True
+
         try:
-            restored = self.recover(plan)
+            require(previous_status in ('HEALTHY', 'STOPPING', 'STOPPED', 'BACKED_UP', 'STARTING',
+                    'RECOVERING', 'RECOVERY_REQUIRED', 'ROLLED_BACK', 'ROLLED_BACK_AFTER_FAILURE'),
+                    'INVALID_RECOVERY_STATE')
+            with self.workspace_boundary(plan):
+                active = self.state / 'active.json'
+                if active.exists():
+                    require(load(active)['checkout'] in (plan['checkout'], plan['before']['checkout']),
+                            'NEWER_DEPLOYMENT_ACTIVE')
+                new = Path(plan['checkout'])
+                require(file_hash(new / ('.env.' + self.role)) == plan['new_environment_sha256'] and
+                        tree_hashes(new / 'runtime-config') == plan['new_preserved_config_hashes'],
+                        'RECOVERY_CONFIGURATION_CHANGED')
+                current = self.recovery_preflight(plan)
+                restored = self._recover(plan, current, begin_changes)
             return self.journal(plan, 'ROLLED_BACK', recovery=restored)
-        except Exception:
-            self.journal(plan, 'RECOVERY_REQUIRED')
-            raise DeployError('RECOVERY_REQUIRED') from None
+        except Exception as exc:
+            if started:
+                self.journal(plan, 'RECOVERY_REQUIRED')
+                raise DeployError('RECOVERY_REQUIRED') from None
+            known = isinstance(exc, (DeployError, workspace_files.WorkspaceDeploymentError, WorkspaceBusy))
+            reason = str(exc) if known else 'ROLLBACK_PREFLIGHT_FAILED'
+            write(self.state / 'rollback-audit' / identifier / (uuid.uuid4().hex + '.json'),
+                  {'event': 'ROLLBACK_REFUSED', 'time': time.time(), 'plan_id': identifier,
+                   'previous_status': previous_status, 'reason_code': reason})
+            raise DeployError(reason) from None
 
 
 def main():
