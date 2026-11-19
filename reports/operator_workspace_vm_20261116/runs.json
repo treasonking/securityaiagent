@@ -1,0 +1,132 @@
+[
+  {
+    "run_id": "run_c46d7534010c4602a8a589c3c40c7c39",
+    "plan_id": "opplan_412909493dbb4718a7bd2a9126ff1863",
+    "plan_sha256": "85d0da60cf588ede0fc130acfb257bfbd1464828657714a670798bf9e27a155a",
+    "transport": "mcp",
+    "scope": {
+      "profile_id": "operator-prepared-resources",
+      "revision": 1,
+      "snapshot_sha256": "bcec10c49d544cf2f853583855665de4767a7378996ce4364efedeb0335074c7",
+      "effective_limits": {
+        "max_requests": 11,
+        "max_tool_calls": 12,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 2.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      }
+    },
+    "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+    "replay": {
+      "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "run_id": "run_c46d7534010c4602a8a589c3c40c7c39",
+      "verdict_matches": true,
+      "evidence_count": 11
+    },
+    "usage": {
+      "http_requests": 11,
+      "tool_calls": 12
+    },
+    "evidence_count": 11,
+    "target_counts": [
+      {
+        "pid": 4528,
+        "started_at": "2026-11-16T06:49:44.440839+00:00",
+        "received_http_requests": 2
+      },
+      {
+        "pid": 4528,
+        "started_at": "2026-11-16T06:49:44.440839+00:00",
+        "received_http_requests": 2
+      },
+      {
+        "pid": 4528,
+        "started_at": "2026-11-16T06:49:44.440839+00:00",
+        "received_http_requests": 13
+      }
+    ],
+    "duplicate": "PLAN_ALREADY_SUBMITTED",
+    "http_status": 409,
+    "download_sha256": {
+      "md": "58ac62061bec2cbd30d24df97abd7961f08090bf8eb19f118fab18608609e03b",
+      "json": "469b25e62cc39bb02f804ff2ba5133383ec6e30a109572246940e8ef263b9ded"
+    },
+    "controller_version": {
+      "workspace": "operator-workspace-v1",
+      "component": "Controller",
+      "commit": "97d10e25298261775bc4423dab1d6226ed22a156",
+      "working_tree_dirty": true,
+      "workspace_source_sha256": "fa2f4bfccf3d2e301b277e487bf89df39cc74546e91fc0a34f9c6986207206a7"
+    }
+  },
+  {
+    "run_id": "run_2bd371dd9a9a4b06b291da4f642c79eb",
+    "plan_id": "opplan_8e03e86c696d4f39b33afaf3d12e9f78",
+    "plan_sha256": "a9f78a1c093e8dabfde19c9ff94737198e0084fe1d709a5d0d67b923f944e9a9",
+    "transport": "function",
+    "scope": {
+      "profile_id": "operator-prepared-resources",
+      "revision": 1,
+      "snapshot_sha256": "bcec10c49d544cf2f853583855665de4767a7378996ce4364efedeb0335074c7",
+      "effective_limits": {
+        "max_requests": 11,
+        "max_tool_calls": 12,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 2.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      }
+    },
+    "verdict": "VULNERABLE",
+    "replay": {
+      "verdict": "VULNERABLE",
+      "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "run_id": "run_2bd371dd9a9a4b06b291da4f642c79eb",
+      "verdict_matches": true,
+      "evidence_count": 11
+    },
+    "usage": {
+      "http_requests": 11,
+      "tool_calls": 12
+    },
+    "evidence_count": 11,
+    "target_counts": [
+      {
+        "pid": 4317,
+        "started_at": "2026-11-16T06:42:57.104545+00:00",
+        "received_http_requests": 2
+      },
+      {
+        "pid": 4317,
+        "started_at": "2026-11-16T06:42:57.104545+00:00",
+        "received_http_requests": 2
+      },
+      {
+        "pid": 4317,
+        "started_at": "2026-11-16T06:42:57.104545+00:00",
+        "received_http_requests": 13
+      }
+    ],
+    "duplicate": "PLAN_ALREADY_SUBMITTED",
+    "http_status": 409,
+    "download_sha256": {
+      "md": "a43c184116819e68cf03fa61760c28bd1516afd1cae338835d95bb432b86896f",
+      "json": "6a8ef9f028cd511481d675dcbe8855496ef0b1824b48cd1d015f73fbd164ac2f"
+    },
+    "controller_version": {
+      "workspace": "operator-workspace-v1",
+      "component": "Controller",
+      "commit": "97d10e25298261775bc4423dab1d6226ed22a156",
+      "working_tree_dirty": true,
+      "workspace_source_sha256": "fa2f4bfccf3d2e301b277e487bf89df39cc74546e91fc0a34f9c6986207206a7"
+    }
+  }
+]

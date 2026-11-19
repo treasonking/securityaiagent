@@ -79,3 +79,51 @@ npm run build
 출력 디렉터리는 새 경로여야 한다. 브라우저 모드의 고정 파일 제어는 **테스트 helper만** 읽는 `command.json`에 `{"action":"measure"}`, `fixed`, `policy_change`, `sync_profile`, `stop`을 순차 기록한다. 이는 UI/API/모델 도구가 아니며 같은 기존 첨부파일 API와 임시 Worker/Controller만 제어한다. `stop`은 정제 산출물 내보내기와 비밀값 대조 후 listener/임시 DB/인증서/키를 정리한다. 공개할 것은 `public/`의 검사된 산출물뿐이다.
 
 실제 브라우저에서 function 취약 실행, MCP 수정 실행, 새로고침/기존 결과 재열기, 다운로드, 정책 변경 거절, 긴 증거의 접힘/내부 스크롤 및 기존 채팅 이동을 확인했다. 실제 Controller/Worker TCP와 Target TLS socket을 사용했으며 `.test` DNS는 코드 경계에서 주입했다. 운영체제 DNS, 외부 서비스, VM 배포, 다중 사용자/RBAC는 검증하지 않았다. API 응답 유실 회귀는 POST 응답 본문을 버린 뒤 ID로 복구하는 시뮬레이션이며 실제 회선 단절을 주장하지 않는다. 상세 실행 결과와 오류/수정 이력은 `reports/operator_workspace_20261115/`에 기록한다.
+
+## VM 업데이트의 설정·이력 보존
+
+`scripts.vm_deploy`는 workspace 설정이 있는 Controller에서 다음을 배포 계획의 hash에 포함한다.
+
+- `OPERATOR_WORKSPACE_CONFIG`와 각 프로필의 `source_path`/`registry_path` 파일.
+- `OPERATOR_WORKSPACE_STATE_PATH` 아래 issued/claimed 계획, bindings, 제출 receipts.
+- 관련 `reports/runs` 파일과 기존 역할별 환경·DB·네트워크 관측.
+
+환경의 상대 경로는 기존 checkout 기준, 프로필의 상대 경로는 workspace JSON의 디렉터리 기준으로 해석한다. 참조된 JSON 파일만 새 release의 `runtime-config/operator-workspace`로 복사하고 새 workspace JSON에서 상대 참조를 다시 만든다. 환경파일은 새 release에 파생본을 쓴다. 원본 파일을 수정하거나 이전 release의 설정을 조용히 계속 참조하지 않는다.
+
+현재 지원 범위는 checkout 내부의 일반 JSON 참조 파일과 `data/` 아래 workspace state다. 외부 경로, `.git`/`.venv`/`node_modules` 참조, symlink/junction, 예상하지 않은 state 파일은 거절한다. 외부 설정이 필요한 운영자는 해당 서비스가 정지한 상태에서 별도로 검토한 내부 사본을 준비하고, 수정된 설정을 기준으로 새 inspect/plan을 만들어야 한다. 배포 도구가 외부 파일을 자동으로 따라가거나 복사하지 않는다.
+
+서비스를 중지하기 전에 source/config/state/report 변경을 재검사한다. admission 경계가 새 preview/submit을 막은 상태에서 다시 검사하고 정상 SIGTERM을 수행한다. 진행 중/대기 중 작업이 있으면 `WORKSPACE_RUN_IN_PROGRESS`로 거절하며 강제 취소해 배포하지 않는다. 이전 workspace 코드에 이 경계가 없으면 실행 중 자동 배포를 거절하므로 먼저 운영자가 정상 종료해야 한다. `WORKSPACE_BUSY`/`WORKSPACE_MAINTENANCE`의 오래된 marker는 자동 제거하지 않는다. 재부팅이나 비정상 종료 후에는 원래 작업·listener·journal을 확인한 다음 운영자가 복구 경계를 결정한다.
+
+배포 후 새로 발급/제출/소비되거나 변경된 workspace 기록이 있으면 rollback을 `WORKSPACE_NEW_HISTORY_ROLLBACK_REFUSED`로 거절한다. 새 release를 유지하고 모든 데이터를 보존한다. 새로운 claim을 이전 state에 자동 병합하거나, 이전 미사용 계획이 다시 실행 가능해진다고 가정하지 않는다. 새 이력이 없는 경우에만 보존된 이전 상태로 복구할 수 있다. **rollback은 새 DB·보고서·실행 데이터를 이전 release에 자동 병합하지 않는다.** 안전한 자동 복구가 불가능하면 journal에 복구 필요 상태가 남는다.
+
+workspace가 없는 기존 배포는 같은 경로를 유지한다. 별도의 DB migration은 없다. 단일 Controller 프로세스 전제와 새 preview/digest 확인 규칙도 그대로다.
+
+### 처음 준비하는 고정 실습 프로필
+
+운영자 전용 `scripts.vm_deploy_host prepare-workspace --exchange <전달경로>`는 이미 등록된 HTTP `10.78.0.30:8080`, cookie, 두 계정·두 tickets 리소스만 준비한다. 기존 예제 명세/registry와 같은 내용인지 guest에서 재확인한다. 새 비밀번호/proof는 private 전달 파일에만 저장하며 Controller 로그인 키와 Worker token은 기존 환경에서 보존한다. 기존 Target DB를 사용하는 서비스를 수정하는 대신 별도 `operator-target` 환경과 기존 독립 API launcher를 새 release에서 사용한다. DNS/CA/HTTPS를 추가하지 않는다.
+
+이 설정은 자동 기본값이 아니다. 명시적으로 준비한 `workspace-setup`의 파일 hash가 계획에 들어가며, 준비 파일이 바뀌면 apply 전에 새 계획을 요구한다. `prepare-fixed`는 준비된 동일 비밀값을 유지하고 Target의 시험 모드만 fixed로 바꾼다. 이 변경도 새 plan/digest/apply와 정상 재시작을 거친다. 일반 업데이트에서는 새 setup을 넣지 않고 현재 프로필/환경을 보존한다.
+
+### 고정 역할 서비스 명령
+
+새 active checkout에서 `python -m scripts.vm_service status`로 고정 역할 주소의 health를 확인한다. `start`, `stop`, `restart`에는 확인한 40자리 `--expected` commit이 필요하며, 실제 hostname의 등록 역할과 active checkout만 사용한다. 임의 shell/URL/port를 받지 않는다. Controller restart도 workspace가 idle일 때만 허용하고 기존 DB·journal·reports를 그대로 사용한다. 이 명령은 systemd나 부팅 자동 실행을 설치하지 않는다.
+
+### 2026-11-16 적용한 실습 VM 사용법
+
+세 VM에 `ubuntu`로 로그인한다. 각 VM의 active checkout은 `/home/ubuntu/securityaiagent-deployments/active.json`의 `checkout` 값이다. 11월 16일 최종 Controller는 `releases/f64a9a332e04447b8fd31167c62d7a43`, Worker는 `releases/582d58d5c84a4859b358ec04ec3b4dc4`, fixed Target은 `releases/2c6a3ad1c48040278e8dbcf52445e027`이었다. 세 경로의 상위 디렉터리는 `/home/ubuntu/securityaiagent-deployments`다.
+
+재부팅 후 Target → Worker → Controller 순서로 각 VM에서 실행한다. 이미 서비스가 실행 중이면 먼저 status로 확인한다. sudo 인증은 기존 방화벽을 읽는 데 사용한다.
+
+```bash
+sudo -v
+cd "$(python3 -c 'import json; print(json.load(open("/home/ubuntu/securityaiagent-deployments/active.json"))["checkout"])')"
+expected=97d10e25298261775bc4423dab1d6226ed22a156
+.venv/bin/python -m scripts.vm_service start --expected "$expected"
+.venv/bin/python -m scripts.vm_service status
+```
+
+호스트에서 [실습 UI](http://192.168.56.10:8000/)를 열어 기존 Controller 접근 토큰으로 인증한다. 준비된 프로필을 선택하고 preview의 대상과 계획을 확인한 뒤 실행한다. 제출 응답이 끊기면 **기존 상태 조회**에서 해당 제출을 연다. 기존 검사와 보고서는 **저장된 검사**에서 다시 열 수 있다.
+
+종료 시 진행 중인 제출이 끝났는지 확인한다. Controller → Worker → Target 순으로 위와 같은 checkout에서 `.venv/bin/python -m scripts.vm_service stop --expected "$expected"`를 실행한다. 다음 기동에도 같은 start 절차를 사용한다.
+
+업데이트할 때는 새 exchange에 오프라인 bundle을 준비하고 역할별 inspect에서 관측한 commit을 plan의 expected로 지정한다. 프로필이 이미 구성된 일반 업데이트는 기존 설정을 승계한다. 새 release 경로, 참조 파일 해시, state 및 보고서 목록을 검토한 뒤 해당 plan ID와 digest로 apply한다. 복구할 때도 원래 plan의 ID와 digest를 사용한다. 결과가 누락되면 같은 sequence의 receipt와 journal을 먼저 조회한다. [배포 절차와 관측 결과](../reports/operator_workspace_vm_20261116/README.md)
