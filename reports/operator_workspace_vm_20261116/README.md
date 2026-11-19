@@ -22,4 +22,4 @@ Target → Worker → Controller 순으로 배포했고 수정 모드 전환 때
 - 11월 16일 VM 재부팅으로 임시 공유가 해제됐다. 공유 복원 후 기존 sequence를 회수했다. 세 초기 plan이 exit 2로 실패했으며 새 release를 적용한 서비스는 없었다. guest에서 bundle은 읽혔지만 새 setup 파일을 열 때 errno 71이 발생했다. 호스트의 새 setup 디렉터리에서 VirtualBox 실행 사용자의 읽기 권한이 빠져 있었다. 실패 receipt와 journal을 확인하고 해당 권한만 보완한 뒤 새 plan 세 개를 발급했다.
 - 실제 VM에서는 신규 프로필 배포와 두 실행 후 정상 재시작까지 검증했다. 기존 workspace 이력이 있는 release의 교체, 이력이 바뀐 release의 rollback 거절, 링크 및 경로 변경 거절은 로컬 회귀에서 검증했다. 실 VM rollback과 긴 증거 펼침 상태의 화면 배치는 미검증이다.
 - 로컬에서 `.\.venv\Scripts\python.exe -m pytest`가 937 passed, 41 warnings로 완료됐다. 최초 중단된 실행은 제외했다. frontend의 `npm test`는 16 passed, `npm run build`는 성공했다.
-- 11월 19일 세 VM이 실행 중이었으나 Controller health 연결은 거절됐다. 서비스는 수동 시작 방식이다. 11월 16일 health는 당시 배포 결과다.
+- 11월 19일 재부팅 후 최초 Controller 연결은 거절됐다. 이후 같은 UI 주소의 health가 `ok`로 복구됐고 인증된 profiles에서 `vm-prepared-resources`가 준비 상태였다. 기존 두 run의 저장 증거를 다시 조회하고 Markdown·JSON을 다운로드해 11월 16일 보관한 네 파일과 바이트 단위로 일치함을 확인했다. 서비스 시작 원인과 부팅 자동 시작은 확인하지 않았다.
