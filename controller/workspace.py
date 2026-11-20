@@ -22,7 +22,7 @@ from common.workspace_lifecycle import admission, WorkspaceBusy
 from controller.candidate_execution import CandidateError
 from controller.candidates import analyse, read_local, unique, fail_constant
 from controller.operator_execution import ResourceHistory, execute_plan, parse_plan, preview, validate_execution
-from verifier.operator import replay
+from verifier.operator import replay_loaded
 
 PLAN = re.compile(r'opplan_[0-9a-f]{32}')
 RUN = re.compile(r'run_[0-9a-f]{32}')
@@ -46,6 +46,7 @@ def diagnostic(code):
         'PLAN_CONFIRMATION_MISMATCH': '확인한 계획 digest가 다릅니다. 새 preview를 확인해 주세요.',
         'WORKER_POLICY_CHANGED': 'Worker 정책이 바뀌었습니다. 새 preview가 필요합니다.',
         'INTERRUPTED': 'Controller 실행이 중단됐습니다. 기존 증거를 확인하고 자동 재실행하지 마세요.',
+        'SAVED_INPUT_UNREADABLE': '검증 불가 · 저장된 보고서, 계약 또는 증거를 읽을 수 없습니다.',
         'NOT_FOUND': '요청한 기록을 찾을 수 없습니다.',
         'WORKSPACE_MAINTENANCE': '배포 준비 중입니다. 새 제출을 중지하고 기존 검사 이력을 확인해 주세요.',
         'WORKSPACE_BUSY': '다른 계획 작업이 진행 중입니다. 기존 상태를 먼저 확인해 주세요.',
@@ -60,6 +61,18 @@ def diagnostic(code):
 
 def safe_code(value):
     return value if isinstance(value,str) and re.fullmatch(r'[A-Z_]{1,64}',value) else 'WORKSPACE_OPERATION_FAILED'
+
+
+def report_conclusion(replayed):
+    if replayed is None:
+        return dict(state='unavailable', verdict='INCONCLUSIVE', label='검증 불가',
+                    reason_code='SAVED_INPUT_UNREADABLE')
+    verdict = replayed['verdict']
+    reason = replayed['reason_code']
+    if not replayed['verdict_matches'] or reason == 'REPORT_CONTRACT_MISMATCH':
+        return dict(state='withheld', verdict='INCONCLUSIVE', label='판정 보류 / 증거 불일치',
+                    reason_code=reason if verdict == 'INCONCLUSIVE' else 'VERDICT_MISMATCH')
+    return dict(state='consistent', verdict=verdict, label=verdict, reason_code=reason)
 
 
 class Profile(FrozenModel):
@@ -266,14 +279,34 @@ class Workspace:
         files=sorted((self.root/'jobs').glob('opplan_*.json'),key=lambda p:p.stat().st_mtime,reverse=True)[:100]
         return [self.job(p.stem) for p in files if PLAN.fullmatch(p.stem)]
 
-    def run_view(self,run_id):
-        if not RUN.fullmatch(run_id): raise WorkspaceError('NOT_FOUND',404)
-        folder=checked(self.reports,run_id)
-        report=read_json(self.reports,run_id,'report.json')
-        if report.get('schema_version')!='operator-report-v1' or report.get('run_id')!=run_id:
-            raise WorkspaceError('NOT_FOUND',404)
-        policy=ResourcePolicy.model_validate(read_json(self.reports,run_id,'verification_contract.json'))
-        evidence=[ResourceEvidence.model_validate(x).model_dump(mode='json') for x in read_json(self.reports,run_id,'evidence.json')]
+    def _report(self, run_id):
+        if not RUN.fullmatch(run_id) or not checked(self.reports, run_id).is_dir():
+            raise WorkspaceError('NOT_FOUND', 404)
+        try:
+            report = read_json(self.reports, run_id, 'report.json')
+        except WorkspaceError:
+            raise WorkspaceError('SAVED_INPUT_UNREADABLE') from None
+        if not isinstance(report, dict):
+            raise WorkspaceError('SAVED_INPUT_UNREADABLE')
+        if report.get('schema_version') != 'operator-report-v1' or report.get('run_id') != run_id:
+            raise WorkspaceError('NOT_FOUND', 404)
+        return report
+
+    def run_view(self, run_id):
+        return self._view(run_id, self._report(run_id))
+
+    def _view(self, run_id, report):
+        try:
+            return self._project(run_id, report)
+        except (ValueError, OSError, TypeError, KeyError, AttributeError):
+            raise WorkspaceError('SAVED_INPUT_UNREADABLE') from None
+
+    def _project(self, run_id, report):
+        policy = ResourcePolicy.model_validate(read_json(self.reports, run_id, 'verification_contract.json'))
+        rows = read_json(self.reports, run_id, 'evidence.json')
+        if not isinstance(rows, list):
+            raise WorkspaceError('SAVED_INPUT_UNREADABLE')
+        evidence = [ResourceEvidence.model_validate(row) for row in rows]
         connections=[]
         if checked(self.reports,run_id,'connection_observations.json').exists():
             connections=[DomainObservation.model_validate(x).model_dump(mode='json') for x in read_json(self.reports,run_id,'connection_observations.json')]
@@ -281,18 +314,19 @@ class Workspace:
         status=report.get('status')
         if verdict not in {'VULNERABLE','BLOCKED_BY_ACCESS_CONTROL','INCONCLUSIVE'} or status not in FINAL:
             raise WorkspaceError('RESULT_NOT_READY')
-        rerun=replay(folder)
+        rerun=replay_loaded(report, policy, evidence)
         reason=safe_code(report.get('reason_code'))
         version={'workspace':'legacy-cli-record','commit':'not-recorded'}
         link=read_json(self.reports,run_id,'candidate_execution.json') if checked(self.reports,run_id,'candidate_execution.json').exists() else {}
         if PLAN.fullmatch(link.get('plan_id','')):
             job=self.job(link['plan_id'],missing_ok=True)
             if job and job.get('run_id')==run_id: version=job['version']
-        return dict(run_id=run_id,status=status,verdict=verdict,reason_code=reason,
+        return dict(conclusion=report_conclusion(rerun),run_id=run_id,status=status,verdict=verdict,reason_code=reason,
             message=diagnostic(reason) if verdict=='INCONCLUSIVE' else None,
             started_at=report.get('started_at'),finished_at=report.get('finished_at'),transport=report.get('tool_transport'),
             policy=public_policy(policy),actual_scope=report.get('scope_policy'),usage=report['limits_used'],
-            sequence=public_sequence(policy),evidence=evidence,connections=connections,replay=rerun,
+            sequence=public_sequence(policy),evidence=[e.model_dump(mode='json') for e in evidence],
+            connections=connections,replay=rerun,
             version=version,
             model_candidates=[],verification_basis='operator_http_observation')
 
@@ -300,26 +334,39 @@ class Workspace:
         result=[]
         for file in sorted(self.reports.glob('run_*/report.json'),key=lambda p:p.stat().st_mtime,reverse=True)[:200]:
             try:
-                row=self.run_view(file.parent.name)
-                result.append({k:row[k] for k in ('run_id','status','verdict','started_at','transport')})
-            except Exception: continue  # Other/unfinished/legacy-chat reports remain in the existing UI.
+                report = self._report(file.parent.name)
+            except WorkspaceError:
+                continue  # Only identifiable operator reports belong in this list.
+            row = {k: report.get(k) for k in ('run_id', 'status', 'verdict', 'started_at')}
+            row['transport'] = report.get('tool_transport')
+            try:
+                row['conclusion'] = self._view(file.parent.name, report)['conclusion']
+            except WorkspaceError:
+                row['conclusion'] = report_conclusion(None)
+            result.append(row)
         return result
 
     def reproduction(self,run_id):
         data=self.run_view(run_id)
         data['credential_placeholders']={'user-a':'<ACCOUNT_A_LOGIN> / <ACCOUNT_A_PASSWORD>',
             'user-b':'<ACCOUNT_B_LOGIN> / <ACCOUNT_B_PASSWORD>','session':'<COOKIE_OR_BEARER_FROM_LOGIN>'}
-        data['impact']=('계정 A의 교차 요청에서 준비된 비공개 리소스 B의 합성 proof가 일치했습니다.' if data['verdict']=='VULNERABLE'
-            else '관측한 교차 요청은 명시적으로 거절됐습니다.' if data['verdict']=='BLOCKED_BY_ACCESS_CONTROL'
+        current = data['conclusion']
+        data['impact']=('계정 A의 교차 요청에서 준비된 비공개 리소스 B의 합성 proof가 일치했습니다.' if current['verdict']=='VULNERABLE'
+            else '관측한 교차 요청은 명시적으로 거절됐습니다.' if current['verdict']=='BLOCKED_BY_ACCESS_CONTROL'
             else '접근 통제를 확정할 수 없습니다. 실패 사유와 부분 증거를 확인하세요.')
         data['limitations']='두 준비 계정·두 리소스·해당 관측 시각에 한정합니다. 실제 고객 정보 유출, 금전 피해, 심각도 또는 사이트 전체 안전성을 주장하지 않습니다.'
         data['recommendation']='서버에서 매 리소스 요청의 인증 주체와 소유권/프로젝트 권한을 검사하고 명시적으로 거절하세요.'
+        if current['state'] == 'withheld':
+            explanation = f"{current['label']} ({current['reason_code']})"
+            data['impact'] = explanation + ' · 현재 저장 증거로 영향을 확정할 수 없습니다.'
+            data['recommendation'] = explanation + ' · 보고서와 저장 증거의 대응 관계를 확인하세요.'
+        data['original_verdict'] = {'verdict': data['verdict'], 'reason_code': data['reason_code']}
         return data
 
     def markdown(self,run_id):
         d=self.reproduction(run_id)
         sections=[f'# 접근 통제 재현 보고서 {run_id}',
-            f"## 1. 검사 요약과 판정\n\n{d['status']} / {d['verdict']}\n\n사유: {d['reason_code']} · {d['message'] or d['impact']}",
+            f"## 1. 검사 요약과 판정\n\n실행 상태: {d['status']} / 현재 결론: {d['conclusion']['label']}\n\n사유: {d['conclusion']['reason_code']} · {d['impact']}",
             f"## 2. 대상·관측 시각·범위\n\n{d['policy']['target_id']} · {d['policy']['origin']}\n\n{d['started_at']} → {d['finished_at']}\n\n정책: `{json.dumps(d['policy']['scope_policy'],ensure_ascii=False)}`",
             '## 3. 계정·리소스 준비\n\n서버 측 등록 프로필의 두 계정과 소유 리소스만 사용합니다. 인증정보는 운영자가 별도로 준비합니다.\n\n'+json.dumps(d['credential_placeholders'],ensure_ascii=False),
             '## 4. 요청 순서와 재현 절차\n\n등록 프로필 선택 → 새 preview → 아래 순서·정책 확인 → 현재 digest 명시적 승인 → 실행 → 저장 증거 재판정. 임의 URL이나 경로를 추가하지 않습니다.\n\n'+ '\n'.join(f"{s['index']}. {s['account_ref']} · {s['method']} `{s['path']}`" for s in d['sequence']),
@@ -327,5 +374,5 @@ class Workspace:
             '## 6. 근거 evidence와 정제 관측\n\n'+ '\n'.join(f"- `{e['evidence_id']}`: {e['account_ref']} {e['method']} `{e['path']}` → {e['status_code']} / {e['reason_code']}" for e in d['evidence'])+'\n\nDNS/TLS 관측(접근 통제 판정 입력 아님):\n\n```json\n'+json.dumps(d['connections'],ensure_ascii=False,indent=2)+'\n```',
             f"## 7. 확인된 영향과 해석의 한계\n\n{d['impact']}\n\n{d['limitations']}",
             f"## 8. 수정 권고\n\n{d['recommendation']}",
-            '## 9. 재판정과 실행 버전\n\n'+json.dumps({'replay':d['replay'],'version':d['version']},ensure_ascii=False)+'\n\n원본 증거를 수정하지 않고 만든 파생 보고서입니다.']
+            '## 9. 재판정과 실행 버전\n\n'+f"최초 판정(이력): {d['verdict']} · {d['reason_code']}\n\n"+json.dumps({'replay':d['replay'],'version':d['version']},ensure_ascii=False)+'\n\n원본 증거를 수정하지 않고 만든 파생 보고서입니다.']
         return '\n\n'.join(sections)+'\n'

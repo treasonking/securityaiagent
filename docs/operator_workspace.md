@@ -60,6 +60,10 @@ plan/run ID를 정규식으로 검증한다. 고정 파일명과 root containmen
 
 ## 보고서와 과거 기록
 
+목록·상세·JSON의 현재 표시 기준은 `conclusion`이다. `status`는 실행 상태, 기존 `verdict`와 `reason_code`는 최초 판정과 당시 사유, `replay`는 조회한 증거의 재판정이다. 따라서 실행이 `COMPLETED`여도 현재 결론은 보류될 수 있다. JSON 다운로드에서는 `original_verdict`로도 최초 판정 이력을 읽을 수 있다.
+
+최초 판정과 재판정이 다르거나 증거와 보고서 계약이 맞지 않으면 `conclusion.state=withheld`, `conclusion.verdict=INCONCLUSIVE`와 함께 ‘판정 보류 / 증거 불일치’를 표시한다. 필수 파일을 읽지 못하면 상세 조회와 다운로드가 `SAVED_INPUT_UNREADABLE` 오류를 반환한다. 목록에서 보고서를 operator run으로 식별할 수 있으면 ‘검증 불가’로 남긴다. 판정 일치는 현재 저장된 입력에 대한 비교이며 파일 작성자의 신원이나 암호학적 무결성을 보증하지 않는다.
+
 기존 저장 `operator-report-v1`, contract/evidence/connection 관측을 읽어 verifier replay를 실행한다. Markdown은 요약, 대상/시각/범위, 준비 조건, 요청 순서, 기대와 관측, evidence ID, 영향/한계, 권고, 재판정/버전의 9개 절로 구성한다. JSON에도 같은 정제된 데이터와 인증 placeholder를 제공한다. LLM을 호출하지 않고 원본 증거를 변경하지 않는다.
 
 합성 proof의 일치는 실제 고객 데이터 유출로 표현하지 않는다. 심각도·금전 피해·사이트 전체 안전성을 생성하지 않는다. 과거 CLI operator 보고서에 실행 버전이 없으면 `not-recorded`로 표시한다. legacy documents/records 및 로그 기반 보고서는 기존 채팅 조회 경로를 유지한다. 기존 기록을 새 형식으로 덮어쓰지 않는다.

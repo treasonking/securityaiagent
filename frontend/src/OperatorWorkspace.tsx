@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { ResultHeading, SavedRunButton } from './current-verdict.js';
 import * as api from './operator-api';
 import { canExecute, statusLabel, terminal } from './operator-state.js';
 
@@ -43,9 +44,19 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
   }
   async function openResult(id: string) {
     active.current=id;
+    setResult(null);
     sessionStorage.setItem('operator-run',id);
     try { const r=await api.result(id); if(active.current===id) { setResult(r);setRefreshError(''); } }
-    catch { setRefreshError('결과 갱신에 실패했습니다. 검사 실패로 판정한 것이 아닙니다. 상태 조회를 다시 시도하세요.'); }
+    catch (cause) {
+      if (active.current !== id) return;
+      setResult(null);
+      if (cause instanceof api.OperatorError && cause.code === 'SAVED_INPUT_UNREADABLE') {
+        setRefreshError(cause.message);
+        await history().catch(() => setRuns([]));
+      } else {
+        setRefreshError('결과 갱신에 실패했습니다. 기존 상태를 다시 조회하세요.');
+      }
+    }
   }
   function acceptPlan(next: api.Plan) {
     const identity=next.plan_id+next.plan_sha256;
@@ -109,7 +120,7 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
         <p className="operator-note">서버 측 등록만 허용합니다. 준비 상태 조회는 Worker 정책 조회이며 Target 로그인·접속 성공 확인이 아닙니다.</p>
         {notice && <p>{notice}</p>}{profile && <p className={profile.ready?'operator-ready':'error'}>{profile.ready?'설정 준비됨 · Target 미접속':profile.message}</p>}
         <h2>최근 제출</h2><div className="operator-history">{jobs.map(j=><button key={j.plan_id} disabled={busy} onClick={()=>{setConfirmed(false);void recover(j.plan_id,true);}}>{statusLabel(j.status)} · {j.plan_id.slice(-8)}<small>{j.run_id?.slice(-8) || '실행 전'}</small></button>)}</div>
-        <h2>저장된 검사</h2><div className="operator-history">{runs.map(r=><button key={r.run_id} onClick={()=>void openResult(r.run_id)}>{r.verdict}<small>{r.transport} · {r.run_id.slice(-8)}</small></button>)}</div>
+        <h2>저장된 검사</h2><div className="operator-history">{runs.map(r=><SavedRunButton key={r.run_id} run={r} onOpen={openResult}/>)}</div>
       </aside>
       <section className="operator-content" aria-label="계획과 결과">
         {error && <p className="error" role="alert">{error}</p>}{refreshError && <p className="warning" role="alert">{refreshError}</p>}
@@ -119,9 +130,9 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
           <Policy value={plan.policy}/><h3>수행할 요청 순서</h3><ol className="operator-sequence">{plan.sequence.map(s=><li key={s.index}><strong>{s.account_ref}</strong> · {s.operation} <code>{s.method} {s.path}</code></li>)}</ol><p>{plan.interpretation}</p>
           {plan.job && <div className="operator-job" role="status"><strong>실행 상태: {statusLabel(plan.job.status)}</strong><p>{plan.job.run_id || '아직 run이 생성되지 않았습니다.'}</p>{plan.job.message && <p>{plan.job.message}</p>}</div>}
         </section>}
-        {result && <section className="operator-result"><h2>저장된 검사 결과</h2><div className="operator-section-heading"><strong>실행: {statusLabel(result.status)}</strong><strong>Verifier: {result.verdict}</strong></div><p>{result.run_id} · {result.transport}</p>{result.message && <p className="warning">{result.message}</p>}<p>원인: {result.reason_code}</p>
+        {result && <section className="operator-result"><h2>저장된 검사 결과</h2><ResultHeading run={result}/><p>{result.run_id} · {result.transport}</p>{result.conclusion?.state === 'consistent' && result.message && <p>{result.message}</p>}
           <p>실제 Worker 사용량: HTTP {result.usage.http_requests} / 도구 {result.usage.tool_calls} · 설정 최대: HTTP {result.policy.scope_policy.effective_limits.max_requests} / 도구 {result.policy.scope_policy.effective_limits.max_tool_calls}</p><p>모델 후보 없음 · 고정 mock 실행 · HTTP 증거 기반 판정</p>
-          <p>저장 증거 재판정: {result.replay.verdict} · {result.replay.verdict_matches?'최초 판정과 일치':'불일치 — 기록 검토 필요'}</p><p className="operator-note">이번 두 계정·두 리소스의 관측 범위에 한정됩니다. INCONCLUSIVE는 안전 판정이 아닙니다.</p>
+          <p>최초 판정(이력): {result.verdict} · {result.reason_code}</p><p>저장 증거 재판정: {result.replay.verdict} · {result.replay.reason_code} · {result.replay.verdict_matches?'최초 판정과 일치':'불일치 — 기록 검토 필요'}</p><p className="operator-note">이번 두 계정·두 리소스의 관측 범위에 한정됩니다. INCONCLUSIVE는 안전 판정이 아닙니다.</p>
           <div className="operator-downloads"><a href={api.downloadUrl(result.run_id,'markdown')}>Markdown 보고서 다운로드</a><a href={api.downloadUrl(result.run_id,'json')}>JSON 보고서 다운로드</a></div>
           <details><summary>HTTP 증거 ({result.evidence.length})</summary><div className="operator-detail-scroll">{result.evidence.map(e=><article key={e.evidence_id}><code>{e.evidence_id}</code><p>{e.account_ref} · {e.method} {e.path} → {e.status_code}</p><small>{e.reason_code}</small></article>)}</div></details>
           <details><summary>DNS/TLS 연결 관측 ({result.connections.length})</summary><pre className="operator-detail-scroll">{JSON.stringify(result.connections,null,2)}</pre></details>

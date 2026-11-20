@@ -6,8 +6,9 @@ export type Profile = { profile_id: string; name: string; ready: boolean; policy
 export type Step = { index: number; account_ref: string; operation: string; resource_id?: string; method: string; path: string };
 export type Job = { plan_id: string; profile_id: string; plan_sha256: string; status: string; run_id: string | null; message?: string; reason_code?: string; created_at: number };
 export type Plan = { profile_id: string; plan_id: string; plan_sha256: string; expires_at: number; transport: string; policy: Policy; sequence: Step[]; expected_http_requests: number; expected_tool_calls: number; job: Job | null; interpretation: string };
-export type Result = { run_id: string; status: string; verdict: string; reason_code: string; message: string | null; started_at: string; finished_at: string; transport: string; policy: Policy; usage: Record<string, number>; evidence: { evidence_id: string; account_ref: string; method: string; path: string; status_code: number; reason_code: string }[]; connections: Record<string, unknown>[]; replay: { verdict: string; verdict_matches: boolean; reason_code: string }; version: Record<string, unknown>; actual_scope: Scope | null };
-export type PastRun = Pick<Result, 'run_id' | 'status' | 'verdict' | 'started_at' | 'transport'>;
+export type Conclusion = { state: "consistent" | "withheld" | "unavailable"; verdict: string; label: string; reason_code: string };
+export type Result = { conclusion: Conclusion; run_id: string; status: string; verdict: string; reason_code: string; message: string | null; started_at: string; finished_at: string; transport: string; policy: Policy; usage: Record<string, number>; evidence: { evidence_id: string; account_ref: string; method: string; path: string; status_code: number; reason_code: string }[]; connections: Record<string, unknown>[]; replay: { verdict: string; verdict_matches: boolean; reason_code: string }; version: Record<string, unknown>; actual_scope: Scope | null };
+export type PastRun = Pick<Result, 'conclusion' | 'run_id' | 'status' | 'verdict' | 'started_at' | 'transport'>;
 
 export class OperatorError extends Error { constructor(public code: string, message: string) { super(message); } }
 async function request<T>(path: string, body?: object): Promise<T> {

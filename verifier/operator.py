@@ -53,6 +53,11 @@ def replay(directory):
     if report.get('schema_version')!='operator-report-v1': raise ValueError('unsupported report contract')
     policy=ResourcePolicy.model_validate(read('verification_contract.json'))
     evidence=[ResourceEvidence.model_validate(e) for e in read('evidence.json')]
+    return replay_loaded(report, policy, evidence)
+
+
+def replay_loaded(report, policy, evidence):
+    """Replay the same parsed records that will be displayed or exported."""
     result=verify_operator(evidence,policy,run_id=report['run_id'])
     # A transport failure/cancellation after the last HTTP response still lacks
     # a successful worker finish. Stored partial runs cannot gain a verdict.
