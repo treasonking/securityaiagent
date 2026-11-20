@@ -28,3 +28,15 @@ export const jobs = () => request<{ jobs: Job[] }>('/jobs');
 export const runs = () => request<{ runs: PastRun[] }>('/runs');
 export const result = (id: string) => request<Result>(`/runs/${encodeURIComponent(id)}`);
 export const downloadUrl = (id: string, kind: 'markdown' | 'json') => `/api/operator/runs/${encodeURIComponent(id)}/download/${kind}`;
+export type DisclosureReview = { run_id: string; template_version: string; markdown: string; review_digest: string };
+const disclosureUrl = (id: string) => `/runs/${encodeURIComponent(id)}/disclosure-draft`;
+export const disclosurePreview = (id: string) => request<DisclosureReview>(disclosureUrl(id));
+export async function disclosureDownload(id: string, review_digest: string, signal: AbortSignal) {
+  const response = await fetch('/api/operator'+disclosureUrl(id), { method:'POST', headers:writeHeaders(),
+    credentials:'same-origin', cache:'no-store', signal, body:JSON.stringify({ review_digest, confirmed:true }) });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail?.message || '초안을 발급하지 못했습니다. 새 미리보기를 확인하세요.');
+  }
+  return response.blob();
+}

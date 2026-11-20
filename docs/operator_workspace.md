@@ -131,3 +131,13 @@ expected=97d10e25298261775bc4423dab1d6226ed22a156
 종료 시 진행 중인 제출이 끝났는지 확인한다. Controller → Worker → Target 순으로 위와 같은 checkout에서 `.venv/bin/python -m scripts.vm_service stop --expected "$expected"`를 실행한다. 다음 기동에도 같은 start 절차를 사용한다.
 
 업데이트할 때는 새 exchange에 오프라인 bundle을 준비하고 역할별 inspect에서 관측한 commit을 plan의 expected로 지정한다. 프로필이 이미 구성된 일반 업데이트는 기존 설정을 승계한다. 새 release 경로, 참조 파일 해시, state 및 보고서 목록을 검토한 뒤 해당 plan ID와 digest로 apply한다. 복구할 때도 원래 plan의 ID와 digest를 사용한다. 결과가 누락되면 같은 sequence의 receipt와 journal을 먼저 조회한다. [배포 절차와 관측 결과](../reports/operator_workspace_vm_20261116/README.md)
+
+## 저장된 합성 검사로 제보 초안 검토하기
+
+1. 로그인한 워크스페이스에서 **저장된 검사**를 연다. 실행이 완료됐고 최초 판정과 현재 저장 증거의 재판정이 모두 `VULNERABLE`이면 **제보 초안 검토 → 내부 초안 미리보기**를 선택할 수 있다.
+2. 미리보기에서 관측된 영향과 검사 범위를 읽고, **HTTP 증거**를 펼쳐 교차 조회와 소유자 대조 조회의 evidence ID를 대조한다. 두 계정과 두 합성 리소스에서 확인한 내용이 초안의 표현과 맞는지 검토한다.
+3. 확인란을 선택한 다음 **검토한 Markdown 다운로드**를 누른다. 파일명은 `<run_id>-internal-draft.md`다. 기술 보고서는 결과 화면의 기존 Markdown·JSON 링크에서 내려받는다.
+
+증거·계약·보고서 등 초안 입력이나 템플릿이 바뀌면 새 미리보기에서 다시 확인한다. 현재 판정이 보류됐거나 자료를 읽을 수 없으면 화면의 사유를 확인한다. 다운로드 요청은 기존 로그인 세션과 CSRF 검사를 거친다. SHA-256 확인값의 용도는 검토한 자료와 발급할 자료의 일치 확인에 한정된다. 작성자 신원과 증거 출처를 인증하는 전자서명은 제공하지 않는다.
+
+[실제 브라우저에서 내려받은 합성 예시](../reports/reviewed_disclosure_20261120/example.md)

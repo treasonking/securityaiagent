@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ResultHeading, SavedRunButton } from './current-verdict.js';
+import DisclosureDraft from './DisclosureDraft';
 import * as api from './operator-api';
 import { canExecute, statusLabel, terminal } from './operator-state.js';
 
@@ -134,6 +135,7 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
           <p>실제 Worker 사용량: HTTP {result.usage.http_requests} / 도구 {result.usage.tool_calls} · 설정 최대: HTTP {result.policy.scope_policy.effective_limits.max_requests} / 도구 {result.policy.scope_policy.effective_limits.max_tool_calls}</p><p>모델 후보 없음 · 고정 mock 실행 · HTTP 증거 기반 판정</p>
           <p>최초 판정(이력): {result.verdict} · {result.reason_code}</p><p>저장 증거 재판정: {result.replay.verdict} · {result.replay.reason_code} · {result.replay.verdict_matches?'최초 판정과 일치':'불일치 — 기록 검토 필요'}</p><p className="operator-note">이번 두 계정·두 리소스의 관측 범위에 한정됩니다. INCONCLUSIVE는 안전 판정이 아닙니다.</p>
           <div className="operator-downloads"><a href={api.downloadUrl(result.run_id,'markdown')}>Markdown 보고서 다운로드</a><a href={api.downloadUrl(result.run_id,'json')}>JSON 보고서 다운로드</a></div>
+          <DisclosureDraft key={result.run_id} run={result}/>
           <details><summary>HTTP 증거 ({result.evidence.length})</summary><div className="operator-detail-scroll">{result.evidence.map(e=><article key={e.evidence_id}><code>{e.evidence_id}</code><p>{e.account_ref} · {e.method} {e.path} → {e.status_code}</p><small>{e.reason_code}</small></article>)}</div></details>
           <details><summary>DNS/TLS 연결 관측 ({result.connections.length})</summary><pre className="operator-detail-scroll">{JSON.stringify(result.connections,null,2)}</pre></details>
           <details><summary>실행 정책·버전</summary><pre className="operator-detail-scroll">{JSON.stringify({actual_scope:result.actual_scope,version:result.version},null,2)}</pre></details>

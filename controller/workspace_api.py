@@ -17,6 +17,11 @@ class ExecuteRequest(FrozenModel):
     confirmed: Literal[True]
 
 
+class DraftConfirmation(FrozenModel):
+    review_digest: str = Field(pattern=r'^[0-9a-f]{64}$')
+    confirmed: Literal[True]
+
+
 def attach_workspace(app,workspace,owner,write_owner):
     router=APIRouter(prefix='/api/operator',dependencies=[Depends(owner)])
     def require():
@@ -66,6 +71,17 @@ def attach_workspace(app,workspace,owner,write_owner):
         try: return require().run_view(run_id)
         except WorkspaceError: raise
         except Exception: raise WorkspaceError('RESULT_NOT_READY') from None
+
+    @router.get('/runs/{run_id}/disclosure-draft')
+    async def draft_preview(run_id: str):
+        return require().disclosure_review(run_id)
+
+    @router.post('/runs/{run_id}/disclosure-draft', dependencies=[Depends(write_owner)])
+    async def draft_download(run_id: str, payload: DraftConfirmation):
+        draft = require().disclosure_review(run_id, payload.review_digest)
+        return Response(draft['markdown'], media_type='text/markdown; charset=utf-8',
+                        headers={'Content-Disposition': f'attachment; filename="{run_id}-internal-draft.md"',
+                                 'Cache-Control': 'no-store'})
 
     @router.get('/runs/{run_id}/download/{kind}')
     async def download(run_id:str,kind:Literal['markdown','json']):

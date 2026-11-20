@@ -5,6 +5,7 @@ from the existing database and the executor's issued/claimed plan ledger.
 """
 import asyncio
 import hashlib
+import hmac
 import json
 import os
 from pathlib import Path
@@ -23,6 +24,7 @@ from controller.candidate_execution import CandidateError
 from controller.candidates import analyse, read_local, unique, fail_constant
 from controller.operator_execution import ResourceHistory, execute_plan, parse_plan, preview, validate_execution
 from verifier.operator import replay_loaded
+from controller.disclosure_draft import render_review
 
 PLAN = re.compile(r'opplan_[0-9a-f]{32}')
 RUN = re.compile(r'run_[0-9a-f]{32}')
@@ -46,6 +48,10 @@ def diagnostic(code):
         'PLAN_CONFIRMATION_MISMATCH': '확인한 계획 digest가 다릅니다. 새 preview를 확인해 주세요.',
         'WORKER_POLICY_CHANGED': 'Worker 정책이 바뀌었습니다. 새 preview가 필요합니다.',
         'INTERRUPTED': 'Controller 실행이 중단됐습니다. 기존 증거를 확인하고 자동 재실행하지 마세요.',
+        'DRAFT_NOT_COMPLETED': '실행이 완료되지 않아 초안을 만들 수 없습니다.',
+        'DRAFT_BLOCKED': '접근 통제가 요청을 차단한 기록입니다. 제보 초안 대상에서 제외됩니다.',
+        'DRAFT_UNCONFIRMED': '현재 증거로 취약 판정을 확인할 수 없습니다. 최초 판정과 재판정을 확인하세요.',
+        'DRAFT_REVIEW_CHANGED': '검토 후 저장 자료가 바뀌었습니다. 새 미리보기를 확인하세요.',
         'SAVED_INPUT_UNREADABLE': '검증 불가 · 저장된 보고서, 계약 또는 증거를 읽을 수 없습니다.',
         'NOT_FOUND': '요청한 기록을 찾을 수 없습니다.',
         'WORKSPACE_MAINTENANCE': '배포 준비 중입니다. 새 제출을 중지하고 기존 검사 이력을 확인해 주세요.',
@@ -109,9 +115,12 @@ def checked(root, *parts):
     return path
 
 
-def read_json(root,*parts):
+def read_json(root,*parts, input_hashes=None):
     try:
-        return json.loads(read_local(checked(root,*parts)),object_pairs_hook=unique,parse_constant=fail_constant)
+        raw = read_local(checked(root,*parts))
+        if input_hashes is not None:
+            input_hashes['/'.join(parts)] = hashlib.sha256(raw).hexdigest()
+        return json.loads(raw,object_pairs_hook=unique,parse_constant=fail_constant)
     except WorkspaceError: raise
     except Exception: raise WorkspaceError('NOT_FOUND',404) from None
 
@@ -279,11 +288,11 @@ class Workspace:
         files=sorted((self.root/'jobs').glob('opplan_*.json'),key=lambda p:p.stat().st_mtime,reverse=True)[:100]
         return [self.job(p.stem) for p in files if PLAN.fullmatch(p.stem)]
 
-    def _report(self, run_id):
+    def _report(self, run_id, input_hashes=None):
         if not RUN.fullmatch(run_id) or not checked(self.reports, run_id).is_dir():
             raise WorkspaceError('NOT_FOUND', 404)
         try:
-            report = read_json(self.reports, run_id, 'report.json')
+            report = read_json(self.reports, run_id, 'report.json', input_hashes=input_hashes)
         except WorkspaceError:
             raise WorkspaceError('SAVED_INPUT_UNREADABLE') from None
         if not isinstance(report, dict):
@@ -295,21 +304,23 @@ class Workspace:
     def run_view(self, run_id):
         return self._view(run_id, self._report(run_id))
 
-    def _view(self, run_id, report):
+    def _view(self, run_id, report, input_hashes=None):
         try:
-            return self._project(run_id, report)
+            return self._project(run_id, report, input_hashes)
         except (ValueError, OSError, TypeError, KeyError, AttributeError):
             raise WorkspaceError('SAVED_INPUT_UNREADABLE') from None
 
-    def _project(self, run_id, report):
-        policy = ResourcePolicy.model_validate(read_json(self.reports, run_id, 'verification_contract.json'))
-        rows = read_json(self.reports, run_id, 'evidence.json')
+    def _project(self, run_id, report, input_hashes):
+        def read(name):
+            return read_json(self.reports, run_id, name, input_hashes=input_hashes)
+        policy = ResourcePolicy.model_validate(read('verification_contract.json'))
+        rows = read('evidence.json')
         if not isinstance(rows, list):
             raise WorkspaceError('SAVED_INPUT_UNREADABLE')
         evidence = [ResourceEvidence.model_validate(row) for row in rows]
         connections=[]
         if checked(self.reports,run_id,'connection_observations.json').exists():
-            connections=[DomainObservation.model_validate(x).model_dump(mode='json') for x in read_json(self.reports,run_id,'connection_observations.json')]
+            connections=[DomainObservation.model_validate(x).model_dump(mode='json') for x in read('connection_observations.json')]
         verdict=report.get('verdict')
         status=report.get('status')
         if verdict not in {'VULNERABLE','BLOCKED_BY_ACCESS_CONTROL','INCONCLUSIVE'} or status not in FINAL:
@@ -317,7 +328,7 @@ class Workspace:
         rerun=replay_loaded(report, policy, evidence)
         reason=safe_code(report.get('reason_code'))
         version={'workspace':'legacy-cli-record','commit':'not-recorded'}
-        link=read_json(self.reports,run_id,'candidate_execution.json') if checked(self.reports,run_id,'candidate_execution.json').exists() else {}
+        link=read('candidate_execution.json') if checked(self.reports,run_id,'candidate_execution.json').exists() else {}
         if PLAN.fullmatch(link.get('plan_id','')):
             job=self.job(link['plan_id'],missing_ok=True)
             if job and job.get('run_id')==run_id: version=job['version']
@@ -345,6 +356,22 @@ class Workspace:
                 row['conclusion'] = report_conclusion(None)
             result.append(row)
         return result
+
+    def disclosure_review(self, run_id, confirmed_digest=None):
+        inputs = {}
+        report = self._report(run_id, inputs)
+        view = self._view(run_id, report, inputs)
+        current = view['conclusion']
+        if view['status'] != 'COMPLETED':
+            raise WorkspaceError('DRAFT_NOT_COMPLETED')
+        if current['verdict'] == 'BLOCKED_BY_ACCESS_CONTROL':
+            raise WorkspaceError('DRAFT_BLOCKED')
+        if current['state'] != 'consistent' or current['verdict'] != 'VULNERABLE':
+            raise WorkspaceError('DRAFT_UNCONFIRMED')
+        draft = render_review(view, inputs)
+        if confirmed_digest is not None and not hmac.compare_digest(draft['review_digest'], confirmed_digest):
+            raise WorkspaceError('DRAFT_REVIEW_CHANGED')
+        return draft
 
     def reproduction(self,run_id):
         data=self.run_view(run_id)
