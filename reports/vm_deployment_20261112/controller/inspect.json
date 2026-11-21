@@ -1,0 +1,304 @@
+{
+  "role": "controller",
+  "action": "inspect",
+  "ok": true,
+  "time": 1794473887.2575376,
+  "inventory": {
+    "role": "controller",
+    "commit": "e54d776dc6cdac642c2b6a9dbd971a9e4b470851",
+    "checkout": "/home/ubuntu/securityaiagent",
+    "environment_reference": "/home/ubuntu/securityaiagent/.env.controller",
+    "environment_sha256": "08c061084e79427e34098a551db8320028bda97edadc152d965580e0d7c66412",
+    "setting_names": [
+      "APP_ACCESS_TOKEN",
+      "APP_SECURE_COOKIE",
+      "APP_SESSION_SECRET",
+      "APP_SESSION_TTL_SECONDS",
+      "CONTROLLER_ALLOWED_CLIENTS",
+      "CONTROLLER_RUN_TIMEOUT_SECONDS",
+      "DATABASE_PATH",
+      "MCP_WORKER_URL",
+      "MODEL_MAX_CALLS",
+      "MODEL_PROVIDER",
+      "OFFLINE_VERIFICATION_TOKEN",
+      "OPENAI_API_KEY",
+      "OPENAI_MODEL",
+      "RUN_MAX_CONCURRENCY",
+      "UI_ALLOWED_HOSTS",
+      "UI_ALLOWED_ORIGINS",
+      "WORKER_TOKEN",
+      "WORKER_URL"
+    ],
+    "runtime_references": {
+      "DATABASE_PATH": "/home/ubuntu/securityaiagent/data/securitylab.sqlite3"
+    },
+    "runtime_config_hashes": {
+      "targets.json": "d2390a673214674782d12e718fa7b83c7e85cd4de3657cff66d6cec803065f78",
+      "worker_accounts.example.json": "873aaafb8849c661bb85d527272984a3215af0130926788035d1788188b583f9"
+    },
+    "preserved_config_hashes": {},
+    "launcher": "legacy_uvicorn",
+    "listener": null,
+    "network": {
+      "interfaces": [
+        {
+          "name": "lo",
+          "mac": "00:00:00:00:00:00",
+          "addresses": [
+            [
+              "inet",
+              "127.0.0.1",
+              8
+            ],
+            [
+              "inet6",
+              "::1",
+              128
+            ]
+          ]
+        },
+        {
+          "name": "enp0s3",
+          "mac": "08:00:27:e6:a1:6a",
+          "addresses": [
+            [
+              "inet",
+              "10.0.2.15",
+              24
+            ],
+            [
+              "inet6",
+              "fd17:625c:f037:2:a00:27ff:fee6:a16a",
+              64
+            ],
+            [
+              "inet6",
+              "fe80::a00:27ff:fee6:a16a",
+              64
+            ]
+          ]
+        },
+        {
+          "name": "enp0s8",
+          "mac": "08:00:27:fd:88:d5",
+          "addresses": [
+            [
+              "inet",
+              "10.77.0.10",
+              24
+            ]
+          ]
+        },
+        {
+          "name": "enp0s9",
+          "mac": "08:00:27:ee:07:59",
+          "addresses": [
+            [
+              "inet",
+              "192.168.56.10",
+              24
+            ]
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "dst": "default",
+          "gateway": "10.0.2.2",
+          "dev": "enp0s3",
+          "protocol": "dhcp",
+          "prefsrc": "10.0.2.15",
+          "metric": 100,
+          "flags": []
+        },
+        {
+          "dst": "10.0.2.0/24",
+          "dev": "enp0s3",
+          "protocol": "kernel",
+          "scope": "link",
+          "prefsrc": "10.0.2.15",
+          "metric": 100,
+          "flags": []
+        },
+        {
+          "dst": "10.77.0.0/24",
+          "dev": "enp0s8",
+          "protocol": "kernel",
+          "scope": "link",
+          "prefsrc": "10.77.0.10",
+          "metric": 101,
+          "flags": []
+        },
+        {
+          "dst": "192.168.56.0/24",
+          "dev": "enp0s9",
+          "protocol": "kernel",
+          "scope": "link",
+          "prefsrc": "192.168.56.10",
+          "metric": 102,
+          "flags": []
+        },
+        {
+          "type": "local",
+          "dst": "10.0.2.15",
+          "dev": "enp0s3",
+          "table": "local",
+          "protocol": "kernel",
+          "scope": "host",
+          "prefsrc": "10.0.2.15",
+          "flags": []
+        },
+        {
+          "type": "broadcast",
+          "dst": "10.0.2.255",
+          "dev": "enp0s3",
+          "table": "local",
+          "protocol": "kernel",
+          "scope": "link",
+          "prefsrc": "10.0.2.15",
+          "flags": []
+        },
+        {
+          "type": "local",
+          "dst": "10.77.0.10",
+          "dev": "enp0s8",
+          "table": "local",
+          "protocol": "kernel",
+          "scope": "host",
+          "prefsrc": "10.77.0.10",
+          "flags": []
+        },
+        {
+          "type": "broadcast",
+          "dst": "10.77.0.255",
+          "dev": "enp0s8",
+          "table": "local",
+          "protocol": "kernel",
+          "scope": "link",
+          "prefsrc": "10.77.0.10",
+          "flags": []
+        },
+        {
+          "type": "local",
+          "dst": "127.0.0.0/8",
+          "dev": "lo",
+          "table": "local",
+          "protocol": "kernel",
+          "scope": "host",
+          "prefsrc": "127.0.0.1",
+          "flags": []
+        },
+        {
+          "type": "local",
+          "dst": "127.0.0.1",
+          "dev": "lo",
+          "table": "local",
+          "protocol": "kernel",
+          "scope": "host",
+          "prefsrc": "127.0.0.1",
+          "flags": []
+        },
+        {
+          "type": "broadcast",
+          "dst": "127.255.255.255",
+          "dev": "lo",
+          "table": "local",
+          "protocol": "kernel",
+          "scope": "link",
+          "prefsrc": "127.0.0.1",
+          "flags": []
+        },
+        {
+          "type": "local",
+          "dst": "192.168.56.10",
+          "dev": "enp0s9",
+          "table": "local",
+          "protocol": "kernel",
+          "scope": "host",
+          "prefsrc": "192.168.56.10",
+          "flags": []
+        },
+        {
+          "type": "broadcast",
+          "dst": "192.168.56.255",
+          "dev": "enp0s9",
+          "table": "local",
+          "protocol": "kernel",
+          "scope": "link",
+          "prefsrc": "192.168.56.10",
+          "flags": []
+        },
+        {
+          "dst": "fd17:625c:f037:2::/64",
+          "dev": "enp0s3",
+          "protocol": "ra",
+          "metric": 100,
+          "flags": [],
+          "pref": "medium"
+        },
+        {
+          "dst": "fe80::/64",
+          "dev": "enp0s3",
+          "protocol": "kernel",
+          "metric": 1024,
+          "flags": [],
+          "pref": "medium"
+        },
+        {
+          "dst": "default",
+          "gateway": "fe80::2",
+          "dev": "enp0s3",
+          "protocol": "ra",
+          "metric": 20100,
+          "flags": [],
+          "pref": "medium"
+        },
+        {
+          "type": "local",
+          "dst": "::1",
+          "dev": "lo",
+          "table": "local",
+          "protocol": "kernel",
+          "metric": 0,
+          "flags": [],
+          "pref": "medium"
+        },
+        {
+          "type": "local",
+          "dst": "fd17:625c:f037:2:a00:27ff:fee6:a16a",
+          "dev": "enp0s3",
+          "table": "local",
+          "protocol": "kernel",
+          "metric": 0,
+          "flags": [],
+          "pref": "medium"
+        },
+        {
+          "type": "local",
+          "dst": "fe80::a00:27ff:fee6:a16a",
+          "dev": "enp0s3",
+          "table": "local",
+          "protocol": "kernel",
+          "metric": 0,
+          "flags": [],
+          "pref": "medium"
+        },
+        {
+          "type": "multicast",
+          "dst": "ff00::/8",
+          "dev": "enp0s3",
+          "table": "local",
+          "protocol": "kernel",
+          "metric": 256,
+          "flags": [],
+          "pref": "medium"
+        }
+      ],
+      "firewall": {
+        "iptables-save": "f5f531cfafa62994c4c818e0f6b5eb7e7051d4f57708f5f0b11e52f3e308e169",
+        "ip6tables-save": "0bad3b05997bdb91f14cdb55ca638d7444df8fa3ea9c49cb5e36c7f1c0ed603e"
+      },
+      "no_default_route_required": false
+    }
+  }
+}

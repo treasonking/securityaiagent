@@ -1,0 +1,44 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_be57bfb27f064bcea5c38435edc4a91d",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "mcp",
+  "started_at": "2026-11-14T06:21:23.674503+00:00",
+  "status": "FAILED",
+  "verdict": "INCONCLUSIVE",
+  "reason_code": "TLS_CERT_UNTRUSTED",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "098b8e774f35b97c5a19189aee6b7d231d0f41cdc2bb841ec53ebfe3504bdc42",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-ip-san-v1",
+      "ca_bundle_sha256": "aea7a89c387f231234dd0ff59783eb95a78bca23b87cc5aa906a5774df7046f8",
+      "context_ca_sha256": "2425035b8a0d6ec88659ae349153c63fbf2ca224948eca61a2248684ed7f0138",
+      "minimum_version": "TLSv1.2"
+    }
+  },
+  "limits_used": {
+    "http_requests": 1,
+    "tool_calls": 1
+  },
+  "evidence_ids": [],
+  "finished_at": "2026-11-14T06:21:23.841119+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

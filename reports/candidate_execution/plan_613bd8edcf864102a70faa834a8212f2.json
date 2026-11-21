@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "plan_613bd8edcf864102a70faa834a8212f2",
+  "created_at": 1793469590,
+  "expires_at": 1793469890,
+  "candidate_id": "6b1a0af20067f1610b3cba91f505f21b246128a85fc3099ef6315fafe72b6928",
+  "source_sha256": "b3c699c9219ffc374a42d1d413965d44849f06ef142e66ca2aea26695758eda8",
+  "registry_sha256": "e4dbff6fadbe82c7df4027ccebeb3e4f0b73293b1a2f132913ce3eb41e444a56",
+  "worker_origin": "http://127.0.0.1:49941",
+  "policy": {
+    "contract_version": "candidate-preview-v1",
+    "target_id": "lab-web",
+    "scenario_id": "access-control-http",
+    "registry_sha256": "e4dbff6fadbe82c7df4027ccebeb3e4f0b73293b1a2f132913ce3eb41e444a56",
+    "origin": "http://127.0.0.1:49938",
+    "adapter_id": "synthetic-documents",
+    "auth_mode": "cookie",
+    "routes": {
+      "login_path": "/login",
+      "list_path": "/documents",
+      "detail_path": "/documents/{document_id}"
+    },
+    "scope_policy": {
+      "profile_id": "lab-access-control",
+      "revision": 4,
+      "snapshot_sha256": "953c1915c603b423e3ef0b7101c31b92b1b4080f48c83921887da36639d1d43f",
+      "effective_limits": {
+        "max_requests": 9,
+        "max_tool_calls": 10,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 2.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      }
+    }
+  },
+  "provider": "mock",
+  "transport": "mcp",
+  "accounts": [
+    "user-a",
+    "user-b"
+  ],
+  "expected_http_requests": 9,
+  "expected_tool_calls": 10,
+  "verification_status": "NOT_EXECUTED",
+  "plan_sha256": "23d20571a12160d765ec5ececd648ed40b8e09108b6478cf40736b6db603defe"
+}

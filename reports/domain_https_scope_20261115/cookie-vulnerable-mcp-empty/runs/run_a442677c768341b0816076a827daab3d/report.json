@@ -1,0 +1,55 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_a442677c768341b0816076a827daab3d",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "mcp",
+  "started_at": "2026-11-14T17:09:58.854430+00:00",
+  "status": "FAILED",
+  "verdict": "INCONCLUSIVE",
+  "reason_code": "DNS_NO_RESULTS",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "5909749a62984c7211db01adc814061cae8ab4a45a2826f0b208895a38df49b9",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-dns-san-v1",
+      "ca_bundle_sha256": "86300c028ac7b21dca09774484f72972e9c64471bb3afbf939bc61da61182d70",
+      "context_ca_sha256": "a5418d1405f5dd082234c7cef933570fe3ea1539e0c123709f9985fea5c61daa",
+      "minimum_version": "TLSv1.2"
+    },
+    "domain": {
+      "version": "domain-network-v1",
+      "allowed_ip_ranges": [
+        "127.0.0.1/32"
+      ],
+      "allow_non_global": true,
+      "resolver": "system-a-aaaa-all-v1",
+      "connection": "numeric-peer-checked-per-request-v1",
+      "hostname": "attachments.securityai.test",
+      "port": 62876
+    }
+  },
+  "limits_used": {
+    "http_requests": 1,
+    "tool_calls": 1
+  },
+  "evidence_ids": [],
+  "finished_at": "2026-11-14T17:09:59.013433+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

@@ -1,0 +1,216 @@
+[
+  {
+    "evidence_id": "ev_4eafcda93ef34cc498842806d40a6a1b",
+    "run_id": "adapter-49247ba08c3947e7882adb0ad3d6bb1f",
+    "method": "GET",
+    "path": "/documents",
+    "status_code": 200,
+    "account_ref": "user-a",
+    "request_id": "ab88e022-d6cd-4f9c-bdb7-179c08aee7ec",
+    "synthetic_document_marker": null,
+    "body_hash": "d2dd37e3be14387925425d16a4e114112e932e5592622c684166640156ac5ffc",
+    "server_observation": "http_observation",
+    "purpose": "http-list-user-a",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/login",
+        "list_path": "/documents",
+        "detail_path": "/documents/{document_id}"
+      },
+      "session_binding": "c344e41451a9545c4311cea72c2dd3688df9b3bc76dc05b99f6478115eb47be4",
+      "authenticated_account": "user-a",
+      "response_kind": "document_list",
+      "document_id": null,
+      "owner_ref": "user-a",
+      "listed_document_ids": [
+        "doc-a-001"
+      ],
+      "private_canary_digest": null,
+      "canary_present": false
+    },
+    "created_at": "2026-11-04T12:49:23.725380+00:00"
+  },
+  {
+    "evidence_id": "ev_cf792fddae164f7bafa227f4f402b873",
+    "run_id": "adapter-49247ba08c3947e7882adb0ad3d6bb1f",
+    "method": "GET",
+    "path": "/documents",
+    "status_code": 200,
+    "account_ref": "user-b",
+    "request_id": "4f38b3da-339f-424b-b877-d9d020257737",
+    "synthetic_document_marker": null,
+    "body_hash": "dd0d35c02a4ff7ab95e1363aca8ea79b12129a68e7d46fb6dcbe13a4f52fefa9",
+    "server_observation": "http_observation",
+    "purpose": "http-list-user-b",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/login",
+        "list_path": "/documents",
+        "detail_path": "/documents/{document_id}"
+      },
+      "session_binding": "d27c508ec0f704df8d111583f2b6385a3b544ad07ba81c74bbca0ed374b5512c",
+      "authenticated_account": "user-b",
+      "response_kind": "document_list",
+      "document_id": null,
+      "owner_ref": "user-b",
+      "listed_document_ids": [
+        "doc-b-001"
+      ],
+      "private_canary_digest": null,
+      "canary_present": false
+    },
+    "created_at": "2026-11-04T12:49:24.234408+00:00"
+  },
+  {
+    "evidence_id": "ev_e864ce3913ff47a99a83ac8f88fab4e7",
+    "run_id": "adapter-49247ba08c3947e7882adb0ad3d6bb1f",
+    "method": "GET",
+    "path": "/documents/doc-a-001",
+    "status_code": 200,
+    "account_ref": "user-a",
+    "request_id": "91fb0cd4-7856-40be-99e2-54a660fe07dc",
+    "synthetic_document_marker": null,
+    "body_hash": "2b84ea08476ba8351200d449e657751caf917461926450b85e56a471166c1e54",
+    "server_observation": "http_observation",
+    "purpose": "http-own-a",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/login",
+        "list_path": "/documents",
+        "detail_path": "/documents/{document_id}"
+      },
+      "session_binding": "c344e41451a9545c4311cea72c2dd3688df9b3bc76dc05b99f6478115eb47be4",
+      "authenticated_account": "user-a",
+      "response_kind": "private_document",
+      "document_id": "doc-a-001",
+      "owner_ref": "user-a",
+      "listed_document_ids": [],
+      "private_canary_digest": "7fa04f6bc293b2cd76d0b94c369891233c708ce998906d44708d39e0d5739f32",
+      "canary_present": true
+    },
+    "created_at": "2026-11-04T12:49:24.711020+00:00"
+  },
+  {
+    "evidence_id": "ev_6eef3918ce914d49939677e9314dcb99",
+    "run_id": "adapter-49247ba08c3947e7882adb0ad3d6bb1f",
+    "method": "GET",
+    "path": "/documents/doc-b-001",
+    "status_code": 200,
+    "account_ref": "user-b",
+    "request_id": "9b29fe0f-b255-4f0b-9e20-81005c4feb17",
+    "synthetic_document_marker": null,
+    "body_hash": "7aebad4f390e5ed1fb53d8406ca102ac9d8583f87570b4305144f6f92d5a9e46",
+    "server_observation": "http_observation",
+    "purpose": "http-own-b",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/login",
+        "list_path": "/documents",
+        "detail_path": "/documents/{document_id}"
+      },
+      "session_binding": "d27c508ec0f704df8d111583f2b6385a3b544ad07ba81c74bbca0ed374b5512c",
+      "authenticated_account": "user-b",
+      "response_kind": "private_document",
+      "document_id": "doc-b-001",
+      "owner_ref": "user-b",
+      "listed_document_ids": [],
+      "private_canary_digest": "344c7e4172f6ed5c5f00f879a3b5309458c21457855433d4847de5c7df92bbc3",
+      "canary_present": true
+    },
+    "created_at": "2026-11-04T12:49:25.218317+00:00"
+  },
+  {
+    "evidence_id": "ev_e0657ed2eacd49829b29322ed4d75a8a",
+    "run_id": "adapter-49247ba08c3947e7882adb0ad3d6bb1f",
+    "method": "GET",
+    "path": "/documents/doc-b-001",
+    "status_code": 404,
+    "account_ref": "user-a",
+    "request_id": "0fbe8847-afc3-4702-b919-bfa498e672ba",
+    "synthetic_document_marker": null,
+    "body_hash": "f607fd07eab161861cde1b46b529dafb34786965eb0be0d18d26e0118eebcbca",
+    "server_observation": "http_observation",
+    "purpose": "http-cross-b",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/login",
+        "list_path": "/documents",
+        "detail_path": "/documents/{document_id}"
+      },
+      "session_binding": "c344e41451a9545c4311cea72c2dd3688df9b3bc76dc05b99f6478115eb47be4",
+      "authenticated_account": "user-a",
+      "response_kind": "document_denied",
+      "document_id": null,
+      "owner_ref": null,
+      "listed_document_ids": [],
+      "private_canary_digest": null,
+      "canary_present": false
+    },
+    "created_at": "2026-11-04T12:49:25.730877+00:00"
+  },
+  {
+    "evidence_id": "ev_0153e0b69a6d4fcd98333d59ceb1da41",
+    "run_id": "adapter-49247ba08c3947e7882adb0ad3d6bb1f",
+    "method": "GET",
+    "path": "/documents/doc-b-001",
+    "status_code": 200,
+    "account_ref": "user-b",
+    "request_id": "b42d8369-69fb-47db-88fc-af612f1b7c78",
+    "synthetic_document_marker": null,
+    "body_hash": "7aebad4f390e5ed1fb53d8406ca102ac9d8583f87570b4305144f6f92d5a9e46",
+    "server_observation": "http_observation",
+    "purpose": "http-recheck-b",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/login",
+        "list_path": "/documents",
+        "detail_path": "/documents/{document_id}"
+      },
+      "session_binding": "d27c508ec0f704df8d111583f2b6385a3b544ad07ba81c74bbca0ed374b5512c",
+      "authenticated_account": "user-b",
+      "response_kind": "private_document",
+      "document_id": "doc-b-001",
+      "owner_ref": "user-b",
+      "listed_document_ids": [],
+      "private_canary_digest": "344c7e4172f6ed5c5f00f879a3b5309458c21457855433d4847de5c7df92bbc3",
+      "canary_present": true
+    },
+    "created_at": "2026-11-04T12:49:26.224770+00:00"
+  },
+  {
+    "evidence_id": "ev_aa06eea35e144dde96032793f03a56ed",
+    "run_id": "adapter-49247ba08c3947e7882adb0ad3d6bb1f",
+    "method": "GET",
+    "path": "/documents/doc-a-001",
+    "status_code": 200,
+    "account_ref": "user-a",
+    "request_id": "1bff3ad6-e08c-4476-9f2b-593bc567adfe",
+    "synthetic_document_marker": null,
+    "body_hash": "2b84ea08476ba8351200d449e657751caf917461926450b85e56a471166c1e54",
+    "server_observation": "http_observation",
+    "purpose": "http-recheck-a",
+    "http_observation": {
+      "target_id": "lab-web",
+      "routes": {
+        "login_path": "/login",
+        "list_path": "/documents",
+        "detail_path": "/documents/{document_id}"
+      },
+      "session_binding": "c344e41451a9545c4311cea72c2dd3688df9b3bc76dc05b99f6478115eb47be4",
+      "authenticated_account": "user-a",
+      "response_kind": "private_document",
+      "document_id": "doc-a-001",
+      "owner_ref": "user-a",
+      "listed_document_ids": [],
+      "private_canary_digest": "7fa04f6bc293b2cd76d0b94c369891233c708ce998906d44708d39e0d5739f32",
+      "canary_present": true
+    },
+    "created_at": "2026-11-04T12:49:26.712637+00:00"
+  }
+]

@@ -1,0 +1,91 @@
+{
+  "status": "REJECTED_BEFORE_RUN",
+  "run_id": null,
+  "reason_code": "WORKER_POLICY_CHANGED",
+  "old_plan_sha256": "b2fc902d97a349d6673d73e6de9b3d68968afe482fdf1e4a27ade637c5a61bea",
+  "old_scope": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "94bdd8cb8252427bd11fdcefc1dcf376d71932864bc96ee46a2890c2f9a83172",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-dns-san-v1",
+      "ca_bundle_sha256": "e9736faaa519432c21841b811d62f0b9bb9e8f210b4a56c6bb2c961cb5bdcb0d",
+      "context_ca_sha256": "1aa7c957cdb49143719f092f12a622fd6d5b8b21f61e487f24b6e091549929dc",
+      "minimum_version": "TLSv1.2"
+    },
+    "domain": {
+      "version": "domain-network-v1",
+      "allowed_ip_ranges": [
+        "127.0.0.1/32"
+      ],
+      "allow_non_global": true,
+      "resolver": "system-a-aaaa-all-v1",
+      "connection": "numeric-peer-checked-per-request-v1",
+      "hostname": "attachments.securityai.test",
+      "port": 63235
+    }
+  },
+  "new_scope": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "f4ba064588231c126d0073f1cb6e19dbd8f82e7dd879e847d560455aa24582ff",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-dns-san-v1",
+      "ca_bundle_sha256": "e9736faaa519432c21841b811d62f0b9bb9e8f210b4a56c6bb2c961cb5bdcb0d",
+      "context_ca_sha256": "1aa7c957cdb49143719f092f12a622fd6d5b8b21f61e487f24b6e091549929dc",
+      "minimum_version": "TLSv1.2"
+    },
+    "domain": {
+      "version": "domain-network-v1",
+      "allowed_ip_ranges": [
+        "127.0.0.1/32",
+        "127.0.0.2/32"
+      ],
+      "allow_non_global": true,
+      "resolver": "system-a-aaaa-all-v1",
+      "connection": "numeric-peer-checked-per-request-v1",
+      "hostname": "attachments.securityai.test",
+      "port": 63235
+    }
+  },
+  "target_http": 0,
+  "dns_calls": 0,
+  "network": {
+    "tcp_accepted": 0,
+    "tls_handshake_attempts": 0,
+    "tls_handshake_failed": 0,
+    "tls_handshake_completed": 0
+  },
+  "claimed": false,
+  "run_directories": 0,
+  "fresh_preview_counts": {
+    "http": 0,
+    "dns": 0,
+    "tcp_accepted": 0,
+    "tls_handshake_attempts": 0,
+    "tls_handshake_failed": 0,
+    "tls_handshake_completed": 0
+  }
+}

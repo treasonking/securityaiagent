@@ -1,0 +1,14 @@
+{
+  "job": {
+    "action": "stop",
+    "sequence": "9404f482e1194ed69be52806a027230e"
+  },
+  "receipt": {
+    "role": "target",
+    "sequence": "9404f482e1194ed69be52806a027230e"
+  },
+  "result": {
+    "role": "target",
+    "sequence": "9404f482e1194ed69be52806a027230e"
+  }
+}

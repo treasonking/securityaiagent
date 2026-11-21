@@ -1,0 +1,50 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_fa9b469dafc84ed8b201771c16fc59b9",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "mcp",
+  "started_at": "2026-11-13T07:11:52.206329+00:00",
+  "status": "COMPLETED",
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+  "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "cd19ce224a1c32c528c9d6a9605153a52a44b8521649fc75c8758b4479609cbb",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "limits_used": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_ids": [
+    "76f099c8ce0af479d2ced7f1bd9878618188ff631745a1473253be3cb2fb6e5d",
+    "c79cf97a20955a625c7386a056d8dd9f9681b203096df6182b553131200c1fdd",
+    "7c79a782e9bd18fd1640a384ed636513c8e94d04fb2aef1f61dad0ac55e0276e",
+    "43a8371871d4e397f01ba9dafcb4799f2248021fb0c93114fbbea90d546864e0",
+    "10fd7c8c905d967e9232e93534187bbcef4e53cafbee38d927c2016f481454b0",
+    "ab8c207678a5eb20e46ea7d06d5b905826008dc408981453cf63e918c05103a4",
+    "6b23558292d63a240a5ade417c93cb4de26f0a9c9bb9ea1a5ef06028c5e68d8b",
+    "aed658fa42ecb54e77709569ae2bba84bcfaa500584edf9f42770a29402e85b1",
+    "6d557ac03a35234d87c283845aaa1b43631a64c2f99519b9beda39f4fda7da74",
+    "7cfda78d9762292b8ff37f18300a45eaccfd923ecca03361727cd7d33822fd9b",
+    "449a6279ff591742309014db59ae379b76937809563e50208d5e88e2dc6894a1"
+  ],
+  "finished_at": "2026-11-13T07:11:52.942173+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

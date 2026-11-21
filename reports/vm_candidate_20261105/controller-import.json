@@ -1,0 +1,20 @@
+{
+  "role": "controller",
+  "action": "import",
+  "ok": true,
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "exit_code": 0,
+  "candidate": {
+    "candidate_id": "38eae30a50bfb3b8b5cebc483cd96e63b9cd712af75c798eecf59f0413273b89",
+    "finding_type": "cross_account_document_access",
+    "method": "GET",
+    "path_template": "/api/records/{document_id}",
+    "origin_source": "operator_registry",
+    "adapter_id": "synthetic-records",
+    "status": "READY_FOR_REVIEW",
+    "reason_codes": [
+      "REGISTERED_READ_FLOW_MATCH"
+    ],
+    "verification_status": "NOT_EXECUTED"
+  }
+}

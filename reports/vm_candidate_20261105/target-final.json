@@ -1,0 +1,36 @@
+{
+  "role": "target",
+  "action": "final",
+  "ok": true,
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "preexisting_config_reports_history_unchanged": true,
+  "changed_preexisting_paths": [],
+  "new_plan_history_files": 0,
+  "database_preservation": [
+    {
+      "file": "vm-target-vulnerable.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true
+    },
+    {
+      "file": "vm-target-fixed.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true
+    },
+    {
+      "file": "vm-target-live-vulnerable.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true
+    },
+    {
+      "file": "vm-target.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true
+    },
+    {
+      "file": "target.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true
+    }
+  ]
+}

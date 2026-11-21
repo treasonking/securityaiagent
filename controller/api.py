@@ -62,7 +62,7 @@ class ConversationRequest(BaseModel):
 class MessageRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     message: str = Field(min_length=1, max_length=4000)
-    scenario_id: Literal["access-control"] = "access-control"
+    scenario_id: Literal["access-control", "access-control-http"] = "access-control"
     target_id: Literal["lab-web"] = "lab-web"
     provider: Literal["mock", "openai"] = "mock"
     tool_transport: Literal["function", "mcp"] = "function"
@@ -73,6 +73,7 @@ def create_app(
     settings: AppSettings,
     clients: dict[str, ToolClient],
     repository: Repository | None = None,
+    workspace=None,
 ) -> FastAPI:
     repo = repository or Repository(settings.database_path)
     repo.interrupt_unfinished_runs()
@@ -99,11 +100,14 @@ def create_app(
     async def lifespan(_: FastAPI):
         yield
         await manager.shutdown()
+        if workspace is not None:
+            await workspace.shutdown()
 
     app = FastAPI(title="SecurityLab controller", docs_url=None, redoc_url=None, lifespan=lifespan)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=sorted(settings.allowed_hosts))
     app.state.repository = repo
     app.state.manager = manager
+    app.state.operator_workspace = workspace
 
     @app.middleware("http")
     async def origin_guard(request: Request, call_next):
@@ -120,6 +124,8 @@ def create_app(
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Content-Security-Policy"] = "default-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
         response.headers["Referrer-Policy"] = "no-referrer"
+        if request.url.path.startswith('/api/operator'):
+            response.headers['Cache-Control'] = 'no-store'
         return response
 
     async def owner(
@@ -204,6 +210,8 @@ def create_app(
         run = repo.get_run_internal(payload.run_id)
         if run is None or run["status"] != RunStatus.COMPLETED or not run["report"]:
             raise HTTPException(status_code=409, detail="completed online run is required")
+        if run["report"].get("scenario_id") != "access-control":
+            raise HTTPException(status_code=409, detail="offline import is only for the log-based scenario")
         evidence_items = [Evidence.model_validate(item) for item in repo.list_evidence(payload.run_id)]
         if payload.evidence_count != len(evidence_items):
             raise HTTPException(status_code=409, detail="evidence count mismatch")
@@ -234,6 +242,7 @@ def create_app(
         report.environment["target_server_log"] = (
             "offline-correlated" if fully_correlated else "offline-partial"
         )
+        report.verification_basis = "target_log_correlated" if fully_correlated else "pending_target_log"
         repo.update_run_report(payload.run_id, report)
         repo.save_findings(report)
         if fully_correlated:
@@ -374,6 +383,8 @@ def create_app(
             raise HTTPException(status_code=404, detail="run not found")
         return {"events": repo.list_events(run_id)}
 
+    from controller.workspace_api import attach_workspace
+    attach_workspace(app,workspace,owner,write_owner)
     frontend_dist = Path(__file__).resolve().parents[1] / "frontend" / "dist"
     if frontend_dist.exists():
         app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
@@ -431,4 +442,17 @@ def create_app_from_env() -> FastAPI:
         openai_configured=bool(os.getenv("OPENAI_API_KEY") and os.getenv("OPENAI_MODEL")),
         offline_import_token=os.getenv("OFFLINE_VERIFICATION_TOKEN") or None,
     )
-    return create_app(settings=settings, clients={"function": function_client, "mcp": mcp_client})
+    workspace=None
+    if os.getenv('OPERATOR_WORKSPACE_CONFIG'):
+        from controller.workspace import Workspace, load_profiles
+        from controller.operator_client import ResourceClient, ResourcePolicyClient
+        try:
+            profiles=load_profiles(resolve_path(os.environ['OPERATOR_WORKSPACE_CONFIG'],''))
+            base=os.getenv('WORKER_URL','http://10.77.0.20:9000')
+            workspace=Workspace(profiles=profiles,
+                state_path=resolve_path(os.getenv('OPERATOR_WORKSPACE_STATE_PATH',''),'data/operator_workspace'),
+                reports_path=settings.reports_path,policy_client=ResourcePolicyClient(base,token),
+                client_factory=lambda t:ResourceClient(base,token,t),timeout=settings.run_timeout_seconds)
+        except Exception:
+            raise RuntimeError('invalid operator workspace server configuration') from None
+    return create_app(settings=settings, clients={"function": function_client, "mcp": mcp_client},workspace=workspace)

@@ -1,0 +1,146 @@
+{
+  "schema_version": "operator-plan-v1",
+  "plan_id": "opplan_16460d1f7b684bdeadcaa4003424b4f4",
+  "created_at": 1794553899,
+  "expires_at": 1794554199,
+  "candidate_id": "4de747ebc5fb1215d6fb04bd39018e8aa84aab8b3f0beb9e83b9ed1f2d6a1dcc",
+  "source_sha256": "f855b06eed211cd713dd2e94edf7b34140aada34cc039c21850918e974e6cfb8",
+  "registry_sha256": "d6aba8cdda4a02a716785c969359a5d891a7886d61e832a7dc4db89cc3492c0e",
+  "worker_origin": "http://127.0.0.1:53581",
+  "policy": {
+    "contract_version": "operator-resource-v1",
+    "target_id": "lab-web",
+    "scenario_id": "operator-resource-http",
+    "registry_sha256": "d6aba8cdda4a02a716785c969359a5d891a7886d61e832a7dc4db89cc3492c0e",
+    "origin": "http://127.0.0.1:53580",
+    "adapter": {
+      "contract_version": "operator-resource-v1",
+      "adapter_id": "project-attachment-json",
+      "routes": {
+        "login_path": "/gateway/authenticate",
+        "me_path": "/gateway/session/profile",
+        "detail_path": "/workspace/attachments/{resource_id}"
+      },
+      "accounts": {
+        "user_a": {
+          "username": "cedar_editor",
+          "password_env": "LAB_USER_A_PASSWORD"
+        },
+        "user_b": {
+          "username": "quartz_reviewer",
+          "password_env": "LAB_USER_B_PASSWORD"
+        }
+      },
+      "login_user_field": "handle",
+      "login_password_field": "secret",
+      "auth_mode": "cookie",
+      "cookie_name": "project_sid",
+      "token_field": null,
+      "principal_field": "context.member.subject",
+      "resource_id_field": "artifact.key",
+      "owner_field": "artifact.acl.holder",
+      "visibility_field": "artifact.acl.classification",
+      "private_value": "restricted",
+      "public_value": "shared",
+      "proof_field": "content.audit.receipt",
+      "denial_status": 403,
+      "denial_field": "problem.kind",
+      "denial_value": "attachment_forbidden"
+    },
+    "accounts": {
+      "user_a": {
+        "principal_id": "member_K73",
+        "resource_id": "attachment_M4s8",
+        "proof_env": "OPERATOR_PROOF_A"
+      },
+      "user_b": {
+        "principal_id": "member_R92",
+        "resource_id": "attachment_N9t2",
+        "proof_env": "OPERATOR_PROOF_B"
+      }
+    },
+    "proof_commitments": {
+      "user_a": "cc7102630af3cf2fe3ef89ab57c87665228933aba92dc809c920d052fb643957",
+      "user_b": "644a5b862fe108aeea8f3c5b18f6e70bda750d117da621e4480d3ae5b6413ba1"
+    },
+    "scope_policy": {
+      "profile_id": "local-project-attachments",
+      "revision": 1,
+      "snapshot_sha256": "5e1bc98d4dc4af6799fcd2b736c0cd7090112b3173103d4bbac87839a9aee05e",
+      "effective_limits": {
+        "max_requests": 11,
+        "max_tool_calls": 12,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 1000.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      }
+    }
+  },
+  "sequence": [
+    {
+      "account_ref": "user-a",
+      "operation": "login",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "login",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "identity",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "identity",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_M4s8"
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2"
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2"
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2"
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_M4s8"
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "identity",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "identity",
+      "resource_id": null
+    }
+  ],
+  "provider": "mock",
+  "transport": "mcp",
+  "expected_http_requests": 11,
+  "expected_tool_calls": 12,
+  "verification_status": "NOT_EXECUTED",
+  "plan_sha256": "f258ae71f11e6082d7c1540bd0f125e1b3c2025ad79c5cf8f11ed6289bb20f47"
+}

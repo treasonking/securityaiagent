@@ -1,0 +1,61 @@
+{
+  "role": "worker",
+  "action": "inspect",
+  "ok": true,
+  "started_at": "2026-11-07T07:01:27.691346+00:00",
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "branch": "codex/candidate-preview-run",
+  "tracked_status": "",
+  "listener": null,
+  "network": {
+    "links": [
+      {
+        "name": "lo",
+        "mac": "00:00:00:00:00:00"
+      },
+      {
+        "name": "enp0s3",
+        "mac": "08:00:27:6b:7b:e9"
+      },
+      {
+        "name": "enp0s8",
+        "mac": "08:00:27:2b:9c:8e"
+      }
+    ],
+    "addresses": [
+      {
+        "name": "lo",
+        "ipv4": [
+          "127.0.0.1"
+        ]
+      },
+      {
+        "name": "enp0s3",
+        "ipv4": [
+          "10.77.0.20"
+        ]
+      },
+      {
+        "name": "enp0s8",
+        "ipv4": [
+          "10.78.0.20"
+        ]
+      }
+    ]
+  },
+  "firewall_sha256": "b2185023f2791ad536e0eb01083a17d59a279460707a09639f5b9cf849db88d4",
+  "env_files": [
+    ".env.target.example",
+    ".env.controller.example",
+    ".env.example",
+    ".env.worker.example",
+    ".env.worker"
+  ],
+  "sqlite_files": [
+    "target.sqlite3"
+  ],
+  "new_checkout_exists": true,
+  "baseline_exists": true,
+  "configuration_valid": true,
+  "finished_at": "2026-11-07T07:01:28.292206+00:00"
+}

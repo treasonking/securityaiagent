@@ -1,0 +1,298 @@
+{
+  "started_at_utc": "2026-11-15T06:57:14.143277+00:00",
+  "provider": "mock",
+  "browser_session": true,
+  "trace": [
+    {
+      "action": "measure",
+      "http_before": 0,
+      "http_after": 0,
+      "network": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "jobs": []
+    },
+    {
+      "action": "fixed",
+      "http_before": 11,
+      "http_after": 11,
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "jobs": [
+        {
+          "plan_id": "opplan_4c4fc4a6a3504ebcb4e1e659b9c8d837",
+          "profile_id": "attachments",
+          "plan_sha256": "f70edee4ffc11aa14ee67fadadf12df414a4b9e485b94814891846e8ebbacb36",
+          "status": "COMPLETED",
+          "run_id": "run_5668df00b4a744fabae19bfa388420fe",
+          "created_at": 1794737386.9297414,
+          "updated_at": 1794737387.8149598,
+          "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+          "version": {
+            "workspace": "operator-workspace-v1",
+            "component": "Controller",
+            "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+            "working_tree_dirty": true,
+            "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+          },
+          "message": null
+        }
+      ]
+    },
+    {
+      "action": "measure",
+      "http_before": 11,
+      "http_after": 11,
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "jobs": [
+        {
+          "plan_id": "opplan_4c4fc4a6a3504ebcb4e1e659b9c8d837",
+          "profile_id": "attachments",
+          "plan_sha256": "f70edee4ffc11aa14ee67fadadf12df414a4b9e485b94814891846e8ebbacb36",
+          "status": "COMPLETED",
+          "run_id": "run_5668df00b4a744fabae19bfa388420fe",
+          "created_at": 1794737386.9297414,
+          "updated_at": 1794737387.8149598,
+          "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+          "version": {
+            "workspace": "operator-workspace-v1",
+            "component": "Controller",
+            "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+            "working_tree_dirty": true,
+            "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+          },
+          "message": null
+        }
+      ]
+    },
+    {
+      "action": "policy_change",
+      "http_before": 22,
+      "http_after": 22,
+      "network": {
+        "tcp_accepted": 22,
+        "tls_handshake_attempts": 22,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 22
+      },
+      "jobs": [
+        {
+          "plan_id": "opplan_9dd4164923c74d3c9bd65a9f9f20cf10",
+          "profile_id": "attachments",
+          "plan_sha256": "88a6a9299653011fbc765a18574212cbf567265d5c178c392340d810721cd0d0",
+          "status": "COMPLETED",
+          "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+          "created_at": 1794737675.8176937,
+          "updated_at": 1794737679.5446332,
+          "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+          "version": {
+            "workspace": "operator-workspace-v1",
+            "component": "Controller",
+            "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+            "working_tree_dirty": true,
+            "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+          },
+          "message": null
+        },
+        {
+          "plan_id": "opplan_4c4fc4a6a3504ebcb4e1e659b9c8d837",
+          "profile_id": "attachments",
+          "plan_sha256": "f70edee4ffc11aa14ee67fadadf12df414a4b9e485b94814891846e8ebbacb36",
+          "status": "COMPLETED",
+          "run_id": "run_5668df00b4a744fabae19bfa388420fe",
+          "created_at": 1794737386.9297414,
+          "updated_at": 1794737387.8149598,
+          "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+          "version": {
+            "workspace": "operator-workspace-v1",
+            "component": "Controller",
+            "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+            "working_tree_dirty": true,
+            "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+          },
+          "message": null
+        }
+      ]
+    },
+    {
+      "action": "measure",
+      "http_before": 22,
+      "http_after": 22,
+      "network": {
+        "tcp_accepted": 22,
+        "tls_handshake_attempts": 22,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 22
+      },
+      "jobs": [
+        {
+          "plan_id": "opplan_9dd4164923c74d3c9bd65a9f9f20cf10",
+          "profile_id": "attachments",
+          "plan_sha256": "88a6a9299653011fbc765a18574212cbf567265d5c178c392340d810721cd0d0",
+          "status": "COMPLETED",
+          "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+          "created_at": 1794737675.8176937,
+          "updated_at": 1794737679.5446332,
+          "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+          "version": {
+            "workspace": "operator-workspace-v1",
+            "component": "Controller",
+            "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+            "working_tree_dirty": true,
+            "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+          },
+          "message": null
+        },
+        {
+          "plan_id": "opplan_4c4fc4a6a3504ebcb4e1e659b9c8d837",
+          "profile_id": "attachments",
+          "plan_sha256": "f70edee4ffc11aa14ee67fadadf12df414a4b9e485b94814891846e8ebbacb36",
+          "status": "COMPLETED",
+          "run_id": "run_5668df00b4a744fabae19bfa388420fe",
+          "created_at": 1794737386.9297414,
+          "updated_at": 1794737387.8149598,
+          "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+          "version": {
+            "workspace": "operator-workspace-v1",
+            "component": "Controller",
+            "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+            "working_tree_dirty": true,
+            "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+          },
+          "message": null
+        }
+      ]
+    },
+    {
+      "action": "stop",
+      "http_before": 22,
+      "http_after": 22,
+      "network": {
+        "tcp_accepted": 22,
+        "tls_handshake_attempts": 22,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 22
+      },
+      "jobs": [
+        {
+          "plan_id": "opplan_9dd4164923c74d3c9bd65a9f9f20cf10",
+          "profile_id": "attachments",
+          "plan_sha256": "88a6a9299653011fbc765a18574212cbf567265d5c178c392340d810721cd0d0",
+          "status": "COMPLETED",
+          "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+          "created_at": 1794737675.8176937,
+          "updated_at": 1794737679.5446332,
+          "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+          "version": {
+            "workspace": "operator-workspace-v1",
+            "component": "Controller",
+            "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+            "working_tree_dirty": true,
+            "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+          },
+          "message": null
+        },
+        {
+          "plan_id": "opplan_4c4fc4a6a3504ebcb4e1e659b9c8d837",
+          "profile_id": "attachments",
+          "plan_sha256": "f70edee4ffc11aa14ee67fadadf12df414a4b9e485b94814891846e8ebbacb36",
+          "status": "COMPLETED",
+          "run_id": "run_5668df00b4a744fabae19bfa388420fe",
+          "created_at": 1794737386.9297414,
+          "updated_at": 1794737387.8149598,
+          "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+          "version": {
+            "workspace": "operator-workspace-v1",
+            "component": "Controller",
+            "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+            "working_tree_dirty": true,
+            "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+          },
+          "message": null
+        }
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "plan_id": "opplan_9dd4164923c74d3c9bd65a9f9f20cf10",
+      "profile_id": "attachments",
+      "plan_sha256": "88a6a9299653011fbc765a18574212cbf567265d5c178c392340d810721cd0d0",
+      "status": "COMPLETED",
+      "run_id": "run_bbfd081a81e14cc58a70b4c857396e98",
+      "created_at": 1794737675.8176937,
+      "updated_at": 1794737679.5446332,
+      "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "version": {
+        "workspace": "operator-workspace-v1",
+        "component": "Controller",
+        "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+        "working_tree_dirty": true,
+        "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+      },
+      "message": null
+    },
+    {
+      "plan_id": "opplan_4c4fc4a6a3504ebcb4e1e659b9c8d837",
+      "profile_id": "attachments",
+      "plan_sha256": "f70edee4ffc11aa14ee67fadadf12df414a4b9e485b94814891846e8ebbacb36",
+      "status": "COMPLETED",
+      "run_id": "run_5668df00b4a744fabae19bfa388420fe",
+      "created_at": 1794737386.9297414,
+      "updated_at": 1794737387.8149598,
+      "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "version": {
+        "workspace": "operator-workspace-v1",
+        "component": "Controller",
+        "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+        "working_tree_dirty": true,
+        "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+      },
+      "message": null
+    }
+  ],
+  "target_http": 22,
+  "network": {
+    "tcp_accepted": 22,
+    "tls_handshake_attempts": 22,
+    "tls_handshake_failed": 0,
+    "tls_handshake_completed": 22
+  },
+  "version": {
+    "workspace": "operator-workspace-v1",
+    "component": "Controller",
+    "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+    "working_tree_dirty": true,
+    "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+  },
+  "source_sha256": {
+    "controller/workspace.py": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84",
+    "controller/workspace_api.py": "3836647485c36a611be15ae310d53d5f5efe542f72e43a96abf71cbc060c491a",
+    "controller/operator_execution.py": "d1c98c7230f12278d715fbd8605bd0a9bc65bef0b11b965ff354690267bc4fdc",
+    "controller/api.py": "b785e4b823e2dba5b01f7d99025d19ba071e6ce05d1a8e16807dd823295e15f4",
+    "frontend/src/OperatorWorkspace.tsx": "23e85e934de11a9cd03a38ed9a6f7029b30a021e4588ed6bb909357ecaad3524",
+    "frontend/src/operator-api.ts": "251257fb993915c340c034e2f896309015cff78cb26da7161e67233c1999dcf6"
+  },
+  "tls_certificate": {
+    "reference_time_utc": "2026-11-15T06:57:13.221674+00:00",
+    "server_not_before": "2026-11-14T06:57:13+00:00",
+    "server_not_after": "2026-11-16T06:57:13+00:00",
+    "server_dns_san": "attachments.securityai.test",
+    "server_certificate_sha256": "47a725e66ca35b08b8b95c540a44f627d4eb16ee81adce1e4ec92f847952da2e",
+    "private_storage": "windows-current-user-only-directory-acl"
+  },
+  "resolver": "injected-test-answers",
+  "secrets_in_verifier": false
+}

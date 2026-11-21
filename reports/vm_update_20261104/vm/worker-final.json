@@ -1,0 +1,18 @@
+{
+  "role": "worker",
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "backup": "/home/ubuntu/securityaiagent-backups/20261104T130259Z",
+  "environment_files_unchanged": true,
+  "existing_report_files_unchanged": true,
+  "database_preservation": [
+    {
+      "file": "target.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true
+    }
+  ],
+  "service_launcher_pid": 4110,
+  "launcher_alive": true,
+  "tracked_changes": "",
+  "ok": true
+}

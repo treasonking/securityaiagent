@@ -1,0 +1,17 @@
+{
+  "received": 2,
+  "events": [
+    {
+      "ordinal": 1,
+      "operation": "login",
+      "status": 200
+    },
+    {
+      "ordinal": 2,
+      "operation": "login",
+      "status": 200
+    }
+  ],
+  "verifier_input": false,
+  "boundary": "HTTP handler entry"
+}

@@ -1,0 +1,76 @@
+{
+  "started_at_utc": "2026-11-15T10:19:55.979463+00:00",
+  "provider": "mock",
+  "browser_session": false,
+  "trace": [],
+  "jobs": [
+    {
+      "plan_id": "opplan_b5dc43cfbe934e439c52dd4766034cdd",
+      "profile_id": "attachments",
+      "plan_sha256": "5c2530756ca01b9a9e769162320a4b0c24704c1c3bac8c79328d6a10ed7680ce",
+      "status": "COMPLETED",
+      "run_id": "run_9e640307aad243a89c11c6261002d5a3",
+      "created_at": 1794737998.0144691,
+      "updated_at": 1794738002.4524674,
+      "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "version": {
+        "workspace": "operator-workspace-v1",
+        "component": "Controller",
+        "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+        "working_tree_dirty": true,
+        "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+      },
+      "message": null
+    },
+    {
+      "plan_id": "opplan_b5d444368b524d6b8defb6deb44f8322",
+      "profile_id": "attachments",
+      "plan_sha256": "bb3dd93502b026ad144b0ffbddcde2330fb87a95488c850134962d0b15959f46",
+      "status": "COMPLETED",
+      "run_id": "run_6593ac8d59ea4cb59f4326f2ce2152d2",
+      "created_at": 1794737996.2784662,
+      "updated_at": 1794737997.5814674,
+      "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "version": {
+        "workspace": "operator-workspace-v1",
+        "component": "Controller",
+        "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+        "working_tree_dirty": true,
+        "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+      },
+      "message": null
+    }
+  ],
+  "target_http": 22,
+  "network": {
+    "tcp_accepted": 22,
+    "tls_handshake_attempts": 22,
+    "tls_handshake_failed": 0,
+    "tls_handshake_completed": 22
+  },
+  "version": {
+    "workspace": "operator-workspace-v1",
+    "component": "Controller",
+    "commit": "8aff74fcbe76a61055bbb8a8f30c1776f0b1599c",
+    "working_tree_dirty": true,
+    "workspace_source_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84"
+  },
+  "source_sha256": {
+    "controller/workspace.py": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84",
+    "controller/workspace_api.py": "adb45aa27496a16e9a13cb42cdbcf6bc7843d85f6e6b6a0cab6895a3a7fd39b4",
+    "controller/operator_execution.py": "d1c98c7230f12278d715fbd8605bd0a9bc65bef0b11b965ff354690267bc4fdc",
+    "controller/api.py": "b785e4b823e2dba5b01f7d99025d19ba071e6ce05d1a8e16807dd823295e15f4",
+    "frontend/src/OperatorWorkspace.tsx": "23e85e934de11a9cd03a38ed9a6f7029b30a021e4588ed6bb909357ecaad3524",
+    "frontend/src/operator-api.ts": "251257fb993915c340c034e2f896309015cff78cb26da7161e67233c1999dcf6"
+  },
+  "tls_certificate": {
+    "reference_time_utc": "2026-11-15T10:19:55.126391+00:00",
+    "server_not_before": "2026-11-14T10:19:55+00:00",
+    "server_not_after": "2026-11-16T10:19:55+00:00",
+    "server_dns_san": "attachments.securityai.test",
+    "server_certificate_sha256": "cc634ec87153b53e6a022af2a8ef57b3a4ddf9f0c35bc162ab7c3fb5b8e893d5",
+    "private_storage": "windows-current-user-only-directory-acl"
+  },
+  "resolver": "injected-test-answers",
+  "secrets_in_verifier": false
+}

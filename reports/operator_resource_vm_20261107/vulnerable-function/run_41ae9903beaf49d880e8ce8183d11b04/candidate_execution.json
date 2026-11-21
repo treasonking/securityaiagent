@@ -1,0 +1,49 @@
+{
+  "schema_version": "operator-link-v1",
+  "run_id": "run_41ae9903beaf49d880e8ce8183d11b04",
+  "plan_id": "opplan_16fd390aa91b462a908d3d39ab251c8c",
+  "plan_sha256": "9b458b34c3d37d3831a33a83b798cba1d5f06dd0cabf8176724b16f3a79bbfb3",
+  "candidate_id": "55575ccb0fb727ddbf0ec58f6562f93f3c449167b593cb460b648d6d1e6ade41",
+  "source_sha256": "7c1d566ddabeac94d551e9f92fa8c7ccb3ee949f8890c3e331c68657082e7aae",
+  "registry_sha256": "1ff19088a0aacb2e0aa8eff5fc2b459a47792193883886537108692162df0a9e",
+  "approval_actor": "codex",
+  "approval_identity_authenticated": false,
+  "expected_scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "4022028635b5dac5918814f2848892e04037c856577f3ad5cd31722130324922",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "actual_scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "4022028635b5dac5918814f2848892e04037c856577f3ad5cd31722130324922",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "control_calls": {
+    "preview_policy": 1,
+    "run_policy": 1
+  },
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE"
+}

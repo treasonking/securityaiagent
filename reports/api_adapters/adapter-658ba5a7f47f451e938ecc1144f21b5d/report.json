@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.2",
+  "scope_policy": {
+    "profile_id": "lab-access-control",
+    "revision": 4,
+    "snapshot_sha256": "8da7379ee276a9b9c3bf94978fd0f9ec1be73569e4efabd34a41ed6462ced1d2",
+    "effective_limits": {
+      "max_requests": 9,
+      "max_tool_calls": 10,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "verification_basis": "http_observation",
+  "run_id": "adapter-658ba5a7f47f451e938ecc1144f21b5d",
+  "scenario_id": "access-control-http",
+  "target_id": "lab-web",
+  "mode": "unknown",
+  "provider_mode": "mock",
+  "model_id": null,
+  "tool_transport": "function",
+  "started_at": "2026-10-27T13:37:53.353869+00:00",
+  "finished_at": "2026-10-27T13:37:53.697866+00:00",
+  "status": "COMPLETED",
+  "verdict": "INCONCLUSIVE",
+  "finding_candidates": [
+    {
+      "finding_type": "cross_account_document_access",
+      "rationale": "Published scenario asks whether user-a can retrieve user-b's synthetic private document.",
+      "source": "mock_provider"
+    }
+  ],
+  "verified_findings": [],
+  "evidence_ids": [],
+  "limits_used": {
+    "http_requests": 1,
+    "tool_calls": 1
+  },
+  "model_usage": {
+    "calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0
+  },
+  "warnings": [
+    "tool workflow incomplete: ToolExecutionError: start_session(user-b): SCOPE_ACCOUNT_DENIED: account is outside the scope profile",
+    "HTTP scenario evidence is missing, duplicated, or out of sequence"
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Windows",
+    "target_data": "synthetic-only",
+    "target_server_log": "not_used"
+  },
+  "recommendations": [
+    "Rerun the same bounded HTTP scenario after changes; results apply only to the tested accounts and resource."
+  ]
+}

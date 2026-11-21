@@ -1,0 +1,90 @@
+{
+  "contract_version": "operator-resource-v1",
+  "target_id": "lab-web",
+  "scenario_id": "operator-resource-http",
+  "registry_sha256": "e988f3eb993d02b4c9b3767a9d446446a7cdf13feece4d7142d3099250b16b47",
+  "origin": "https://attachments.securityai.test:62722",
+  "adapter": {
+    "contract_version": "operator-resource-v1",
+    "adapter_id": "project-attachment-json",
+    "routes": {
+      "login_path": "/gateway/authenticate",
+      "me_path": "/gateway/session/profile",
+      "detail_path": "/workspace/attachments/{resource_id}"
+    },
+    "accounts": {
+      "user_a": {
+        "username": "cedar_editor",
+        "password_env": "LAB_USER_A_PASSWORD"
+      },
+      "user_b": {
+        "username": "quartz_reviewer",
+        "password_env": "LAB_USER_B_PASSWORD"
+      }
+    },
+    "login_user_field": "handle",
+    "login_password_field": "secret",
+    "auth_mode": "cookie",
+    "cookie_name": "project_sid",
+    "token_field": null,
+    "principal_field": "context.member.subject",
+    "resource_id_field": "artifact.key",
+    "owner_field": "artifact.acl.holder",
+    "visibility_field": "artifact.acl.classification",
+    "private_value": "restricted",
+    "public_value": "shared",
+    "proof_field": "content.audit.receipt",
+    "denial_status": 403,
+    "denial_field": "problem.kind",
+    "denial_value": "attachment_forbidden"
+  },
+  "accounts": {
+    "user_a": {
+      "principal_id": "member_K73",
+      "resource_id": "attachment_M4s8",
+      "proof_env": "OPERATOR_PROOF_A"
+    },
+    "user_b": {
+      "principal_id": "member_R92",
+      "resource_id": "attachment_N9t2",
+      "proof_env": "OPERATOR_PROOF_B"
+    }
+  },
+  "proof_commitments": {
+    "user_a": "00a618b7fd806a5f24ff3cfb371ea1310fa687c75e2702d822c05943ec2f1a22",
+    "user_b": "9be3f4b4bce1591df723fd7dd31b552a9ab40761c1e8210c20b1312e50dc4a60"
+  },
+  "scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "c0c026b2771f10e1301fe39b635d9016eaeff6817acd5498b6916d79e2aee7d6",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-dns-san-v1",
+      "ca_bundle_sha256": "8ca1fba4c18ed1528884c48497a4dda3bd9d6fd3ab0740c78caebfb2e1e568a1",
+      "context_ca_sha256": "afc5a77df55e70aeb7395a3485853fa1e888895ad1631e695ecefb386717fe11",
+      "minimum_version": "TLSv1.2"
+    },
+    "domain": {
+      "version": "domain-network-v1",
+      "allowed_ip_ranges": [
+        "127.0.0.1/32"
+      ],
+      "allow_non_global": true,
+      "resolver": "system-a-aaaa-all-v1",
+      "connection": "numeric-peer-checked-per-request-v1",
+      "hostname": "attachments.securityai.test",
+      "port": 62722
+    }
+  }
+}

@@ -1,0 +1,19 @@
+[
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62965",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62965,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "tls",
+    "reason_code": "TLS_CERT_DOMAIN_MISMATCH",
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": false
+  }
+]

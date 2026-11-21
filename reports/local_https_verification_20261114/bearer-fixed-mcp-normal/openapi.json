@@ -1,0 +1,236 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Project Attachment Metadata API",
+    "version": "1.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "projectSession": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "projectSession": []
+    }
+  ],
+  "paths": {
+    "/gateway/authenticate": {
+      "post": {
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "handle": {
+                    "type": "string"
+                  },
+                  "secret": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handle",
+                  "secret"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Attachment service response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "session": {
+                      "type": "object",
+                      "properties": {
+                        "grant": {
+                          "type": "object",
+                          "properties": {
+                            "credential": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "credential"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "grant"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "session"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gateway/session/profile": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Attachment service response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "context": {
+                      "type": "object",
+                      "properties": {
+                        "member": {
+                          "type": "object",
+                          "properties": {
+                            "subject": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "subject"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "member"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "context"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace/attachments/{resource_id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "resource_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,128}$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attachment service response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "artifact": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "project": {
+                          "type": "string"
+                        },
+                        "acl": {
+                          "type": "object",
+                          "properties": {
+                            "holder": {
+                              "type": "string"
+                            },
+                            "classification": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "holder",
+                            "classification"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "project",
+                        "acl"
+                      ]
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "audit": {
+                          "type": "object",
+                          "properties": {
+                            "receipt": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "receipt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "audit"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "artifact",
+                    "content"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Attachment service response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "problem": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "problem"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

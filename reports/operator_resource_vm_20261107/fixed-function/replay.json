@@ -1,0 +1,7 @@
+{
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+  "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+  "run_id": "run_11da0995bcf24b18b17aa5042c7d3bac",
+  "verdict_matches": true,
+  "evidence_count": 11
+}

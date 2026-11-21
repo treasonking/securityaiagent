@@ -1,0 +1,73 @@
+{
+  "job": {
+    "action": "rollback",
+    "plan": "fb4c600846174de684dcf357409e6fa0",
+    "confirm": "c34bbe150219fb9d062779d42d3a3d389fb43e8f102e40b09ea5f2bd032cd7db",
+    "sequence": "9e6d0b37bd284a228e87dc4369bfd343"
+  },
+  "receipt": {
+    "role": "controller",
+    "sequence": "9e6d0b37bd284a228e87dc4369bfd343",
+    "exit_code": 0
+  },
+  "result": {
+    "role": "controller",
+    "action": "rollback",
+    "ok": true,
+    "time": 1794474256.5028036,
+    "result": {
+      "id": "fb4c600846174de684dcf357409e6fa0",
+      "commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+      "events": [
+        {
+          "status": "STOPPING",
+          "time": 1794474160.1006482
+        },
+        {
+          "status": "STOPPED",
+          "time": 1794474160.4555683
+        },
+        {
+          "status": "BACKED_UP",
+          "time": 1794474161.1422167
+        },
+        {
+          "status": "STARTING",
+          "time": 1794474161.1455202
+        },
+        {
+          "status": "HEALTHY",
+          "time": 1794474164.0565898
+        },
+        {
+          "status": "RECOVERING",
+          "time": 1794474256.5051298
+        },
+        {
+          "status": "ROLLED_BACK",
+          "time": 1794474260.8176038
+        }
+      ],
+      "status": "ROLLED_BACK",
+      "health": {
+        "status_code": 200,
+        "status": "ok"
+      },
+      "preservation": {
+        "original_environment_config_reports_unchanged": true,
+        "original_database_rows_exact": true,
+        "deployed_database_existing_rows_preserved": true,
+        "database_count": 2,
+        "network_and_firewall_unchanged": true
+      },
+      "recovery": {
+        "restored_checkout": "/home/ubuntu/securityaiagent-deployments/releases/2b1c96b347234d57a4a3acdb4f12af10",
+        "health": {
+          "status_code": 200,
+          "status": "ok"
+        },
+        "new_data_retained_at": "/home/ubuntu/securityaiagent-deployments/releases/fb4c600846174de684dcf357409e6fa0/data"
+      }
+    }
+  }
+}

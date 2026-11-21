@@ -1,0 +1,40 @@
+{
+  "auth": "cookie",
+  "mode": "vulnerable",
+  "transport": "function",
+  "case": "budget2",
+  "plan_id": "opplan_6d6a2dd747484e8c8a983a3cd5000dff",
+  "plan_sha256": "564e56d719d501b1b7e9515141437fce66d3223ce1140dac9a504db5220d47bd",
+  "planned_snapshot": "d71ea9ab5c36d8b9f37aa123682ef5661876fc43cc44b5fba09dd751d6f1ae6b",
+  "worker_snapshot_at_run": "d71ea9ab5c36d8b9f37aa123682ef5661876fc43cc44b5fba09dd751d6f1ae6b",
+  "run_id": "run_9b50338a506d48fab19e3e49a0776729",
+  "status": "FAILED",
+  "expected_verdict": "INCONCLUSIVE",
+  "actual_verdict": "INCONCLUSIVE",
+  "reason_code": "SCOPE_LIMIT_EXCEEDED",
+  "preview_target_requests": 0,
+  "observed_target_http_requests": 2,
+  "worker_usage": {
+    "http_requests": 2,
+    "tool_calls": 3
+  },
+  "evidence_count": 2,
+  "replay": {
+    "verdict": "INCONCLUSIVE",
+    "reason_code": "INCOMPLETE_WORKFLOW",
+    "run_id": "run_9b50338a506d48fab19e3e49a0776729",
+    "verdict_matches": true,
+    "evidence_count": 2
+  },
+  "issued_count": 1,
+  "claimed_count": 1,
+  "scope_matches_plan": true,
+  "worker_transport_receipts": {
+    "policy": 2,
+    "function": 3,
+    "mcp": 0,
+    "cancel": 1
+  },
+  "plan_run_link_matches": true,
+  "passed": true
+}

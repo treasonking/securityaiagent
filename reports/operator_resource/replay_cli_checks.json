@@ -1,0 +1,23 @@
+[
+  {
+    "check": "mistyped run directory with duplicate run_ prefix",
+    "path": "reports/operator_resource/tcp-06a8a63/cookie-vulnerable-function-normal/runs/run_run_5c413526c9f04a2f84d59fc3b6465b8b",
+    "exit_code": 2,
+    "output": {
+      "verdict": "INCONCLUSIVE",
+      "reason_code": "REPLAY_INPUT_INVALID"
+    }
+  },
+  {
+    "check": "corrected run directory",
+    "path": "reports/operator_resource/tcp-06a8a63/cookie-vulnerable-function-normal/runs/run_5c413526c9f04a2f84d59fc3b6465b8b",
+    "exit_code": 0,
+    "output": {
+      "verdict": "VULNERABLE",
+      "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "run_id": "run_5c413526c9f04a2f84d59fc3b6465b8b",
+      "verdict_matches": true,
+      "evidence_count": 11
+    }
+  }
+]

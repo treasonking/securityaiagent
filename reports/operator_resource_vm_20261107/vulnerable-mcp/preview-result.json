@@ -1,0 +1,13 @@
+{
+  "role": "controller",
+  "action": "preview",
+  "ok": true,
+  "started_at": "2026-11-07T07:03:15.238086+00:00",
+  "exit_code": 0,
+  "cli_started_at": "2026-11-07T07:03:15.506853+00:00",
+  "cli_finished_at": "2026-11-07T07:03:16.163587+00:00",
+  "plan_id": "opplan_98cffb8bd65747448ec915bf717c6dca",
+  "plan_sha256": "393f33c47051acfb42a1a988598f6ced65a0dfb75d3fc02c8857fec35bbc6ded",
+  "expires_at": 1794035296,
+  "finished_at": "2026-11-07T07:03:16.208002+00:00"
+}

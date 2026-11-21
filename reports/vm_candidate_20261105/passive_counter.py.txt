@@ -1,0 +1,92 @@
+"""Bounded passive header counter. Never logs/stores packet payloads or secrets."""
+import json
+import os
+from pathlib import Path
+import select
+import socket
+import struct
+import subprocess
+import sys
+import time
+from urllib.parse import urlsplit
+
+ROOT=Path('/home/ubuntu/securityaiagent')
+sys.path.insert(0,str(ROOT))
+from common.service_config import read_config,validate_config
+from worker.registry import load_scope_registry
+cfg=read_config('worker',ROOT/'.env.worker')
+validate_config('worker',cfg)
+registry_path=Path(cfg.get('TARGET_REGISTRY_PATH','config/targets.json'))
+registry=load_scope_registry(registry_path if registry_path.is_absolute() else ROOT/registry_path,
+                            expected_origin=cfg.get('TARGET_BASE_URL'))
+origin=registry.profile('lab-web')
+# The selected registry has already been validated by the worker parser.
+payload=json.loads((registry_path if registry_path.is_absolute() else ROOT/registry_path).read_text())
+target=urlsplit(payload['targets']['lab-web']['origin'])
+assert target.hostname=='10.78.0.30' and target.port==8080 and target.scheme=='http'
+route=json.loads(subprocess.check_output(['ip','-j','route','get',target.hostname],text=True))[0]
+dev=route['dev']
+source=route['prefsrc']
+assert source=='10.78.0.20'
+phasefile=Path('/mnt/securityai-update/candidate-phase-20261105.json')
+outfile=Path('/mnt/securityai-candidate-results/packet-counts.json')
+allowed={'idle','function-preview','function-review','function-run','mcp-preview','mcp-review','mcp-run','stop'}
+sock=socket.socket(socket.AF_PACKET,socket.SOCK_RAW,socket.htons(3))
+sock.bind((dev,0))
+sock.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,4*1024*1024)
+sock.setblocking(False)
+rows={}
+current=None
+started=time.time()
+lastwrite=0
+drop_total=0
+observed_total=0
+def flush():
+    global drop_total,observed_total
+    stats=sock.getsockopt(263,6,8) # SOL_PACKET / PACKET_STATISTICS (resets interval counters)
+    received,dropped=struct.unpack('II',stats)
+    observed_total+=received
+    drop_total+=dropped
+    result={'observer_pid':os.getpid(),'interface':dev,'source':source,'target':target.hostname,
+        'target_port':target.port,'capture':'passive Ethernet/IP/TCP header counters; no payload output',
+        'started_at_epoch':started,'updated_at_epoch':time.time(),'active_phase':current,
+        'socket_received_packets':observed_total,'socket_dropped_packets':drop_total,'phases':rows}
+    tmp=outfile.with_suffix('.tmp')
+    tmp.write_text(json.dumps(result,indent=2))
+    tmp.replace(outfile)
+while time.time()-started < 1800:
+    try:
+        phase=json.loads(phasefile.read_text())['phase']
+    except (OSError,ValueError,KeyError):
+        phase='idle'
+    assert phase in allowed
+    if phase!=current:
+        if current:
+            rows[current]['ended_at_epoch']=time.time()
+        current=phase
+        rows.setdefault(current,{'started_at_epoch':time.time(),'target_tcp_packets':0,'target_payload_packets':0,'target_payload_bytes':0})
+        flush()
+        if phase=='stop':
+            break
+    ready,_,_=select.select([sock],[],[],0.05)
+    if ready:
+        # At most 128 bytes held transiently; only fixed Ethernet/IP/TCP header fields are inspected.
+        packet,_=sock.recvfrom(128)
+        if len(packet)>=54 and packet[12:14]==b'\x08\x00' and packet[23]==6 and packet[26:30]==socket.inet_aton(source) and packet[30:34]==socket.inet_aton(target.hostname):
+            ihl=(packet[14]&15)*4
+            tcp=14+ihl
+            if len(packet)>=tcp+20 and int.from_bytes(packet[tcp+2:tcp+4],'big')==target.port:
+                row=rows[current]
+                row['target_tcp_packets']+=1
+                total=int.from_bytes(packet[16:18],'big')
+                size=max(0,total-ihl-(packet[tcp+12]>>4)*4)
+                row['target_payload_packets']+=int(size>0)
+                row['target_payload_bytes']+=size
+        del packet
+    if time.time()-lastwrite>=0.5:
+        flush()
+        lastwrite=time.time()
+else:
+    rows.setdefault('timeout',{})['ended_at_epoch']=time.time()
+    flush()
+sock.close()

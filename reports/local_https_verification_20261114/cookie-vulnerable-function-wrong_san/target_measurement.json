@@ -1,0 +1,11 @@
+{
+  "http_received": 0,
+  "network": {
+    "tcp_accepted": 1,
+    "tls_handshake_attempts": 1,
+    "tls_handshake_failed": 1,
+    "tls_handshake_completed": 0
+  },
+  "events": [],
+  "verifier_input": false
+}

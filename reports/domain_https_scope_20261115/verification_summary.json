@@ -1,0 +1,98 @@
+{
+  "status": "COMPLETE",
+  "scope": "registered-domain-https-and-dns-ip-scope",
+  "execution_commit": "0bb9e58139e969d42289003a4ccfce8fb5b77326",
+  "execution_working_tree_dirty": false,
+  "started_at_utc": "2026-11-14T17:09:38.077831+00:00",
+  "date_kst": "2026-11-15",
+  "matrix": {
+    "cases": 24,
+    "passed": 24,
+    "elapsed_seconds": 32.266,
+    "command": ".\\.venv\\Scripts\\python.exe -m scripts.run_domain_https_verification --output verification_tmp/domain-https-publish-20261115-final"
+  },
+  "pytest": {
+    "command": ".\\.venv\\Scripts\\python.exe -m pytest",
+    "passed": 910,
+    "warnings": 40,
+    "elapsed_seconds": 296.53,
+    "exit_code": 0,
+    "new_domain_tests": 85,
+    "warning_categories": [
+      "existing Pydantic incomplete-field warning",
+      "MCP deprecated client helper",
+      "pytest cache directory write permission"
+    ],
+    "initial_suite_before_manifest_regression": {
+      "passed": 909,
+      "warnings": 40,
+      "elapsed_seconds": 317.16
+    },
+    "repeat_reason": "Public source manifest changed and a regression was added during the first suite; final full suite includes that correction. No source change after final pass."
+  },
+  "frontend": {
+    "command": "npm run build",
+    "cwd": "frontend",
+    "exit_code": 0,
+    "modules": 18,
+    "build_ms": 480,
+    "ui_source_unchanged": true,
+    "browser_validation": false
+  },
+  "source_hash_audit": {
+    "files": 28,
+    "commit_and_working_bytes_match": true
+  },
+  "publication": {
+    "per_case_secret_key_path_comparisons": 430,
+    "matches": 0,
+    "temporary_key_directories_removed": 24,
+    "absolute_user_path_and_private_key_marker_findings": 0
+  },
+  "history": {
+    "issued": 26,
+    "claimed": 24,
+    "saved_runs": 24,
+    "replay_matches": 24
+  },
+  "conditions": {
+    "normal_domain_https_eight_passed": true,
+    "all_dns_results_and_actual_peer_pinned": true,
+    "unapproved_dns_reconnection_blocked": true,
+    "domain_certificate_validation_preserved": true,
+    "old_plans_rejected_before_run_after_range_change": true,
+    "saved_evidence_replay_matches": true,
+    "no_unexpected_os_hostname_lookup": true,
+    "http_ip_https_regressions_preserved": true,
+    "public_secret_checks_passed": true,
+    "temporary_keys_cleaned": true,
+    "full_pytest_passed": true,
+    "frontend_build_passed": true
+  },
+  "actual_validation": [
+    "IPv4 loopback Target TCP/TLS",
+    "function/MCP TCP",
+    "SNI and HTTP Host at Target",
+    "numeric socket peer at Worker",
+    "fresh preview/digest/run and evidence replay"
+  ],
+  "injected_validation": [
+    "test-only .test resolver answer sequences",
+    "peer mismatch regression after actual TCP",
+    "OS getaddrinfo adapter unit boundary"
+  ],
+  "not_verified": [
+    "live OS hostname resolution",
+    "external DNS or internet services",
+    "actual IPv6 socket/TLS",
+    "VM deployment",
+    "DNSSEC/online revocation",
+    "browser/SSO/OAuth/CSRF/Nmap/Playwright",
+    "paid model"
+  ],
+  "preservation": {
+    "existing_env_db_vm_firewall_hosts_dns_global_ca_unchanged": true,
+    "previous_reports_unchanged": true,
+    "main_not_merged": true
+  }
+}

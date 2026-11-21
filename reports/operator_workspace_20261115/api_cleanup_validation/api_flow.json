@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "rows": [
+    {
+      "transport": "function",
+      "expected": "VULNERABLE",
+      "actual": "VULNERABLE",
+      "target_http": 11,
+      "run_id": "run_6593ac8d59ea4cb59f4326f2ce2152d2",
+      "plan_id": "opplan_b5d444368b524d6b8defb6deb44f8322",
+      "digest": "bb3dd93502b026ad144b0ffbddcde2330fb87a95488c850134962d0b15959f46"
+    },
+    {
+      "transport": "mcp",
+      "expected": "BLOCKED_BY_ACCESS_CONTROL",
+      "actual": "BLOCKED_BY_ACCESS_CONTROL",
+      "target_http": 11,
+      "run_id": "run_9e640307aad243a89c11c6261002d5a3",
+      "plan_id": "opplan_b5dc43cfbe934e439c52dd4766034cdd",
+      "digest": "5c2530756ca01b9a9e769162320a4b0c24704c1c3bac8c79328d6a10ed7680ce"
+    }
+  ],
+  "connections": "Controller/Worker/Target real loopback TCP; Target TLS; injected DNS"
+}

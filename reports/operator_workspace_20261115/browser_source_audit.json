@@ -1,0 +1,38 @@
+{
+  "controller/workspace.py": {
+    "browser_raw_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84",
+    "pre_normalization_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84",
+    "normalized_lf_sha256": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84",
+    "byte_identical_before_normalization": true
+  },
+  "controller/workspace_api.py": {
+    "browser_raw_sha256": "3836647485c36a611be15ae310d53d5f5efe542f72e43a96abf71cbc060c491a",
+    "pre_normalization_sha256": "adb45aa27496a16e9a13cb42cdbcf6bc7843d85f6e6b6a0cab6895a3a7fd39b4",
+    "normalized_lf_sha256": "adb45aa27496a16e9a13cb42cdbcf6bc7843d85f6e6b6a0cab6895a3a7fd39b4",
+    "byte_identical_before_normalization": false
+  },
+  "controller/operator_execution.py": {
+    "browser_raw_sha256": "d1c98c7230f12278d715fbd8605bd0a9bc65bef0b11b965ff354690267bc4fdc",
+    "pre_normalization_sha256": "d1c98c7230f12278d715fbd8605bd0a9bc65bef0b11b965ff354690267bc4fdc",
+    "normalized_lf_sha256": "d1c98c7230f12278d715fbd8605bd0a9bc65bef0b11b965ff354690267bc4fdc",
+    "byte_identical_before_normalization": true
+  },
+  "controller/api.py": {
+    "browser_raw_sha256": "b785e4b823e2dba5b01f7d99025d19ba071e6ce05d1a8e16807dd823295e15f4",
+    "pre_normalization_sha256": "b785e4b823e2dba5b01f7d99025d19ba071e6ce05d1a8e16807dd823295e15f4",
+    "normalized_lf_sha256": "64829e623babc0307ab2b4d38f86cd946143b1d42f11dd851a8a33370c6bf3b6",
+    "byte_identical_before_normalization": true
+  },
+  "frontend/src/OperatorWorkspace.tsx": {
+    "browser_raw_sha256": "23e85e934de11a9cd03a38ed9a6f7029b30a021e4588ed6bb909357ecaad3524",
+    "pre_normalization_sha256": "23e85e934de11a9cd03a38ed9a6f7029b30a021e4588ed6bb909357ecaad3524",
+    "normalized_lf_sha256": "96303d5685f545e0bb0caf212a6916e3001148200790e36e54ca4b248e9e6613",
+    "byte_identical_before_normalization": true
+  },
+  "frontend/src/operator-api.ts": {
+    "browser_raw_sha256": "251257fb993915c340c034e2f896309015cff78cb26da7161e67233c1999dcf6",
+    "pre_normalization_sha256": "251257fb993915c340c034e2f896309015cff78cb26da7161e67233c1999dcf6",
+    "normalized_lf_sha256": "251257fb993915c340c034e2f896309015cff78cb26da7161e67233c1999dcf6",
+    "byte_identical_before_normalization": true
+  }
+}

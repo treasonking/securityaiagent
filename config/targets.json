@@ -1,12 +1,89 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "targets": {
     "lab-web": {
-      "base_url": "http://10.78.0.30:8080",
-      "allowed_scheme": "http",
-      "allowed_host": "10.78.0.30",
-      "allowed_port": 8080,
-      "account_refs": ["user-a", "user-b", "admin"]
+      "origin": "http://10.78.0.30:8080",
+      "profile": {
+        "profile_id": "lab-access-control",
+        "revision": 4,
+        "enabled": true,
+        "scenarios": {
+          "access-control": [
+            "user-a",
+            "user-b",
+            "admin"
+          ],
+          "access-control-http": [
+            "user-a",
+            "user-b"
+          ]
+        },
+        "operations": [
+          "login",
+          "list_own_documents",
+          "fetch_document"
+        ],
+        "limits": {
+          "max_requests": 30,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 2.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "http_routes": {
+          "login_path": "/login",
+          "list_path": "/documents",
+          "detail_path": "/documents/{document_id}"
+        }
+      },
+      "adapter": {
+        "adapter_id": "synthetic-documents",
+        "routes": {
+          "login_path": "/login",
+          "list_path": "/documents",
+          "detail_path": "/documents/{document_id}"
+        },
+        "accounts": {
+          "user_a": {
+            "username": "user_a",
+            "password_env": "LAB_USER_A_PASSWORD"
+          },
+          "user_b": {
+            "username": "user_b",
+            "password_env": "LAB_USER_B_PASSWORD"
+          },
+          "admin": {
+            "username": "admin",
+            "password_env": "LAB_ADMIN_PASSWORD"
+          }
+        },
+        "login_user_field": "username",
+        "login_password_field": "password",
+        "auth_mode": "cookie",
+        "cookie_name": "lab_session",
+        "token_field": null,
+        "identity_header": "X-SecurityLab-Account",
+        "list_field": "documents",
+        "list_account_field": "account_id",
+        "list_id_field": "document_id",
+        "list_owner_field": "owner_id",
+        "resource_id_field": "document_id",
+        "owner_field": "owner_id",
+        "visibility_field": "visibility",
+        "private_value": "private",
+        "public_value": "public",
+        "content_field": "canary.value",
+        "content_kind_field": "canary.kind",
+        "content_kind_value": "synthetic-private",
+        "content_container_field": "canary",
+        "legacy_marker_field": "marker",
+        "denial_field": "detail",
+        "denial_value": "document not found"
+      }
     }
   }
 }

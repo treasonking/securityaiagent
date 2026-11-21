@@ -1,0 +1,66 @@
+{
+  "role": "target",
+  "action": "final",
+  "ok": true,
+  "started_at": "2026-11-07T07:05:58.970069+00:00",
+  "original_head_unchanged": true,
+  "protected_files_unchanged": true,
+  "changed_paths": [],
+  "databases": [
+    {
+      "file": "target.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true,
+      "exact_rows_match": true
+    },
+    {
+      "file": "vm-target-fixed.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true,
+      "exact_rows_match": true
+    },
+    {
+      "file": "vm-target-live-vulnerable.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true,
+      "exact_rows_match": true
+    },
+    {
+      "file": "vm-target-vulnerable.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true,
+      "exact_rows_match": true
+    },
+    {
+      "file": "vm-target.sqlite3",
+      "quick_check": "ok",
+      "existing_rows_preserved": true,
+      "exact_rows_match": true
+    }
+  ],
+  "network_unchanged": true,
+  "firewall_unchanged": true,
+  "restored_listener": {
+    "pid": 4330,
+    "cwd": "/home/ubuntu/securityaiagent",
+    "args": [
+      "/home/ubuntu/securityaiagent/.venv/bin/python",
+      "-m",
+      "uvicorn",
+      "target.app:app",
+      "--host",
+      "10.78.0.30",
+      "--port",
+      "8080"
+    ],
+    "start_ticks": "99386"
+  },
+  "health": {
+    "status_code": 200,
+    "status": "ok",
+    "path": "/health"
+  },
+  "new_plan_history_files": 0,
+  "new_run_reports": 0,
+  "finished_at": "2026-11-07T07:05:59.343356+00:00"
+}

@@ -1,0 +1,35 @@
+{
+  "role": "target",
+  "action": "restore",
+  "ok": true,
+  "started_at": "2026-11-07T07:05:27.591881+00:00",
+  "stopped_test_service": {
+    "terminated_pid": 4265,
+    "signal": "SIGTERM",
+    "graceful": true
+  },
+  "restored_service": {
+    "launcher_pid": 4327,
+    "listener": {
+      "pid": 4330,
+      "cwd": "/home/ubuntu/securityaiagent",
+      "args": [
+        "/home/ubuntu/securityaiagent/.venv/bin/python",
+        "-m",
+        "uvicorn",
+        "target.app:app",
+        "--host",
+        "10.78.0.30",
+        "--port",
+        "8080"
+      ],
+      "start_ticks": "99386"
+    }
+  },
+  "health": {
+    "status_code": 200,
+    "status": "ok",
+    "path": "/health"
+  },
+  "finished_at": "2026-11-07T07:05:29.495685+00:00"
+}

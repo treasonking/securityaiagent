@@ -1,0 +1,73 @@
+{
+  "job": {
+    "action": "rollback",
+    "plan": "21ca6fe48dbf4ff9b5f1d3acaf18b2ef",
+    "confirm": "433d96a8f7e60c869882a556a8ce1585aaefffbd02c7c312da50ea00a566484b",
+    "sequence": "3d5e69904deb4188980a00746d813413"
+  },
+  "receipt": {
+    "role": "worker",
+    "sequence": "3d5e69904deb4188980a00746d813413",
+    "exit_code": 0
+  },
+  "result": {
+    "role": "worker",
+    "action": "rollback",
+    "ok": true,
+    "time": 1794474254.9321616,
+    "result": {
+      "id": "21ca6fe48dbf4ff9b5f1d3acaf18b2ef",
+      "commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+      "events": [
+        {
+          "status": "STOPPING",
+          "time": 1794474140.7793686
+        },
+        {
+          "status": "STOPPED",
+          "time": 1794474140.9740582
+        },
+        {
+          "status": "BACKED_UP",
+          "time": 1794474141.8332186
+        },
+        {
+          "status": "STARTING",
+          "time": 1794474141.839694
+        },
+        {
+          "status": "HEALTHY",
+          "time": 1794474144.309235
+        },
+        {
+          "status": "RECOVERING",
+          "time": 1794474254.9350185
+        },
+        {
+          "status": "ROLLED_BACK",
+          "time": 1794474258.2750463
+        }
+      ],
+      "status": "ROLLED_BACK",
+      "health": {
+        "status_code": 200,
+        "status": "ok"
+      },
+      "preservation": {
+        "original_environment_config_reports_unchanged": true,
+        "original_database_rows_exact": true,
+        "deployed_database_existing_rows_preserved": true,
+        "database_count": 1,
+        "network_and_firewall_unchanged": true
+      },
+      "recovery": {
+        "restored_checkout": "/home/ubuntu/securityaiagent-deployments/releases/3d88cb99dc5e48b3aefed13a5fda46e6",
+        "health": {
+          "status_code": 200,
+          "status": "ok"
+        },
+        "new_data_retained_at": "/home/ubuntu/securityaiagent-deployments/releases/21ca6fe48dbf4ff9b5f1d3acaf18b2ef/data"
+      }
+    }
+  }
+}

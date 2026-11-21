@@ -1,0 +1,30 @@
+{
+  "job": {
+    "action": "apply",
+    "plan": "7c6a5729e910425cb28a36653d47e54a",
+    "confirm": "6cabbe62544b187e4e7f9febf8ffa267ac825ac5fac6783954e296980de4f979",
+    "sequence": "d650c45b5c134113acf7dff7eb38c622"
+  },
+  "receipt": {
+    "role": "target",
+    "sequence": "d650c45b5c134113acf7dff7eb38c622",
+    "exit_code": 0
+  },
+  "result": {
+    "role": "target",
+    "action": "apply",
+    "ok": true,
+    "time": 1794474314.672595,
+    "result": {
+      "status": "ALREADY_HEALTHY",
+      "id": "7c6a5729e910425cb28a36653d47e54a",
+      "preservation": {
+        "original_environment_config_reports_unchanged": true,
+        "original_database_rows_exact": true,
+        "deployed_database_existing_rows_preserved": true,
+        "database_count": 5,
+        "network_and_firewall_unchanged": true
+      }
+    }
+  }
+}

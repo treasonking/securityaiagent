@@ -1,0 +1,8 @@
+{
+  "role": "controller",
+  "public_files_scanned": 20,
+  "private_values_checked": 5,
+  "secret_matches": 0,
+  "installed_tool_sha256": "1bb50d44a2d8a19a4931c187ae1773b311249697aa4c908f2c2b747ec7718f35",
+  "installed_tool_path": "/home/ubuntu/securityaiagent-deployments/tools/vm_deploy.py"
+}

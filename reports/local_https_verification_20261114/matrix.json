@@ -1,0 +1,1787 @@
+{
+  "started_at_utc": "2026-11-14T06:21:05.487001+00:00",
+  "provider": "mock",
+  "code_commit": "c9b3a33a3b47736f95f3bc23091cccc5903c633d",
+  "working_tree_dirty": true,
+  "command": "python -m scripts.run_local_https_verification --output <new-directory>",
+  "python": "3.12.14",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "openssl": "OpenSSL 3.5.8 25 Aug 2026",
+  "runtime_initial_context_ca_records": 1,
+  "source_sha256": {
+    "scripts/run_local_https_verification.py": "09d0ddc20ee337f06f9fa3033d9fe6ab36ea7c8931da3b672371fa1b6d65985b",
+    "validation/local_https.py": "0114f73ed171a3df9dbfba29272ce5a400ba223265d774f4b7c0ed5566e274c0",
+    "validation/independent_api/api.py": "3637997b28ad0960d3e758647ba72afb89b6334f66a7f370c9ac7d91ff929a46",
+    "worker/app.py": "12366945d72a07946c7e719fe93bfac30f51ea203f424b378d44e6a3d81a369e",
+    "worker/candidate_policy.py": "f20afcf70437a1393970a5391c73ed56f63c87c6081432d139181dc6133fcd10",
+    "worker/cli.py": "4f76d6b1632ba24d6974e420f8c7cf12f818662aedf67a6bfbbbc098aec59db0",
+    "worker/limits.py": "a684052b07d89c07908d679af4504127edd112fd226f55ef475c06a1182d5a18",
+    "worker/operator_app.py": "f5ffa0204b3494bb1a97e56352dd2b190f893df644791632671848ee42d2b84c",
+    "worker/operator_scope.py": "d3ab4567d5da2186837cbe83fec1cc6a171951de20ab26f8195187a748e064ce",
+    "worker/operator_service.py": "3dddb6cda58b37622539cb3a22a4245ac1250374b9cd249dae8a3027981116a5",
+    "worker/policy.py": "14f1f74aeecd5b316fe33b2a30a1d0c27e4c5b2aca2da9a29f3274bf1061d7b0",
+    "worker/registry.py": "1d5c8d99e540b135dd7b12b210d596d7211697a4d700002f791faa2ddb644b06",
+    "worker/scope.py": "f61001c3662c8d99eb6a30108119f2a969aed521e6b11c9a76416280e0a8a6f5",
+    "worker/service.py": "8d481bd14de5cfbe1d20bfa4970a71384d34845aac795cc400c88188a297a613",
+    "worker/tls.py": "e0fb1b1359b1aa04558d9a8292db815c44784b17bd19cb2582a3847b5b3c719e",
+    "worker/__init__.py": "3246af35a733c0567e028729e8fb16f483de2d5496bcf3e465f27f4ac80e3f12",
+    "common/tls_contract.py": "1f2aba89426ad39bb7ddb470e929d55e4b2ede8e645b1b78da9ca5c722aafbf3",
+    "common/operator_contract.py": "b4ac19931413f0e6c4a157e04d8d1c93f762ac9b22d3f70be1f6f7474361783b",
+    "common/schemas.py": "fdcdb11df28ee397d543bcf44409eac9869ab6cd37a5f3a78cf7dd49894966e5",
+    "common/service_config.py": "a291c6d1f70120f1c43351aa3409fe35ec4eeee0741b26bad7fb703ca8d3b35a",
+    "controller/operator_execution.py": "8ac114c215f8f87a4b9776ce3cece680d0ab59123c9731373b982e5b495f622e",
+    "verifier/operator.py": "54262aa4aa9f8903956bf2d9e247f27bc1f7f4055d95ff3c2a68359577dd46f2"
+  },
+  "cases": [
+    {
+      "auth": "cookie",
+      "mode": "vulnerable",
+      "transport": "function",
+      "case": "normal",
+      "run_id": "run_5d85890938a147f7811ccffe374af2f3",
+      "plan_id": "opplan_3d33bf7f5996417aa9ec0308826bb88e",
+      "plan_sha256": "f2f11bb705190b759536ac23a332711eece5ea1f9455a3f31b61c86235d6a52f",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "edb777b8a4132d4bf8c982ab78c2aa57068d3c0fab6c93078b4054e59af40eaa",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "d9d13e71b89ba97a5d70f13447648ed31a53d79ab34638bf6a86584620310720",
+          "context_ca_sha256": "036611c2d10dc73dc2ff469722cb11e194a15829ae05b692fa6cad82cc3300eb",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "edb777b8a4132d4bf8c982ab78c2aa57068d3c0fab6c93078b4054e59af40eaa",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "d9d13e71b89ba97a5d70f13447648ed31a53d79ab34638bf6a86584620310720",
+          "context_ca_sha256": "036611c2d10dc73dc2ff469722cb11e194a15829ae05b692fa6cad82cc3300eb",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "target_http_received": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "status": "COMPLETED",
+      "verdict": "VULNERABLE",
+      "expected_verdict": "VULNERABLE",
+      "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "replay": {
+        "verdict": "VULNERABLE",
+        "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+        "run_id": "run_5d85890938a147f7811ccffe374af2f3",
+        "verdict_matches": true,
+        "evidence_count": 11
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 12,
+        "mcp": 0,
+        "cancel": 0
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:06.172843+00:00",
+        "server_not_before": "2026-11-13T06:21:06+00:00",
+        "server_not_after": "2026-11-15T06:21:06+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "d383dd60f4be869fe95c081050571989d3ae97a690a51fe064d10125c8bba693",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-vulnerable-function-normal"
+    },
+    {
+      "auth": "cookie",
+      "mode": "vulnerable",
+      "transport": "mcp",
+      "case": "normal",
+      "run_id": "run_85fd2cadbbeb4a57b9b494e1a424ce84",
+      "plan_id": "opplan_3dc73817af4e4f4da804161d8bb837d2",
+      "plan_sha256": "d861a4b27a355bf4ebdedf7b1c3ff0afc29c904ba1f47383c6a899531de786c8",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "225284e4b9fba38b348dfdf2d2d9372696c2462aa77614cb48b37287a6ac395d",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "aaf085f09b0407a5eb0d184023de300be1407ff139b7191732ba7819a9dfa0c2",
+          "context_ca_sha256": "7ed3f6942382fbb296e71b3b0db0e3f1eb9231b01a6c21750fc275343cbbc297",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "225284e4b9fba38b348dfdf2d2d9372696c2462aa77614cb48b37287a6ac395d",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "aaf085f09b0407a5eb0d184023de300be1407ff139b7191732ba7819a9dfa0c2",
+          "context_ca_sha256": "7ed3f6942382fbb296e71b3b0db0e3f1eb9231b01a6c21750fc275343cbbc297",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "target_http_received": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "status": "COMPLETED",
+      "verdict": "VULNERABLE",
+      "expected_verdict": "VULNERABLE",
+      "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "replay": {
+        "verdict": "VULNERABLE",
+        "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+        "run_id": "run_85fd2cadbbeb4a57b9b494e1a424ce84",
+        "verdict_matches": true,
+        "evidence_count": 11
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 0,
+        "mcp": 15,
+        "cancel": 0
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:08.475156+00:00",
+        "server_not_before": "2026-11-13T06:21:08+00:00",
+        "server_not_after": "2026-11-15T06:21:08+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "1b1bd82cb1d88444c04b0ede9791f4b99636b89dce043f2763ce832cbe45af99",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-vulnerable-mcp-normal"
+    },
+    {
+      "auth": "cookie",
+      "mode": "fixed",
+      "transport": "function",
+      "case": "normal",
+      "run_id": "run_b4b99a265478464daee820922c522694",
+      "plan_id": "opplan_75c72a4b3df9453d80fe51b66a8d8a6c",
+      "plan_sha256": "5b86c4a3ec51ff2f9b538ab97c0588965fe0e205ee63cab644c367297105442b",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "aac019eaa2c3b09b296e8809f27acbc690abe82d4f631b00addbfdc94cffa615",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "afced8044dcc99248eaff0263654e406f439befb013bbed68b492dfb91122818",
+          "context_ca_sha256": "ec32af2db497b397d0af3fcef7ba469a46fdc2a7824480a46eaa0ce1d088296c",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "aac019eaa2c3b09b296e8809f27acbc690abe82d4f631b00addbfdc94cffa615",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "afced8044dcc99248eaff0263654e406f439befb013bbed68b492dfb91122818",
+          "context_ca_sha256": "ec32af2db497b397d0af3fcef7ba469a46fdc2a7824480a46eaa0ce1d088296c",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "target_http_received": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "status": "COMPLETED",
+      "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "expected_verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "replay": {
+        "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+        "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+        "run_id": "run_b4b99a265478464daee820922c522694",
+        "verdict_matches": true,
+        "evidence_count": 11
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 12,
+        "mcp": 0,
+        "cancel": 0
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:13.606486+00:00",
+        "server_not_before": "2026-11-13T06:21:13+00:00",
+        "server_not_after": "2026-11-15T06:21:13+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "cf770e27771cbc3cf9918165169ff4a9805ceabd153ad0a22fdd137db98227bd",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-fixed-function-normal"
+    },
+    {
+      "auth": "cookie",
+      "mode": "fixed",
+      "transport": "mcp",
+      "case": "normal",
+      "run_id": "run_63d5d805ccac4f83a08c75ffa5b8bb96",
+      "plan_id": "opplan_b35d3edd5e8b4967beffabf96381cc6a",
+      "plan_sha256": "6da13b2eb8ade66f2ec0029ec2a581b9c7d1a772deeca3abcfd5dc68b3adbdc7",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "936e6563a853c0aa31a49ca557d4cd69025870bbf4a49a5ce90f29abe9c7c08b",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "704bf9ec52a90f2b68f8103b0bf7dbe9fd6186fa68ce42ebe2605897292d89e5",
+          "context_ca_sha256": "4c2176a59e4f8ad3e7a2aaa56acf7e0534253b37edb2e6b3007094bc920b2c2f",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "936e6563a853c0aa31a49ca557d4cd69025870bbf4a49a5ce90f29abe9c7c08b",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "704bf9ec52a90f2b68f8103b0bf7dbe9fd6186fa68ce42ebe2605897292d89e5",
+          "context_ca_sha256": "4c2176a59e4f8ad3e7a2aaa56acf7e0534253b37edb2e6b3007094bc920b2c2f",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "target_http_received": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "status": "COMPLETED",
+      "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "expected_verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "replay": {
+        "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+        "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+        "run_id": "run_63d5d805ccac4f83a08c75ffa5b8bb96",
+        "verdict_matches": true,
+        "evidence_count": 11
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 0,
+        "mcp": 15,
+        "cancel": 0
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:15.227691+00:00",
+        "server_not_before": "2026-11-13T06:21:15+00:00",
+        "server_not_after": "2026-11-15T06:21:15+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "33ffac18c6855e38823883c5c4f9b3fb1464c1e1a93da814c527250ccaa7ca00",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-fixed-mcp-normal"
+    },
+    {
+      "auth": "bearer",
+      "mode": "vulnerable",
+      "transport": "function",
+      "case": "normal",
+      "run_id": "run_53266594d90445d2b55152042bff5fa9",
+      "plan_id": "opplan_d9e51fe3397c44daa258f5b6d14f01a6",
+      "plan_sha256": "79fc5f8938fcc7fc5f17db38cfceb232b08f0ed45825fb3bdea1c13efaa4a701",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "c47632a426347125e029764ec502b50e3c857877ad434989dc4e946056de3de3",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "d827d10175ea6e124e2dca2d541b736da01f7e4d0e701621dc95fe937ce0705b",
+          "context_ca_sha256": "88e04589959e10b20a63453815143406313d3e92e8f4501e4f2c8ab1f10ec59a",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "c47632a426347125e029764ec502b50e3c857877ad434989dc4e946056de3de3",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "d827d10175ea6e124e2dca2d541b736da01f7e4d0e701621dc95fe937ce0705b",
+          "context_ca_sha256": "88e04589959e10b20a63453815143406313d3e92e8f4501e4f2c8ab1f10ec59a",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "target_http_received": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "status": "COMPLETED",
+      "verdict": "VULNERABLE",
+      "expected_verdict": "VULNERABLE",
+      "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "replay": {
+        "verdict": "VULNERABLE",
+        "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+        "run_id": "run_53266594d90445d2b55152042bff5fa9",
+        "verdict_matches": true,
+        "evidence_count": 11
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 12,
+        "mcp": 0,
+        "cancel": 0
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:16.713562+00:00",
+        "server_not_before": "2026-11-13T06:21:16+00:00",
+        "server_not_after": "2026-11-15T06:21:16+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "19749afe7c388d843d13c3401628af43d98b4924105de66922b085182e5bf99a",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "bearer-vulnerable-function-normal"
+    },
+    {
+      "auth": "bearer",
+      "mode": "vulnerable",
+      "transport": "mcp",
+      "case": "normal",
+      "run_id": "run_5a3fe47a46aa4cf893055624748a2ba6",
+      "plan_id": "opplan_12ec28e890834115b698a3ab97861a16",
+      "plan_sha256": "a10bf49b186f99e4f69bd08a5ea646a5f899d0571c03dd04d510a42705572144",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "1694c4d325bcaff16b36115088e32ac0a2f03d255f4bdafbbedbdcab1903803c",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "012a6c57c482c5f60a405260e63f154690512a0d825875ee2195ff7f84f2de64",
+          "context_ca_sha256": "635c58187bc6b3c2263aac5d47fb86589a2ebb9f95900c57ae8265b826020403",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "1694c4d325bcaff16b36115088e32ac0a2f03d255f4bdafbbedbdcab1903803c",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "012a6c57c482c5f60a405260e63f154690512a0d825875ee2195ff7f84f2de64",
+          "context_ca_sha256": "635c58187bc6b3c2263aac5d47fb86589a2ebb9f95900c57ae8265b826020403",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "target_http_received": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "status": "COMPLETED",
+      "verdict": "VULNERABLE",
+      "expected_verdict": "VULNERABLE",
+      "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "replay": {
+        "verdict": "VULNERABLE",
+        "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+        "run_id": "run_5a3fe47a46aa4cf893055624748a2ba6",
+        "verdict_matches": true,
+        "evidence_count": 11
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 0,
+        "mcp": 15,
+        "cancel": 0
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:18.106763+00:00",
+        "server_not_before": "2026-11-13T06:21:18+00:00",
+        "server_not_after": "2026-11-15T06:21:18+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "f1f386ffb76ee9965458fe564201b0b145919a8df00948f93fe40f7bb9045b39",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "bearer-vulnerable-mcp-normal"
+    },
+    {
+      "auth": "bearer",
+      "mode": "fixed",
+      "transport": "function",
+      "case": "normal",
+      "run_id": "run_542e1f2841ae4860b81fee3dd49c6e3b",
+      "plan_id": "opplan_b1e521df0a9547dfabdccafae3089780",
+      "plan_sha256": "e9b0f4350ed4767ab2c8284b828148179f94f0896cd0588e9793e0985b3badb9",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "9f9dec78b6981e671380bdf5fd38dbbbcbe8550902f9766f6ff4a82edf7c2ce4",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "79296df0b8bb3bd56a1dd5efddc44c388755eeae1a404943411156feff416693",
+          "context_ca_sha256": "16331d56ff436f2e00e32c1d2182abb2a7b3112b6b7573a352b73111e55d0b4e",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "9f9dec78b6981e671380bdf5fd38dbbbcbe8550902f9766f6ff4a82edf7c2ce4",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "79296df0b8bb3bd56a1dd5efddc44c388755eeae1a404943411156feff416693",
+          "context_ca_sha256": "16331d56ff436f2e00e32c1d2182abb2a7b3112b6b7573a352b73111e55d0b4e",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "target_http_received": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "status": "COMPLETED",
+      "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "expected_verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "replay": {
+        "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+        "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+        "run_id": "run_542e1f2841ae4860b81fee3dd49c6e3b",
+        "verdict_matches": true,
+        "evidence_count": 11
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 12,
+        "mcp": 0,
+        "cancel": 0
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:19.297718+00:00",
+        "server_not_before": "2026-11-13T06:21:19+00:00",
+        "server_not_after": "2026-11-15T06:21:19+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "641494325a0345058280b51e6c9b35fa123da1ab532491a7c10c781cf6365a97",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "bearer-fixed-function-normal"
+    },
+    {
+      "auth": "bearer",
+      "mode": "fixed",
+      "transport": "mcp",
+      "case": "normal",
+      "run_id": "run_ca675c504d424a64a414bfd4ce76f6d3",
+      "plan_id": "opplan_da9120ae4abe42d1a9ca4c5bce1ff314",
+      "plan_sha256": "1afd3db9245d95d6705d18e9767d98dd29bcf2fe5a5cb28b8217a592ebf604d3",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "ba741234da39f9e413e685308476465f09176ee2e03f5649ee847e89b4a3db80",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "9a1545cd22efdf9d19a171899bdaeed24245df19ce9ea78292a159d7c8f64a13",
+          "context_ca_sha256": "c1b034653aaf2ea80ff8851d0c85d16fd9f41203a6016477a75ed7c660c9a294",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "ba741234da39f9e413e685308476465f09176ee2e03f5649ee847e89b4a3db80",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "9a1545cd22efdf9d19a171899bdaeed24245df19ce9ea78292a159d7c8f64a13",
+          "context_ca_sha256": "c1b034653aaf2ea80ff8851d0c85d16fd9f41203a6016477a75ed7c660c9a294",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "target_http_received": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "status": "COMPLETED",
+      "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "expected_verdict": "BLOCKED_BY_ACCESS_CONTROL",
+      "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "replay": {
+        "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+        "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+        "run_id": "run_ca675c504d424a64a414bfd4ce76f6d3",
+        "verdict_matches": true,
+        "evidence_count": 11
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 0,
+        "mcp": 15,
+        "cancel": 0
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:20.701845+00:00",
+        "server_not_before": "2026-11-13T06:21:20+00:00",
+        "server_not_after": "2026-11-15T06:21:20+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "a5a7980df6ad0a89de71e1d99fa45a7564439d8a2c79a5b86369da377602da1c",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "bearer-fixed-mcp-normal"
+    },
+    {
+      "auth": "cookie",
+      "mode": "vulnerable",
+      "transport": "function",
+      "case": "untrusted_ca",
+      "run_id": "run_6b8d9640aa1a48698ffae32ce7d3e0dd",
+      "plan_id": "opplan_37eafeec965b432da08fc0735f110ea7",
+      "plan_sha256": "2ca6d0273dc489fc7ffe68dac5e3d39c1e6cab022a25e90cb7a7632357f8afe7",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "ff8b8429035ab816f909b74bdf8cc5cd33e99ef25a1d31d0f2b0fc1826c7b175",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "6ec7ec2dcd5d3514bcd3d887be5ea488e3c3e68fc3c7a3b70856f4e8d6deccd2",
+          "context_ca_sha256": "59ba409faf97ded440fd650410b22b8b31cbcc68771a846a84cec2ae648fe4f7",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "ff8b8429035ab816f909b74bdf8cc5cd33e99ef25a1d31d0f2b0fc1826c7b175",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "6ec7ec2dcd5d3514bcd3d887be5ea488e3c3e68fc3c7a3b70856f4e8d6deccd2",
+          "context_ca_sha256": "59ba409faf97ded440fd650410b22b8b31cbcc68771a846a84cec2ae648fe4f7",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 1,
+        "tls_handshake_attempts": 1,
+        "tls_handshake_failed": 1,
+        "tls_handshake_completed": 0
+      },
+      "target_http_received": 0,
+      "worker_usage": {
+        "http_requests": 1,
+        "tool_calls": 1
+      },
+      "evidence_count": 0,
+      "status": "FAILED",
+      "verdict": "INCONCLUSIVE",
+      "expected_verdict": "INCONCLUSIVE",
+      "reason_code": "TLS_CERT_UNTRUSTED",
+      "replay": {
+        "verdict": "INCONCLUSIVE",
+        "reason_code": "INCOMPLETE_WORKFLOW",
+        "run_id": "run_6b8d9640aa1a48698ffae32ce7d3e0dd",
+        "verdict_matches": true,
+        "evidence_count": 0
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 1,
+        "mcp": 0,
+        "cancel": 1
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:22.068751+00:00",
+        "server_not_before": "2026-11-13T06:21:22+00:00",
+        "server_not_after": "2026-11-15T06:21:22+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "bc6a4dcfddfa7b9acfbba51a872dd4de816a3ec6f76a9be4e01787c0c463d772",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-vulnerable-function-untrusted_ca"
+    },
+    {
+      "auth": "cookie",
+      "mode": "vulnerable",
+      "transport": "mcp",
+      "case": "untrusted_ca",
+      "run_id": "run_be57bfb27f064bcea5c38435edc4a91d",
+      "plan_id": "opplan_a842d7eb4e914a559e576a326371166d",
+      "plan_sha256": "25ecd7cc061c693862cd0ed40e977eec43925a5e086c4795f75c446dc789e01d",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "098b8e774f35b97c5a19189aee6b7d231d0f41cdc2bb841ec53ebfe3504bdc42",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "aea7a89c387f231234dd0ff59783eb95a78bca23b87cc5aa906a5774df7046f8",
+          "context_ca_sha256": "2425035b8a0d6ec88659ae349153c63fbf2ca224948eca61a2248684ed7f0138",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "098b8e774f35b97c5a19189aee6b7d231d0f41cdc2bb841ec53ebfe3504bdc42",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "aea7a89c387f231234dd0ff59783eb95a78bca23b87cc5aa906a5774df7046f8",
+          "context_ca_sha256": "2425035b8a0d6ec88659ae349153c63fbf2ca224948eca61a2248684ed7f0138",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 1,
+        "tls_handshake_attempts": 1,
+        "tls_handshake_failed": 1,
+        "tls_handshake_completed": 0
+      },
+      "target_http_received": 0,
+      "worker_usage": {
+        "http_requests": 1,
+        "tool_calls": 1
+      },
+      "evidence_count": 0,
+      "status": "FAILED",
+      "verdict": "INCONCLUSIVE",
+      "expected_verdict": "INCONCLUSIVE",
+      "reason_code": "TLS_CERT_UNTRUSTED",
+      "replay": {
+        "verdict": "INCONCLUSIVE",
+        "reason_code": "INCOMPLETE_WORKFLOW",
+        "run_id": "run_be57bfb27f064bcea5c38435edc4a91d",
+        "verdict_matches": true,
+        "evidence_count": 0
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 0,
+        "mcp": 4,
+        "cancel": 1
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:23.327419+00:00",
+        "server_not_before": "2026-11-13T06:21:23+00:00",
+        "server_not_after": "2026-11-15T06:21:23+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "781ca44ebe4e4770ce29ecfaed8d4208e61fbfcf3d10678a51bfa4bc2f1068f6",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-vulnerable-mcp-untrusted_ca"
+    },
+    {
+      "auth": "cookie",
+      "mode": "vulnerable",
+      "transport": "function",
+      "case": "wrong_san",
+      "run_id": "run_88198e9dd2d044868e5e7b670843f798",
+      "plan_id": "opplan_e674da6ac226405d85128f1bd4391155",
+      "plan_sha256": "78f5483cebc4fbc47f99d6937f7ec717ba448a8132168f21a6640d51783241fb",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "e38ffed89c5209cf73389f09c8dad33b921c797ab17a2c339e9842e482c2b5a6",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "53ff9b1b99b9321d313a5b3bdc252ec5ea9eeaa6bad2295f43a34c56ab9c8824",
+          "context_ca_sha256": "96d722b4bdc2b2cdb63016f8411054de5cdef6d9fb7ed841a0e3a9fcfc705109",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "e38ffed89c5209cf73389f09c8dad33b921c797ab17a2c339e9842e482c2b5a6",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "53ff9b1b99b9321d313a5b3bdc252ec5ea9eeaa6bad2295f43a34c56ab9c8824",
+          "context_ca_sha256": "96d722b4bdc2b2cdb63016f8411054de5cdef6d9fb7ed841a0e3a9fcfc705109",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 1,
+        "tls_handshake_attempts": 1,
+        "tls_handshake_failed": 1,
+        "tls_handshake_completed": 0
+      },
+      "target_http_received": 0,
+      "worker_usage": {
+        "http_requests": 1,
+        "tool_calls": 1
+      },
+      "evidence_count": 0,
+      "status": "FAILED",
+      "verdict": "INCONCLUSIVE",
+      "expected_verdict": "INCONCLUSIVE",
+      "reason_code": "TLS_CERT_IP_SAN_MISMATCH",
+      "replay": {
+        "verdict": "INCONCLUSIVE",
+        "reason_code": "INCOMPLETE_WORKFLOW",
+        "run_id": "run_88198e9dd2d044868e5e7b670843f798",
+        "verdict_matches": true,
+        "evidence_count": 0
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 1,
+        "mcp": 0,
+        "cancel": 1
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:24.207533+00:00",
+        "server_not_before": "2026-11-13T06:21:24+00:00",
+        "server_not_after": "2026-11-15T06:21:24+00:00",
+        "server_ip_san": "127.0.0.2",
+        "server_certificate_sha256": "9fb682029e630b34743af09664ea9070276f265d837c4896474bcab20d02cd06",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-vulnerable-function-wrong_san"
+    },
+    {
+      "auth": "cookie",
+      "mode": "vulnerable",
+      "transport": "mcp",
+      "case": "wrong_san",
+      "run_id": "run_cf20e3f472c54a9197f6a7bb0a4f86f1",
+      "plan_id": "opplan_caf4e010ffde498596505f84036e44d8",
+      "plan_sha256": "16b94354225807cff7bcbde1074178c059a9b1f1428ac1142895d60616a1cdb5",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "c8327de887a209c46f9e95ac054b6d846f3ee3f19e86c0adabe1fd64d6b5c0b8",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "4c75e9a5ccc34fcb1352ec97f93b32b2a325f369af9c16004863742600753f70",
+          "context_ca_sha256": "546c90d3b4da8258df6529b3e429a6ab6f83b11a3d6f6b7ac0ff869b85b81858",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "c8327de887a209c46f9e95ac054b6d846f3ee3f19e86c0adabe1fd64d6b5c0b8",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "4c75e9a5ccc34fcb1352ec97f93b32b2a325f369af9c16004863742600753f70",
+          "context_ca_sha256": "546c90d3b4da8258df6529b3e429a6ab6f83b11a3d6f6b7ac0ff869b85b81858",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 1,
+        "tls_handshake_attempts": 1,
+        "tls_handshake_failed": 1,
+        "tls_handshake_completed": 0
+      },
+      "target_http_received": 0,
+      "worker_usage": {
+        "http_requests": 1,
+        "tool_calls": 1
+      },
+      "evidence_count": 0,
+      "status": "FAILED",
+      "verdict": "INCONCLUSIVE",
+      "expected_verdict": "INCONCLUSIVE",
+      "reason_code": "TLS_CERT_IP_SAN_MISMATCH",
+      "replay": {
+        "verdict": "INCONCLUSIVE",
+        "reason_code": "INCOMPLETE_WORKFLOW",
+        "run_id": "run_cf20e3f472c54a9197f6a7bb0a4f86f1",
+        "verdict_matches": true,
+        "evidence_count": 0
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 0,
+        "mcp": 4,
+        "cancel": 1
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:25.151681+00:00",
+        "server_not_before": "2026-11-13T06:21:25+00:00",
+        "server_not_after": "2026-11-15T06:21:25+00:00",
+        "server_ip_san": "127.0.0.2",
+        "server_certificate_sha256": "4b72fcfcd2380d2f20af45928d84b6d9474f0f907a20e6ca2a7e54f85022ac62",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-vulnerable-mcp-wrong_san"
+    },
+    {
+      "auth": "cookie",
+      "mode": "vulnerable",
+      "transport": "function",
+      "case": "expired",
+      "run_id": "run_81e417c4ca3f40649141e5f489d71978",
+      "plan_id": "opplan_bb52503ed7f24ddd88748358492650cf",
+      "plan_sha256": "fcc3e8daa11a53ed193492e352e4a33b760e10fe25a93373ac8b04fd9bccadd6",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "8ef962bc07f75cd3df6c472236aa72d48c5467dbd9a5c4b6491948d168160435",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "3948760cfdb1f37232f36a393f5d0c8c691836380c95da90a633274d4fa73f62",
+          "context_ca_sha256": "e3095488cde5621937a4b5cecf619870de06dc675e2509aeb43631780c33904f",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "8ef962bc07f75cd3df6c472236aa72d48c5467dbd9a5c4b6491948d168160435",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "3948760cfdb1f37232f36a393f5d0c8c691836380c95da90a633274d4fa73f62",
+          "context_ca_sha256": "e3095488cde5621937a4b5cecf619870de06dc675e2509aeb43631780c33904f",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 1,
+        "tls_handshake_attempts": 1,
+        "tls_handshake_failed": 1,
+        "tls_handshake_completed": 0
+      },
+      "target_http_received": 0,
+      "worker_usage": {
+        "http_requests": 1,
+        "tool_calls": 1
+      },
+      "evidence_count": 0,
+      "status": "FAILED",
+      "verdict": "INCONCLUSIVE",
+      "expected_verdict": "INCONCLUSIVE",
+      "reason_code": "TLS_CERT_EXPIRED",
+      "replay": {
+        "verdict": "INCONCLUSIVE",
+        "reason_code": "INCOMPLETE_WORKFLOW",
+        "run_id": "run_81e417c4ca3f40649141e5f489d71978",
+        "verdict_matches": true,
+        "evidence_count": 0
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 1,
+        "mcp": 0,
+        "cancel": 1
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:26.037724+00:00",
+        "server_not_before": "2026-11-13T06:21:26+00:00",
+        "server_not_after": "2026-11-14T05:21:26+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "8eb904c069fd5bec9602de65fa72f0d718a63dd33e6d32fdb682eb01302856ca",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-vulnerable-function-expired"
+    },
+    {
+      "auth": "cookie",
+      "mode": "vulnerable",
+      "transport": "mcp",
+      "case": "expired",
+      "run_id": "run_18cb15551bb94d28bf21092978520913",
+      "plan_id": "opplan_3daeb44ff7334f6785f632ccae5b88c9",
+      "plan_sha256": "c6ea8e2c892449e60b427ed8773baf570b5aad8579b6336709ed984a04f4c48f",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "c7a758734cc42b6fd412f92344cb899fc935a0165d73c72b48fd4469068b707e",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "a2283d5329d1fe9c4efee63dbb7f1fa1a435e0968dd67b6d35d40f75f557d3e4",
+          "context_ca_sha256": "bd7e7ed5b0987b0161774a6378a55f521096a6ce2eff65ba18b4ef58425d2c12",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "c7a758734cc42b6fd412f92344cb899fc935a0165d73c72b48fd4469068b707e",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "a2283d5329d1fe9c4efee63dbb7f1fa1a435e0968dd67b6d35d40f75f557d3e4",
+          "context_ca_sha256": "bd7e7ed5b0987b0161774a6378a55f521096a6ce2eff65ba18b4ef58425d2c12",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 1,
+        "tls_handshake_attempts": 1,
+        "tls_handshake_failed": 1,
+        "tls_handshake_completed": 0
+      },
+      "target_http_received": 0,
+      "worker_usage": {
+        "http_requests": 1,
+        "tool_calls": 1
+      },
+      "evidence_count": 0,
+      "status": "FAILED",
+      "verdict": "INCONCLUSIVE",
+      "expected_verdict": "INCONCLUSIVE",
+      "reason_code": "TLS_CERT_EXPIRED",
+      "replay": {
+        "verdict": "INCONCLUSIVE",
+        "reason_code": "INCOMPLETE_WORKFLOW",
+        "run_id": "run_18cb15551bb94d28bf21092978520913",
+        "verdict_matches": true,
+        "evidence_count": 0
+      },
+      "worker_transport_receipts": {
+        "policy": 2,
+        "function": 0,
+        "mcp": 4,
+        "cancel": 1
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:26.836607+00:00",
+        "server_not_before": "2026-11-13T06:21:26+00:00",
+        "server_not_after": "2026-11-14T05:21:26+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "ac52fb1ea1113db2a45f02b3a9ea55fe0f11b225c90d19a76566e246ef6115dd",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": null,
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-vulnerable-mcp-expired"
+    },
+    {
+      "auth": "cookie",
+      "mode": "vulnerable",
+      "transport": "function",
+      "case": "ca_rotation",
+      "run_id": "run_cb50fa0d33844c4d959f6b49cc4bd12e",
+      "plan_id": "opplan_9dce1ea2e0414e71ba3e044638a623a9",
+      "plan_sha256": "7b2f8513ff41359c24fc4979bf95af24473f39ed58b39308787c8a8c6068e2fd",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "eaf5029c8b492e4c1ab4ad7face299484c858b0c3c18f9415f2cec0335241fcc",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "34d27c47a0ac2e0aeceecdd7997e9bce87e59fec4ecfdbecc0baa714cd22a580",
+          "context_ca_sha256": "68e09ff773b5808a47870cf3282890f4f12e864d76856ada8f94e9a23d0b0394",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "eaf5029c8b492e4c1ab4ad7face299484c858b0c3c18f9415f2cec0335241fcc",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "34d27c47a0ac2e0aeceecdd7997e9bce87e59fec4ecfdbecc0baa714cd22a580",
+          "context_ca_sha256": "68e09ff773b5808a47870cf3282890f4f12e864d76856ada8f94e9a23d0b0394",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "target_http_received": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "status": "COMPLETED",
+      "verdict": "VULNERABLE",
+      "expected_verdict": "VULNERABLE",
+      "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "replay": {
+        "verdict": "VULNERABLE",
+        "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+        "run_id": "run_cb50fa0d33844c4d959f6b49cc4bd12e",
+        "verdict_matches": true,
+        "evidence_count": 11
+      },
+      "worker_transport_receipts": {
+        "policy": 4,
+        "function": 12,
+        "mcp": 0,
+        "cancel": 0
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:27.653593+00:00",
+        "server_not_before": "2026-11-13T06:21:27+00:00",
+        "server_not_after": "2026-11-15T06:21:27+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "6be196b63e82ef2aea666442675f65cb6b72c29290bf57d751915aac05252cd0",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": {
+        "same_ca_path": true,
+        "old_plan_sha256": "191173b0402fe65c962c607809977161540d4ebe4a48fa305de394a5decdbc6a",
+        "old_snapshot": {
+          "profile_id": "local-project-attachments",
+          "revision": 1,
+          "snapshot_sha256": "694ef072392a0044374af1b381633713c965fa4e53a87e3f199cf625b4431fcc",
+          "effective_limits": {
+            "max_requests": 11,
+            "max_tool_calls": 12,
+            "timeout_seconds": 5.0,
+            "run_timeout_seconds": 180.0,
+            "max_response_bytes": 65536,
+            "requests_per_second": 1000.0,
+            "max_concurrency": 1,
+            "max_runs": 100,
+            "state_ttl_seconds": 600.0
+          },
+          "tls": {
+            "verification": "dedicated-ca-ip-san-v1",
+            "ca_bundle_sha256": "2b8f62059ac95e4218d580a2099650a60a88cd9a9f905543cc6197dee4e8e5de",
+            "context_ca_sha256": "648a737a80ecc73727b4971ab80e25242425803c855bb52e1e18ccf5eaeacb5f",
+            "minimum_version": "TLSv1.2"
+          }
+        },
+        "new_snapshot": {
+          "profile_id": "local-project-attachments",
+          "revision": 1,
+          "snapshot_sha256": "eaf5029c8b492e4c1ab4ad7face299484c858b0c3c18f9415f2cec0335241fcc",
+          "effective_limits": {
+            "max_requests": 11,
+            "max_tool_calls": 12,
+            "timeout_seconds": 5.0,
+            "run_timeout_seconds": 180.0,
+            "max_response_bytes": 65536,
+            "requests_per_second": 1000.0,
+            "max_concurrency": 1,
+            "max_runs": 100,
+            "state_ttl_seconds": 600.0
+          },
+          "tls": {
+            "verification": "dedicated-ca-ip-san-v1",
+            "ca_bundle_sha256": "34d27c47a0ac2e0aeceecdd7997e9bce87e59fec4ecfdbecc0baa714cd22a580",
+            "context_ca_sha256": "68e09ff773b5808a47870cf3282890f4f12e864d76856ada8f94e9a23d0b0394",
+            "minimum_version": "TLSv1.2"
+          }
+        },
+        "reason_code": "WORKER_POLICY_CHANGED",
+        "target_http_after_rejected_plan": 0,
+        "network_delta_after_rejected_plan": {
+          "tcp_accepted": 0,
+          "tls_handshake_attempts": 0,
+          "tls_handshake_failed": 0,
+          "tls_handshake_completed": 0
+        },
+        "old_plan_claimed": false,
+        "new_plan_sha256": "7b2f8513ff41359c24fc4979bf95af24473f39ed58b39308787c8a8c6068e2fd",
+        "fresh_preview_target_requests": 0
+      },
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-vulnerable-function-ca_rotation"
+    },
+    {
+      "auth": "cookie",
+      "mode": "vulnerable",
+      "transport": "mcp",
+      "case": "ca_rotation",
+      "run_id": "run_463d134fcb9c41029645ccdf9bf282be",
+      "plan_id": "opplan_6a408afa46874411afd097686c2dd7fb",
+      "plan_sha256": "7cfb40f638e9ebbc8cfe0f233971f9dab274f6d63ed10425b1649924e1674bfa",
+      "planned_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "592ba355a869d7666ca639b49f502c591a295337056b03caf0d03328fea30bff",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "173726a38426c479422dc8cb47571650e4d218c679c8ac8d923d3dc0871f011d",
+          "context_ca_sha256": "9f8ef2ad2f7fc674abc786084339f73319bdc86e7a3d751cabf1e723793370e5",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "actual_scope": {
+        "profile_id": "local-project-attachments",
+        "revision": 1,
+        "snapshot_sha256": "592ba355a869d7666ca639b49f502c591a295337056b03caf0d03328fea30bff",
+        "effective_limits": {
+          "max_requests": 11,
+          "max_tool_calls": 12,
+          "timeout_seconds": 5.0,
+          "run_timeout_seconds": 180.0,
+          "max_response_bytes": 65536,
+          "requests_per_second": 1000.0,
+          "max_concurrency": 1,
+          "max_runs": 100,
+          "state_ttl_seconds": 600.0
+        },
+        "tls": {
+          "verification": "dedicated-ca-ip-san-v1",
+          "ca_bundle_sha256": "173726a38426c479422dc8cb47571650e4d218c679c8ac8d923d3dc0871f011d",
+          "context_ca_sha256": "9f8ef2ad2f7fc674abc786084339f73319bdc86e7a3d751cabf1e723793370e5",
+          "minimum_version": "TLSv1.2"
+        }
+      },
+      "preview_target_http": 0,
+      "preview_network_delta": {
+        "tcp_accepted": 0,
+        "tls_handshake_attempts": 0,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 0
+      },
+      "network": {
+        "tcp_accepted": 11,
+        "tls_handshake_attempts": 11,
+        "tls_handshake_failed": 0,
+        "tls_handshake_completed": 11
+      },
+      "target_http_received": 11,
+      "worker_usage": {
+        "http_requests": 11,
+        "tool_calls": 12
+      },
+      "evidence_count": 11,
+      "status": "COMPLETED",
+      "verdict": "VULNERABLE",
+      "expected_verdict": "VULNERABLE",
+      "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "replay": {
+        "verdict": "VULNERABLE",
+        "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+        "run_id": "run_463d134fcb9c41029645ccdf9bf282be",
+        "verdict_matches": true,
+        "evidence_count": 11
+      },
+      "worker_transport_receipts": {
+        "policy": 4,
+        "function": 0,
+        "mcp": 15,
+        "cancel": 0
+      },
+      "plan_link_matches": true,
+      "tls_certificate": {
+        "reference_time_utc": "2026-11-14T06:21:29.483539+00:00",
+        "server_not_before": "2026-11-13T06:21:29+00:00",
+        "server_not_after": "2026-11-15T06:21:29+00:00",
+        "server_ip_san": "127.0.0.1",
+        "server_certificate_sha256": "07edafe9c4037cfab4c4ae93a25f686636301e180697d7217e78d5ef067ae5dc",
+        "private_storage": "windows-current-user-only-directory-acl"
+      },
+      "rotation": {
+        "same_ca_path": true,
+        "old_plan_sha256": "9e70d6036373fcf75bcfb6e5086a7c12b5884bbf2343bf6d69ad7ab3090cd25a",
+        "old_snapshot": {
+          "profile_id": "local-project-attachments",
+          "revision": 1,
+          "snapshot_sha256": "df6a4afc07be771828f2ab21b6d91555245bad0249f65cea8c1806d8cdfe3689",
+          "effective_limits": {
+            "max_requests": 11,
+            "max_tool_calls": 12,
+            "timeout_seconds": 5.0,
+            "run_timeout_seconds": 180.0,
+            "max_response_bytes": 65536,
+            "requests_per_second": 1000.0,
+            "max_concurrency": 1,
+            "max_runs": 100,
+            "state_ttl_seconds": 600.0
+          },
+          "tls": {
+            "verification": "dedicated-ca-ip-san-v1",
+            "ca_bundle_sha256": "a85871483234a2bfd642bdf88bdf38e150f5116d590e095405f3f86fca749fe2",
+            "context_ca_sha256": "9212d15e8bc05a9b0a41efbbb8e7cbd8e1dc9a54716dbb752138997d08998870",
+            "minimum_version": "TLSv1.2"
+          }
+        },
+        "new_snapshot": {
+          "profile_id": "local-project-attachments",
+          "revision": 1,
+          "snapshot_sha256": "592ba355a869d7666ca639b49f502c591a295337056b03caf0d03328fea30bff",
+          "effective_limits": {
+            "max_requests": 11,
+            "max_tool_calls": 12,
+            "timeout_seconds": 5.0,
+            "run_timeout_seconds": 180.0,
+            "max_response_bytes": 65536,
+            "requests_per_second": 1000.0,
+            "max_concurrency": 1,
+            "max_runs": 100,
+            "state_ttl_seconds": 600.0
+          },
+          "tls": {
+            "verification": "dedicated-ca-ip-san-v1",
+            "ca_bundle_sha256": "173726a38426c479422dc8cb47571650e4d218c679c8ac8d923d3dc0871f011d",
+            "context_ca_sha256": "9f8ef2ad2f7fc674abc786084339f73319bdc86e7a3d751cabf1e723793370e5",
+            "minimum_version": "TLSv1.2"
+          }
+        },
+        "reason_code": "WORKER_POLICY_CHANGED",
+        "target_http_after_rejected_plan": 0,
+        "network_delta_after_rejected_plan": {
+          "tcp_accepted": 0,
+          "tls_handshake_attempts": 0,
+          "tls_handshake_failed": 0,
+          "tls_handshake_completed": 0
+        },
+        "old_plan_claimed": false,
+        "new_plan_sha256": "7cfb40f638e9ebbc8cfe0f233971f9dab274f6d63ed10425b1649924e1674bfa",
+        "fresh_preview_target_requests": 0
+      },
+      "passed": true,
+      "temporary_key_directory_removed": true,
+      "path": "cookie-vulnerable-mcp-ca_rotation"
+    }
+  ],
+  "passed": true,
+  "elapsed_seconds": 25.641
+}

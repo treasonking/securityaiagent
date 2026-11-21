@@ -1,0 +1,17 @@
+{
+  "ok": false,
+  "job": {
+    "role": "worker",
+    "action": "apply",
+    "sequence": "86dbac3722d44da3b72d217a13c7eb77"
+  },
+  "receipt": {
+    "sequence": "86dbac3722d44da3b72d217a13c7eb77",
+    "action": "apply",
+    "role": "worker",
+    "exit_code": 23
+  },
+  "result": null,
+  "result_state": "missing",
+  "reason_code": "RECEIPT_EXIT_FAILED"
+}

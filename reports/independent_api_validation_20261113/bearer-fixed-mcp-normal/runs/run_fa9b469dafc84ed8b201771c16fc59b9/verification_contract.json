@@ -1,0 +1,73 @@
+{
+  "contract_version": "operator-resource-v1",
+  "target_id": "lab-web",
+  "scenario_id": "operator-resource-http",
+  "registry_sha256": "c05ae72c1059d4708ed4506722f0de024a1687df549758a998cf636824d5b3fb",
+  "origin": "http://127.0.0.1:53775",
+  "adapter": {
+    "contract_version": "operator-resource-v1",
+    "adapter_id": "project-attachment-json",
+    "routes": {
+      "login_path": "/gateway/authenticate",
+      "me_path": "/gateway/session/profile",
+      "detail_path": "/workspace/attachments/{resource_id}"
+    },
+    "accounts": {
+      "user_a": {
+        "username": "cedar_editor",
+        "password_env": "LAB_USER_A_PASSWORD"
+      },
+      "user_b": {
+        "username": "quartz_reviewer",
+        "password_env": "LAB_USER_B_PASSWORD"
+      }
+    },
+    "login_user_field": "handle",
+    "login_password_field": "secret",
+    "auth_mode": "bearer",
+    "cookie_name": null,
+    "token_field": "session.grant.credential",
+    "principal_field": "context.member.subject",
+    "resource_id_field": "artifact.key",
+    "owner_field": "artifact.acl.holder",
+    "visibility_field": "artifact.acl.classification",
+    "private_value": "restricted",
+    "public_value": "shared",
+    "proof_field": "content.audit.receipt",
+    "denial_status": 403,
+    "denial_field": "problem.kind",
+    "denial_value": "attachment_forbidden"
+  },
+  "accounts": {
+    "user_a": {
+      "principal_id": "member_K73",
+      "resource_id": "attachment_M4s8",
+      "proof_env": "OPERATOR_PROOF_A"
+    },
+    "user_b": {
+      "principal_id": "member_R92",
+      "resource_id": "attachment_N9t2",
+      "proof_env": "OPERATOR_PROOF_B"
+    }
+  },
+  "proof_commitments": {
+    "user_a": "18a3b4c0df24a9853fab4613a1581d7682c2ef208f41970e8068d4ec2aae7735",
+    "user_b": "9a9fa2b3efae956a4b886f7c686f54a8663ae35ec9c1f9aa5b7ed25bf3648714"
+  },
+  "scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "cd19ce224a1c32c528c9d6a9605153a52a44b8521649fc75c8758b4479609cbb",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  }
+}

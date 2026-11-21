@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "job": {
+    "action": "stop",
+    "sequence": "9055ed5dd2054fab954730cf0d47eab9",
+    "role": "target"
+  },
+  "receipt": {
+    "sequence": "9055ed5dd2054fab954730cf0d47eab9",
+    "action": "stop",
+    "role": "target",
+    "exit_code": 0
+  },
+  "result": {
+    "sequence": "9055ed5dd2054fab954730cf0d47eab9",
+    "action": "stop",
+    "role": "target",
+    "ok": true
+  },
+  "result_state": "matched"
+}

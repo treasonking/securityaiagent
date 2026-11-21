@@ -79,7 +79,7 @@ def main() -> None:
     subcommands = parser.add_subparsers(dest="command", required=True)
     subcommands.add_parser("doctor")
     run_parser = subcommands.add_parser("run")
-    run_parser.add_argument("--scenario", default="access-control", choices=["access-control"])
+    run_parser.add_argument("--scenario", default="access-control", choices=["access-control", "access-control-http"])
     run_parser.add_argument("--target", default="lab-web", choices=["lab-web"])
     run_parser.add_argument("--provider", default="mock", choices=["mock", "openai"])
     run_parser.add_argument("--transport", default="function", choices=["function", "mcp"])

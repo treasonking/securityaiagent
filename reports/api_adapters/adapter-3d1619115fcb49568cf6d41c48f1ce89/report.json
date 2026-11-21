@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.2",
+  "scope_policy": {
+    "profile_id": "lab-access-control",
+    "revision": 4,
+    "snapshot_sha256": "a078ce2b73f512afdc5da375af442349764b6098bd644666857a7b6a806b375f",
+    "effective_limits": {
+      "max_requests": 9,
+      "max_tool_calls": 10,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "verification_basis": "http_observation",
+  "run_id": "adapter-3d1619115fcb49568cf6d41c48f1ce89",
+  "scenario_id": "access-control-http",
+  "target_id": "lab-web",
+  "mode": "unknown",
+  "provider_mode": "mock",
+  "model_id": null,
+  "tool_transport": "mcp",
+  "started_at": "2026-10-27T13:37:48.867798+00:00",
+  "finished_at": "2026-10-27T13:37:53.082360+00:00",
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE",
+  "finding_candidates": [
+    {
+      "finding_type": "cross_account_document_access",
+      "rationale": "Published scenario asks whether user-a can retrieve user-b's synthetic private document.",
+      "source": "mock_provider"
+    }
+  ],
+  "verified_findings": [
+    {
+      "finding_type": "cross_account_document_access",
+      "verdict": "VULNERABLE",
+      "evidence_ids": [
+        "ev_6ad8a25fac1f422f83e22f7db232a07d",
+        "ev_f3632a58834e4995a8671b08961189d7",
+        "ev_209786b68b084d3189e9f1b2e7e7f1df",
+        "ev_32087d4c74ae46728798315bc3fbc3af",
+        "ev_bdc363b6e57f4435bf90fc8c494a1ef5",
+        "ev_8d3ab9677c3848c9b30930f00af308cf",
+        "ev_e762feff102a45e3a3f0ab12fd96eacd"
+      ],
+      "reason": "Independent authenticated sessions and owner controls show the same private canary in user-a's cross-account response."
+    }
+  ],
+  "evidence_ids": [
+    "ev_6ad8a25fac1f422f83e22f7db232a07d",
+    "ev_f3632a58834e4995a8671b08961189d7",
+    "ev_209786b68b084d3189e9f1b2e7e7f1df",
+    "ev_32087d4c74ae46728798315bc3fbc3af",
+    "ev_bdc363b6e57f4435bf90fc8c494a1ef5",
+    "ev_8d3ab9677c3848c9b30930f00af308cf",
+    "ev_e762feff102a45e3a3f0ab12fd96eacd"
+  ],
+  "limits_used": {
+    "http_requests": 9,
+    "tool_calls": 10
+  },
+  "model_usage": {
+    "calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "total_tokens": 0
+  },
+  "warnings": [
+    "Limited to these synthetic accounts, resource, and observation time; not a site-wide safety claim."
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "platform": "Windows",
+    "target_data": "synthetic-only",
+    "target_server_log": "not_used"
+  },
+  "recommendations": [
+    "Rerun the same bounded HTTP scenario after changes; results apply only to the tested accounts and resource."
+  ]
+}

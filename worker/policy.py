@@ -4,6 +4,7 @@ import ipaddress
 import re
 from dataclasses import dataclass
 from urllib.parse import unquote, urlsplit
+from common.domain_contract import DomainNetworkPolicy, DomainScope, address, hostname
 
 
 _DOCUMENT_ID = re.compile(r"^doc-[a-z]+-[0-9]{3}$")
@@ -19,20 +20,44 @@ class TargetPolicy:
     scheme: str
     host: str
     port: int
+    network: DomainNetworkPolicy | None = None
+
+    @property
+    def domain_scope(self):
+        return None if self.network is None else DomainScope(hostname=self.host, port=self.port, **self.network.model_dump())
 
     @property
     def base_url(self) -> str:
-        return f"{self.scheme}://{self.host}:{self.port}"
+        host = f"[{self.host}]" if ':' in self.host else self.host
+        return f"{self.scheme}://{host}:{self.port}"
 
     def __post_init__(self) -> None:
-        if self.scheme != "http":
-            raise PolicyViolation("only the registered HTTP lab scheme is supported")
+        if self.scheme not in {"http", "https"}:
+            raise PolicyViolation("only registered HTTP/HTTPS lab schemes are supported")
         try:
-            ipaddress.ip_address(self.host)
-        except ValueError as exc:
-            raise PolicyViolation("target host must be an IP literal") from exc
+            address(self.host)
+        except ValueError:
+            try:
+                canonical = hostname(self.host)
+            except ValueError:
+                raise PolicyViolation('invalid target host') from None
+            if self.scheme != 'https' or self.network is None:
+                raise PolicyViolation('DNS targets require HTTPS and explicit network policy')
+            object.__setattr__(self, 'host', canonical)
+        else:
+            if self.network is not None:
+                raise PolicyViolation('IP literal targets retain the existing IP policy')
         if not 1 <= self.port <= 65535:
             raise PolicyViolation("invalid target port")
+
+    @classmethod
+    def from_origin(cls, target_id, origin, network=None):
+        parsed = urlsplit(origin)
+        policy = cls(target_id, parsed.scheme, parsed.hostname or '', parsed.port or (443 if parsed.scheme == 'https' else 80), network)
+        normalized = origin.lower() if policy.network is not None else origin
+        if normalized != policy.base_url:
+            raise PolicyViolation('registered origin must contain only canonical scheme, host and explicit port')
+        return policy
 
     def normalize_relative_path(self, value: str) -> str:
         if not value.startswith("/") or value.startswith("//") or "\\" in value:

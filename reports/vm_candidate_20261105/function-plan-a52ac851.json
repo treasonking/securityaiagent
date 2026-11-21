@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "plan_51d2d6a7e6fc494e9f285a80efe29416",
+  "created_at": 1793811678,
+  "expires_at": 1793811978,
+  "candidate_id": "38eae30a50bfb3b8b5cebc483cd96e63b9cd712af75c798eecf59f0413273b89",
+  "source_sha256": "89e170210a5f7247629ae30ccb21149464d3f9bcec2cfa84c5a6d67ef1219eb8",
+  "registry_sha256": "13809a7ef19def29fe700becb7ee40b6b5310164d32ac84221f6efe59ec9f654",
+  "worker_origin": "http://10.77.0.20:9000",
+  "policy": {
+    "contract_version": "candidate-preview-v1",
+    "target_id": "lab-web",
+    "scenario_id": "access-control-http",
+    "registry_sha256": "13809a7ef19def29fe700becb7ee40b6b5310164d32ac84221f6efe59ec9f654",
+    "origin": "http://10.78.0.30:8080",
+    "adapter_id": "synthetic-records",
+    "auth_mode": "bearer",
+    "routes": {
+      "login_path": "/api/session",
+      "list_path": "/api/me/records",
+      "detail_path": "/api/records/{document_id}"
+    },
+    "scope_policy": {
+      "profile_id": "lab-records-access-control",
+      "revision": 1,
+      "snapshot_sha256": "6a4d512a0681ddfba1939075f50dd133c4a180b7b5271ef6d751b0dc9e32dfe4",
+      "effective_limits": {
+        "max_requests": 9,
+        "max_tool_calls": 10,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 2.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      }
+    }
+  },
+  "provider": "mock",
+  "transport": "function",
+  "accounts": [
+    "user-a",
+    "user-b"
+  ],
+  "expected_http_requests": 9,
+  "expected_tool_calls": 10,
+  "verification_status": "NOT_EXECUTED",
+  "plan_sha256": "326874f1f924d748a1a0247a6953629cfe5745932affba48cf4e10e358e1f71c"
+}

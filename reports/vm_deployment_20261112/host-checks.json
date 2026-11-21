@@ -1,0 +1,20 @@
+[
+  {
+    "role": "controller",
+    "network_and_original_shared_folders_equal": true,
+    "temporary_share_removed": true,
+    "internal_only_nics": false
+  },
+  {
+    "role": "worker",
+    "network_and_original_shared_folders_equal": true,
+    "temporary_share_removed": true,
+    "internal_only_nics": true
+  },
+  {
+    "role": "target",
+    "network_and_original_shared_folders_equal": true,
+    "temporary_share_removed": true,
+    "internal_only_nics": true
+  }
+]

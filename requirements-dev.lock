@@ -1,2 +1,4 @@
 -r requirements.lock
 pytest==9.0.2
+# Local HTTPS certificate generation only; already pinned in requirements-full.lock.
+cryptography==50.0.2

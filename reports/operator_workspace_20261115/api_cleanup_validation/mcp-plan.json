@@ -1,0 +1,153 @@
+{
+  "profile_id": "attachments",
+  "plan_id": "opplan_b5dc43cfbe934e439c52dd4766034cdd",
+  "plan_sha256": "5c2530756ca01b9a9e769162320a4b0c24704c1c3bac8c79328d6a10ed7680ce",
+  "created_at": 1794737997,
+  "expires_at": 1794738297,
+  "transport": "mcp",
+  "policy": {
+    "target_id": "lab-web",
+    "origin": "https://attachments.securityai.test:56292",
+    "scenario_id": "operator-resource-http",
+    "contract_version": "operator-resource-v1",
+    "auth_mode": "cookie",
+    "provider": "mock",
+    "accounts": [
+      {
+        "alias": "user-a",
+        "resource_id": "attachment_M4s8"
+      },
+      {
+        "alias": "user-b",
+        "resource_id": "attachment_N9t2"
+      }
+    ],
+    "scope_policy": {
+      "profile_id": "local-project-attachments",
+      "revision": 1,
+      "snapshot_sha256": "9e4612cf7efe67b94c84939ff5fd9f8f82d8032d1749e38f6eeed806147af18f",
+      "effective_limits": {
+        "max_requests": 11,
+        "max_tool_calls": 12,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 1000.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      },
+      "tls": {
+        "verification": "dedicated-ca-dns-san-v1",
+        "ca_bundle_sha256": "43363b26d11e9b04cab7bd28bc1bbd21c2a628254ffc721c17ed7dbc9524e69d",
+        "context_ca_sha256": "574b8074b895748016abdea7095e71af2c8f58b639897fb6633b4ebf41542cab",
+        "minimum_version": "TLSv1.2"
+      },
+      "domain": {
+        "version": "domain-network-v1",
+        "allowed_ip_ranges": [
+          "127.0.0.1/32"
+        ],
+        "allow_non_global": true,
+        "resolver": "system-a-aaaa-all-v1",
+        "connection": "numeric-peer-checked-per-request-v1",
+        "hostname": "attachments.securityai.test",
+        "port": 56292
+      }
+    }
+  },
+  "sequence": [
+    {
+      "index": 1,
+      "account_ref": "user-a",
+      "operation": "login",
+      "resource_id": null,
+      "method": "POST",
+      "path": "/gateway/authenticate"
+    },
+    {
+      "index": 2,
+      "account_ref": "user-b",
+      "operation": "login",
+      "resource_id": null,
+      "method": "POST",
+      "path": "/gateway/authenticate"
+    },
+    {
+      "index": 3,
+      "account_ref": "user-a",
+      "operation": "identity",
+      "resource_id": null,
+      "method": "GET",
+      "path": "/gateway/session/profile"
+    },
+    {
+      "index": 4,
+      "account_ref": "user-b",
+      "operation": "identity",
+      "resource_id": null,
+      "method": "GET",
+      "path": "/gateway/session/profile"
+    },
+    {
+      "index": 5,
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_M4s8",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_M4s8"
+    },
+    {
+      "index": 6,
+      "account_ref": "user-b",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_N9t2"
+    },
+    {
+      "index": 7,
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_N9t2"
+    },
+    {
+      "index": 8,
+      "account_ref": "user-b",
+      "operation": "resource",
+      "resource_id": "attachment_N9t2",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_N9t2"
+    },
+    {
+      "index": 9,
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "attachment_M4s8",
+      "method": "GET",
+      "path": "/workspace/attachments/attachment_M4s8"
+    },
+    {
+      "index": 10,
+      "account_ref": "user-a",
+      "operation": "identity",
+      "resource_id": null,
+      "method": "GET",
+      "path": "/gateway/session/profile"
+    },
+    {
+      "index": 11,
+      "account_ref": "user-b",
+      "operation": "identity",
+      "resource_id": null,
+      "method": "GET",
+      "path": "/gateway/session/profile"
+    }
+  ],
+  "expected_http_requests": 11,
+  "expected_tool_calls": 12,
+  "job": null,
+  "interpretation": "\uc900\ube44\ub41c \ub450 \uacc4\uc815\u00b7\ub450 \ub9ac\uc18c\uc2a4\uc758 \uad00\uce21\uc5d0 \ud55c\uc815\ud569\ub2c8\ub2e4. preview\ub294 \uac80\uc0ac \uacb0\uacfc\uac00 \uc544\ub2d9\ub2c8\ub2e4."
+}

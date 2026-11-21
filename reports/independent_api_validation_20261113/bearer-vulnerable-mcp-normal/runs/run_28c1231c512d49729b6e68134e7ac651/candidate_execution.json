@@ -1,0 +1,49 @@
+{
+  "schema_version": "operator-link-v1",
+  "run_id": "run_28c1231c512d49729b6e68134e7ac651",
+  "plan_id": "opplan_4ed4999c2b3d4cfaa8fce9d744556f2a",
+  "plan_sha256": "0ab4c6eb27417fe0ae90e53ee461b45c6395cfb38434ec808e6c61016f5b219f",
+  "candidate_id": "4de747ebc5fb1215d6fb04bd39018e8aa84aab8b3f0beb9e83b9ed1f2d6a1dcc",
+  "source_sha256": "d84547153e0608b42d2c171befd0ace416c701e80519ad6f2f1beeab0e4cd8a3",
+  "registry_sha256": "bfb18fec4527588067209e717b377b8dd7055d3d25787d8a551da118fe3f6c96",
+  "approval_actor": "codex",
+  "approval_identity_authenticated": false,
+  "expected_scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "9e4860687ffbb4ea4e4887cec14daaebe97c9f0de55aca10471667c6c0dbad6c",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "actual_scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "9e4860687ffbb4ea4e4887cec14daaebe97c9f0de55aca10471667c6c0dbad6c",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "control_calls": {
+    "preview_policy": 1,
+    "run_policy": 1
+  },
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE"
+}

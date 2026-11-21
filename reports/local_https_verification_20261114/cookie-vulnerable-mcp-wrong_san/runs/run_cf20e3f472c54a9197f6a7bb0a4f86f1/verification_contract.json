@@ -1,0 +1,79 @@
+{
+  "contract_version": "operator-resource-v1",
+  "target_id": "lab-web",
+  "scenario_id": "operator-resource-http",
+  "registry_sha256": "db3fe1d7230ed9668c2b4506d179fc95b22ba01884a84e2ee8d84e20c20114a7",
+  "origin": "https://127.0.0.1:54222",
+  "adapter": {
+    "contract_version": "operator-resource-v1",
+    "adapter_id": "project-attachment-json",
+    "routes": {
+      "login_path": "/gateway/authenticate",
+      "me_path": "/gateway/session/profile",
+      "detail_path": "/workspace/attachments/{resource_id}"
+    },
+    "accounts": {
+      "user_a": {
+        "username": "cedar_editor",
+        "password_env": "LAB_USER_A_PASSWORD"
+      },
+      "user_b": {
+        "username": "quartz_reviewer",
+        "password_env": "LAB_USER_B_PASSWORD"
+      }
+    },
+    "login_user_field": "handle",
+    "login_password_field": "secret",
+    "auth_mode": "cookie",
+    "cookie_name": "project_sid",
+    "token_field": null,
+    "principal_field": "context.member.subject",
+    "resource_id_field": "artifact.key",
+    "owner_field": "artifact.acl.holder",
+    "visibility_field": "artifact.acl.classification",
+    "private_value": "restricted",
+    "public_value": "shared",
+    "proof_field": "content.audit.receipt",
+    "denial_status": 403,
+    "denial_field": "problem.kind",
+    "denial_value": "attachment_forbidden"
+  },
+  "accounts": {
+    "user_a": {
+      "principal_id": "member_K73",
+      "resource_id": "attachment_M4s8",
+      "proof_env": "OPERATOR_PROOF_A"
+    },
+    "user_b": {
+      "principal_id": "member_R92",
+      "resource_id": "attachment_N9t2",
+      "proof_env": "OPERATOR_PROOF_B"
+    }
+  },
+  "proof_commitments": {
+    "user_a": "461e793de79e3182c5aee433ca39cd86c93c24316d0d3b8b5ad4461e9de9019e",
+    "user_b": "78ca79a36323901675214f27de9db5738d58c9ad0114a06e797d2617e49d0419"
+  },
+  "scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "c8327de887a209c46f9e95ac054b6d846f3ee3f19e86c0adabe1fd64d6b5c0b8",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    },
+    "tls": {
+      "verification": "dedicated-ca-ip-san-v1",
+      "ca_bundle_sha256": "4c75e9a5ccc34fcb1352ec97f93b32b2a325f369af9c16004863742600753f70",
+      "context_ca_sha256": "546c90d3b4da8258df6529b3e429a6ab6f83b11a3d6f6b7ac0ff869b85b81858",
+      "minimum_version": "TLSv1.2"
+    }
+  }
+}

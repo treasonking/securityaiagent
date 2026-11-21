@@ -1,0 +1,31 @@
+{
+  "auth": "cookie",
+  "mode": "vulnerable",
+  "transport": "function",
+  "case": "policy_change",
+  "plan_id": "opplan_2ce3779596764f83b61990dd6f129ee8",
+  "plan_sha256": "ca690342ff86c51ed21e44a907c53177a62d7e248f70fec9eadabce0b6530f52",
+  "planned_snapshot": "090ed27e6a49e1b7cf07b2efcc86be47c4c89cbfc52b18f3e9df88b285d54590",
+  "worker_snapshot_at_run": "0e2e84c279108aa680a313c0a606b9f6e0ea6b7b48390683218d63c27c323a45",
+  "run_id": null,
+  "status": "REJECTED_BEFORE_RUN",
+  "expected_verdict": null,
+  "actual_verdict": null,
+  "reason_code": "WORKER_POLICY_CHANGED",
+  "preview_target_requests": 0,
+  "observed_target_http_requests": 0,
+  "worker_usage": null,
+  "evidence_count": 0,
+  "replay": null,
+  "issued_count": 1,
+  "claimed_count": 0,
+  "scope_matches_plan": null,
+  "worker_transport_receipts": {
+    "policy": 2,
+    "function": 0,
+    "mcp": 0,
+    "cancel": 0
+  },
+  "plan_run_link_matches": null,
+  "passed": true
+}

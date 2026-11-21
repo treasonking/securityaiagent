@@ -1,0 +1,45 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_df032c7c4a544308a24f6bc0c3bc9283",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "function",
+  "started_at": "2026-11-05T18:47:25.586661+00:00",
+  "status": "FAILED",
+  "verdict": "INCONCLUSIVE",
+  "reason_code": "TRANSPORT_OR_RESPONSE_ERROR",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "f039762ead26b3f9858eaf1bb04f7a6daafc7cdf0f7b71d0c2a2051a98c773c3",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "limits_used": {
+    "http_requests": 7,
+    "tool_calls": 7
+  },
+  "evidence_ids": [
+    "40264c3af1e4d6f645803fb43bbce19dc712439a900542dc1d6110e369564291",
+    "e30f5537d6816d55891543100621341a7454dbfb3c79e0ad123f0d0ec216a211",
+    "6bed2498bd355186aea946566477d0f108ff14a7d27f6528692b56733386a790",
+    "ddd267834dc72b97c63483a2dc4477f9b0b55eb9a3605c187ecc9fb8f188886d",
+    "60af5f8a0ce9dac2e6da92e1afaaa6dd2c7659bb26b275a9580b70ddc8a4ea6b",
+    "c46cbbceae30901b5508fd1f4b2001c97ea932328139770d2d54eb586dd40f58"
+  ],
+  "finished_at": "2026-11-05T18:47:26.015691+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

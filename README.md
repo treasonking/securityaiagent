@@ -1,6 +1,12 @@
 # SecurityLab AI v1
 
-SecurityLab AI는 사용자가 소유한 로컬 합성 사이트에서 하나의 공개된 접근 통제 시나리오를 재현하고, 모델의 후보 판단과 증거 검증기의 확정 판정을 분리하는 독립 실험용 애플리케이션이다. 현재 구조는 범용 모의해킹 에이전트가 아니라 **고정 시나리오 검증기 + 선택적 LLM 후보 생성기**다. 자유문은 URL·대상·도구·실행 순서를 바꾸지 않는다.
+SecurityLab AI는 사용자가 소유한 로컬 합성 사이트에서 등록된 접근 통제 시나리오를 재현하고, 모델의 후보 판단과 증거 검증기의 확정 판정을 분리하는 독립 실험용 애플리케이션이다. 현재 구조는 범용 모의해킹 에이전트가 아니라 **고정 시나리오 검증기 + 선택적 LLM 후보 생성기**다. 자유문은 URL·대상·도구·실행 순서를 바꾸지 않는다.
+
+`access-control`은 기존 서버 로그 대조 경로이며 로그가 없으면 `INCONCLUSIVE`다. 새 `access-control-http`는 `lab-web`의 두 실습 계정과 명시적인 합성 private canary 구조를 사용하는 HTTP 전용 경로다. 독립 세션, 소유자 목록·상세, 교차 요청, 소유자/요청자 재조회를 검증하며 target DB·로그·모드나 모델 의견으로 판정하지 않는다. 보고서의 `verification_basis`로 두 경로를 구분한다. 일반 HTML 의미 비교나 임의 외부 사이트 테스트는 지원하지 않는다.
+
+로컬 네 조합 자동 재현: `.\.venv\Scripts\python.exe scripts/run_http_verification.py`. 임시 loopback 서버와 DB를 사용하고 자신이 만든 서버만 종료한다. [HTTP 실행 가이드](docs/http_verification_runbook.md)와 [실제 실행 결과](reports/http_verification_results.md)를 참고한다.
+
+실행 범위는 운영자 파일 `config/targets.json`의 schema 2.0 프로필로 관리한다. worker가 세션 생성 전과 HTTP 전송 직전에 계정·작업·경로·세션·실효 한도를 검사한다. 정책 변경은 worker 재시작 후 적용되며 `TARGET_BASE_URL`은 등록 origin과 일치해야 한다. 오프라인 검사: `.\.venv\Scripts\python.exe -m worker.cli check-policy`. [정책 형식·VM 갱신 절차](docs/scope_policy_runbook.md), [정책 검증 결과](reports/scope_policy_verification.md)를 참고한다. 과거 보고서의 정책 정보는 `legacy / 미기록`으로 유지한다.
 
 ## 구현 범위
 
@@ -59,6 +65,16 @@ cd ..
 Linux VM에서는 `.venv/bin/python`을 사용한다.
 
 ## 설정
+
+운영자가 준비한 두 계정·두 리소스를 검증하는 별도 `operator-resource-http` CLI를 제공한다. 문자열 principal, UUID/불투명 리소스 ID, 정상 `/me`, private/owner/기대 proof를 사용하는 `operator-resource-v1` 계약이다. preview는 대상 요청 0회이고, 확인 후 run은 정상 HTTP 11회·도구 12회·증거 11개다. 기존 documents/records 및 옛 verifier 기준은 유지한다. [설치·계획 확인·실행·재판정 가이드](docs/operator_resource_runbook.md)와 [로컬 실제 TCP 검증 결과](reports/operator_resource_verification.md)를 참고한다. 새 경로는 mock·운영자 CLI 전용이며 기존 VM 환경을 자동 전환하지 않는다.
+
+후보 하나를 선택하고 Worker 정책을 확인한 뒤, digest를 명시해 기존 mock 검사를 실행하는 [후보 preview/run CLI](docs/candidate_preview_run.md)를 제공한다. 미리보기는 실행이나 취약점 판정이 아니며 [별도 검증 결과](reports/candidate_execution_verification.md)를 기록했다.
+
+로컬 OpenAPI JSON에서 접근 통제 검사 **후보를 추출**하는 오프라인 운영자 CLI를 제공한다. 후보는 취약점이나 실행 승인이 아니며 자동 실행하지 않는다. [명령과 지원 범위](docs/openapi_candidate_import.md), [검증 결과](reports/openapi_candidate_verification.md)를 참고한다.
+
+검사 대상의 로그인·쿠키/Bearer 인증·목록·상세 응답 구조는 이제 운영자 API 어댑터로 선택한다. 기본 documents와 중첩 JSON records API를 같은 HTTP 검사 흐름으로 실행한다. [어댑터 설정 및 VM별 업데이트·실행 명령](docs/target_api_adapters.md), [로컬 8조합 및 거절 검증 결과](reports/api_adapter_verification.md)를 참고한다.
+
+서비스별 `.env.controller.example`, `.env.worker.example`, `.env.target.example`을 각 VM의 해당 환경 파일로 복사하고 비밀값을 로컬에서 채운다. `python -m common.service_config check worker`는 네트워크 없이 검사하고, `serve worker`는 선택한 worker 파일만 전달하여 실행한다. controller/target도 같은 형식을 사용한다. [서비스별 API·인증 설정과 이전 절차](docs/service_configuration.md)를 참고한다. 기존 직접 Uvicorn/CLI 실행은 호환되지만 새 launcher의 파일 검사·환경 필터를 거치지 않는다.
 
 `.env.example`을 참고하되 비밀값이 든 환경 파일은 커밋하지 않는다. controller와 worker에는 같은 충분히 긴 `WORKER_TOKEN`을, controller에는 24자 이상의 `APP_SESSION_SECRET`, 16자 이상의 `APP_ACCESS_TOKEN`, evaluator 결과 반영용 `OFFLINE_VERIFICATION_TOKEN`을 설정한다. 브라우저에는 `APP_ACCESS_TOKEN`만 입력하며 worker token과 OpenAI 키는 노출하지 않는다. target과 worker에 동일한 `LAB_USER_A_PASSWORD`, `LAB_USER_B_PASSWORD`, `LAB_ADMIN_PASSWORD`를 설정한다. 이미 seed한 DB의 비밀번호를 바꿀 때는 target DB를 제거해 재-seed해야 하며 일반 reset은 문서 fixture를 보존한다.
 

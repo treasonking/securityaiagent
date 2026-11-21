@@ -1,0 +1,36 @@
+{
+  "role": "worker",
+  "action": "switch",
+  "ok": true,
+  "started_at": "2026-11-07T07:02:03.228053+00:00",
+  "stopped": {
+    "terminated_pid": 3897,
+    "signal": "SIGTERM",
+    "graceful": true
+  },
+  "service": {
+    "launcher_pid": 3937,
+    "listener": {
+      "pid": 3941,
+      "cwd": "/home/ubuntu/securityaiagent-operator-vm-20261106",
+      "args": [
+        "/home/ubuntu/securityaiagent/.venv/bin/python",
+        "-m",
+        "uvicorn",
+        "--factory",
+        "worker.app:create_app_from_env",
+        "--host",
+        "10.77.0.20",
+        "--port",
+        "9000"
+      ],
+      "start_ticks": "79064"
+    }
+  },
+  "health": {
+    "status_code": 200,
+    "status": "ok",
+    "path": "/health"
+  },
+  "finished_at": "2026-11-07T07:02:05.790082+00:00"
+}

@@ -1,0 +1,14 @@
+{
+  "role": "controller",
+  "action": "stage",
+  "ok": true,
+  "started_at": "2026-11-07T07:01:57.340408+00:00",
+  "head": "aa6143245c19cb917b26e056684c498358570cba",
+  "checkout": "/home/ubuntu/securityaiagent-operator-vm-20261106",
+  "environment_files": [
+    ".env.controller.operator"
+  ],
+  "old_checkout_untouched": true,
+  "old_venv_reused_without_install": true,
+  "finished_at": "2026-11-07T07:01:57.781487+00:00"
+}

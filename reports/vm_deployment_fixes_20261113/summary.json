@@ -1,0 +1,72 @@
+{
+  "base_commit": "d31ed92c3b28086dc956606dd84c59d304beebf0",
+  "local": {
+    "before_fix_failing_regressions": 3,
+    "focused_passed": 56,
+    "full_pytest_passed": 773,
+    "warnings": 12,
+    "seconds": 243.66,
+    "build": "passed"
+  },
+  "actual_vms": [
+    {
+      "role": "controller",
+      "inspect_and_stop_correlated": true,
+      "isolated_child_exit": 23,
+      "host_failure_detected": true,
+      "ipv4_routes": 13,
+      "ipv6_routes": 7,
+      "protected_files": 250,
+      "protected_files_and_prior_history_unchanged": true,
+      "guest_network_and_host_nics_unchanged": true,
+      "original_shares_unchanged": true,
+      "temporary_share_removed": true,
+      "listener_before_and_after": null,
+      "environment_values_exported": false
+    },
+    {
+      "role": "worker",
+      "inspect_and_stop_correlated": true,
+      "isolated_child_exit": 23,
+      "host_failure_detected": true,
+      "ipv4_routes": 9,
+      "ipv6_routes": 1,
+      "protected_files": 43,
+      "protected_files_and_prior_history_unchanged": true,
+      "guest_network_and_host_nics_unchanged": true,
+      "original_shares_unchanged": true,
+      "temporary_share_removed": true,
+      "listener_before_and_after": null,
+      "environment_values_exported": false
+    },
+    {
+      "role": "target",
+      "inspect_and_stop_correlated": true,
+      "isolated_child_exit": 23,
+      "host_failure_detected": true,
+      "ipv4_routes": 6,
+      "ipv6_routes": 1,
+      "protected_files": 115,
+      "protected_files_and_prior_history_unchanged": true,
+      "guest_network_and_host_nics_unchanged": true,
+      "original_shares_unchanged": true,
+      "temporary_share_removed": true,
+      "listener_before_and_after": null,
+      "environment_values_exported": false
+    }
+  ],
+  "actual_vm_deployment_executed": false,
+  "actual_vm_route_mutation_executed": false,
+  "source_sha256": {
+    "scripts/vm_deploy.py": "3c16362ab26d2ce98c3f1025b6e85de5030c1802f8da6e473a62900524b9b9bd",
+    "scripts/vm_deploy_dispatcher.py": "16ddfe6adc2ade8ef63983d8cb9d3a5367bb13b4d0f32a7180442b6d138a33ce",
+    "scripts/vm_deploy_host.py": "563caf8f4c240ccac719c43be480877c446d91cedf0d3e8d92e4a5187b1b1abc"
+  },
+  "local_only": [
+    "IPv6-only default route injection",
+    "IPv6 route drift after planning",
+    "uncertain changing job resubmission rejection",
+    "late-result collection after timeout"
+  ],
+  "prior_success_records_preserved": true
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_54658ffb5432427789c5b16c3272c3d9",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "mcp",
+  "started_at": "2026-11-07T07:03:36.023450+00:00",
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE",
+  "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "4022028635b5dac5918814f2848892e04037c856577f3ad5cd31722130324922",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "limits_used": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_ids": [
+    "f555609d94fbc02d1c20e44c1b188385cbca026fb30da075071e33dcbe7d3ec8",
+    "20d912c5a629642870572440952c17d98fbc52efaa8e21d21aa62cc7ec3de180",
+    "b4eaf137666d8a9e32d5d69b6a578163daccff5746ee369355069e14ba11ad25",
+    "18617793565fbc73ee185b2bf20773d82b52ec305997d9faafd2115aa1f86cd9",
+    "1f1076c6be4baab9dfa67333d7a8aba4b3ab1d027cfb89ade7f73718ad40c348",
+    "4d458e312ed8f561b812641d89615ba9c92b9c3cf43b35c995b5ae1785301b34",
+    "4bcbf58b3833432bd84c1a78dea32808567a6a45e845715882744a29a44e022c",
+    "10d3dc3a2f5f9ea92cef79e82c914e7cfc10eef381a3cd5715e7bfcd15111678",
+    "8d14b173ef3df4e8524b939ab09439f4f5c7ef3586b9f93cd530bbbffe75afee",
+    "7bdd5a0b15b296e8e8811e359411594a2814b876437210d3924ed9331d83acbd",
+    "e37b87f7d57a749b46eb711d165c11fb00a721aa1e0bfd8950edc393c2b6fb40"
+  ],
+  "finished_at": "2026-11-07T07:03:43.634185+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

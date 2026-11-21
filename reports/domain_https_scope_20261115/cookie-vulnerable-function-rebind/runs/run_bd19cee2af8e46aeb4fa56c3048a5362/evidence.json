@@ -1,0 +1,25 @@
+[
+  {
+    "schema_version": "operator-evidence-v1",
+    "contract_version": "operator-resource-v1",
+    "run_id": "run_bd19cee2af8e46aeb4fa56c3048a5362",
+    "evidence_id": "3b3c1f053bf437ca95ff1eeef11e8f99fd7a15b7ce7560e53d34dc37d1eaa885",
+    "request_id": "9101d421-4fb0-414f-b4e1-218a750afcb1",
+    "snapshot_sha256": "b3ae7b05c79fd5bb8d6e1665e1139ec8fc4975b1a72bfaee8672e7c8a8517e13",
+    "step_index": 0,
+    "account_ref": "user-a",
+    "operation": "login",
+    "method": "POST",
+    "path": "/gateway/authenticate",
+    "status_code": 200,
+    "session_binding": "aba513fd9fdf184fc993ccfd4c27f7b84ec9c2fcf8d946b878d90b62a54c6033",
+    "response_kind": "login",
+    "principal_ref": null,
+    "resource_ref": null,
+    "owner_ref": null,
+    "proof_ref": null,
+    "proof_digest": null,
+    "proof_present": false,
+    "reason_code": "LOGIN_ESTABLISHED"
+  }
+]

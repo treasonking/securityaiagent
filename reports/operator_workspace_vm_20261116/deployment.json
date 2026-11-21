@@ -1,0 +1,94 @@
+[
+  {
+    "role": "target",
+    "phase": "target",
+    "from_commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+    "commit": "97d10e25298261775bc4423dab1d6226ed22a156",
+    "checkout": "/home/ubuntu/securityaiagent-deployments/releases/2d2eebbc80c740579b32ef14dd4b5239",
+    "old_checkout": "/home/ubuntu/securityaiagent-deployments/releases/7c6a5729e910425cb28a36653d47e54a",
+    "plan_id": "2d2eebbc80c740579b32ef14dd4b5239",
+    "plan_sha256": "b36341a679c52bab0687f59fe470b6d8c6eab4b4f6604cd4d30de7def22c7122",
+    "apply_sequence": "454f1c675a094aad9449a3f67cbc083d",
+    "health": {
+      "status_code": 200,
+      "status": "ok"
+    },
+    "preservation": {
+      "original_environment_config_reports_unchanged": true,
+      "original_database_rows_exact": true,
+      "deployed_database_existing_rows_preserved": true,
+      "database_count": 5,
+      "network_and_firewall_unchanged": true,
+      "workspace_history_preserved": false
+    }
+  },
+  {
+    "role": "worker",
+    "phase": "worker",
+    "from_commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+    "commit": "97d10e25298261775bc4423dab1d6226ed22a156",
+    "checkout": "/home/ubuntu/securityaiagent-deployments/releases/582d58d5c84a4859b358ec04ec3b4dc4",
+    "old_checkout": "/home/ubuntu/securityaiagent-deployments/releases/3d88cb99dc5e48b3aefed13a5fda46e6",
+    "plan_id": "582d58d5c84a4859b358ec04ec3b4dc4",
+    "plan_sha256": "6abe378f638b5be697ca618402a29e77fff8e7cd1d8e023ee2bc3125a41ce768",
+    "apply_sequence": "28b180a85d9543eebde9d04c89885ab9",
+    "health": {
+      "status_code": 200,
+      "status": "ok"
+    },
+    "preservation": {
+      "original_environment_config_reports_unchanged": true,
+      "original_database_rows_exact": true,
+      "deployed_database_existing_rows_preserved": true,
+      "database_count": 1,
+      "network_and_firewall_unchanged": true,
+      "workspace_history_preserved": false
+    }
+  },
+  {
+    "role": "controller",
+    "phase": "controller",
+    "from_commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+    "commit": "97d10e25298261775bc4423dab1d6226ed22a156",
+    "checkout": "/home/ubuntu/securityaiagent-deployments/releases/f64a9a332e04447b8fd31167c62d7a43",
+    "old_checkout": "/home/ubuntu/securityaiagent-deployments/releases/2b1c96b347234d57a4a3acdb4f12af10",
+    "plan_id": "f64a9a332e04447b8fd31167c62d7a43",
+    "plan_sha256": "33810f9ac5ca2fd384fd8a3a972ec1f7fbce9e4e1b21ea4d71ad95b05a83a735",
+    "apply_sequence": "c4553571a28e419d95ad5dec2d6c3a0f",
+    "health": {
+      "status_code": 200,
+      "status": "ok"
+    },
+    "preservation": {
+      "original_environment_config_reports_unchanged": true,
+      "original_database_rows_exact": true,
+      "deployed_database_existing_rows_preserved": true,
+      "database_count": 2,
+      "network_and_firewall_unchanged": true,
+      "workspace_history_preserved": false
+    }
+  },
+  {
+    "role": "target",
+    "phase": "target-fixed",
+    "from_commit": "97d10e25298261775bc4423dab1d6226ed22a156",
+    "commit": "97d10e25298261775bc4423dab1d6226ed22a156",
+    "checkout": "/home/ubuntu/securityaiagent-deployments/releases/2c6a3ad1c48040278e8dbcf52445e027",
+    "old_checkout": "/home/ubuntu/securityaiagent-deployments/releases/2d2eebbc80c740579b32ef14dd4b5239",
+    "plan_id": "2c6a3ad1c48040278e8dbcf52445e027",
+    "plan_sha256": "ee8966ed8810229c1030669901d7b6cf5592ca46da95771ad488674b3f86453e",
+    "apply_sequence": "eb574cae89ef4710aa7116e04b9a1ca2",
+    "health": {
+      "status_code": 200,
+      "status": "ok"
+    },
+    "preservation": {
+      "original_environment_config_reports_unchanged": true,
+      "original_database_rows_exact": true,
+      "deployed_database_existing_rows_preserved": true,
+      "database_count": 5,
+      "network_and_firewall_unchanged": true,
+      "workspace_history_preserved": false
+    }
+  }
+]

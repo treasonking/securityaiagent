@@ -1,0 +1,33 @@
+{
+  "commit": "23cae0f160c4a6e79c7252c179d5084dcad40569",
+  "source_matches_committed_bytes": true,
+  "source_sha256": {
+    "common/service_config.py": "13ae89e3317e7857a4c15323ed2b16f82ed1eac8107443ac6c0c0d28249bd9f2",
+    "controller/api.py": "64829e623babc0307ab2b4d38f86cd946143b1d42f11dd851a8a33370c6bf3b6",
+    "controller/operator_execution.py": "d1c98c7230f12278d715fbd8605bd0a9bc65bef0b11b965ff354690267bc4fdc",
+    "controller/workspace.py": "a102890442a088e8cdca8b104a60753601a0bac55d452bbfa8977f4f93fb9e84",
+    "controller/workspace_api.py": "adb45aa27496a16e9a13cb42cdbcf6bc7843d85f6e6b6a0cab6895a3a7fd39b4",
+    "frontend/src/App.tsx": "9185944ffc719f8133ba1a198aa6848b42026d3acbb96e869ccc9ce9343de8f3",
+    "frontend/src/OperatorWorkspace.tsx": "96303d5685f545e0bb0caf212a6916e3001148200790e36e54ca4b248e9e6613",
+    "frontend/src/api.ts": "3f8bc6e8e99a5be70b1173ab226729c209c1e64c744d9ab0b099eddf189bfcdc",
+    "frontend/src/operator-api.ts": "251257fb993915c340c034e2f896309015cff78cb26da7161e67233c1999dcf6",
+    "frontend/src/operator-state.d.ts": "236ca6f20236fb36b5ad4c020204572da4b15d7d81e1bc1b38c4a6d702834ede",
+    "frontend/src/operator-state.js": "c17948fdc6a879886e42a001d352d1579680a036e14135fffc7a95fb1ff5e996",
+    "frontend/src/styles.css": "98e3df6902e33023c1a9baefd96132d7f68d08b2eb528fc8e9effcc34e0d7b38",
+    "frontend/tests/operator-state.test.mjs": "367da202556e48b032ea3d21b6fac4972bebab9f4a853bcb0b412a05bc8a78b2",
+    "scripts/run_operator_workspace_validation.py": "cdf610f5e000dc6daddc1c85b02c76d14a6349a663e2140bdfc40b9c937dcc36",
+    "tests/test_operator_workspace.py": "3b258ef8f62a8efbe9882c56550d85494ee88d934376c4cd17acf029a1bebc4b",
+    "validation/operator_workspace.py": "178b909a902e0bc538b12e27f1aa698ddbb1572453835f7dce9a5f7eb425d70a"
+  },
+  "frontend_dist_sha256": {
+    "index.html": "c231a38c693cfa742d922c5056488e2acd80a2fb4c3248c67f1a3c5e8705ed8f",
+    "assets/index-B9Be3KKG.css": "11fa0e7a4bad385d1204e21af8d25c14cf37cd76e49278dd0d1ddedf5afc00ca",
+    "assets/index-COmDSndQ.js": "da2bcadc3145693591606cc93a6eb590403e18a51711897b54862865b5511f26"
+  },
+  "public_text_pattern_files_checked": 26,
+  "private_key_or_absolute_sensitive_path_matches": 0,
+  "dynamic_secret_checks": [
+    "browser/publication_check.json",
+    "api_cleanup_validation/publication_check.json"
+  ]
+}

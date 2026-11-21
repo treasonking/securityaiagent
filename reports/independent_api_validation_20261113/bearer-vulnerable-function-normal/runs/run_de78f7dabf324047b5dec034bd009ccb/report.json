@@ -1,0 +1,50 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_de78f7dabf324047b5dec034bd009ccb",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "function",
+  "started_at": "2026-11-13T07:11:47.682397+00:00",
+  "status": "COMPLETED",
+  "verdict": "VULNERABLE",
+  "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "8e212c488609b70e2d99142c1be3a730942a35c250a6fdcbc8b3a9012ad8d43b",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "limits_used": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_ids": [
+    "4647f27dad5136d29acf78bd4d748a75f3c5a9c04b0df0332ef45e32e2e86b78",
+    "18ac20d52df088220ba7253badbc545cc7ba730d44cc962016351d8a38bd586a",
+    "493b5d1c63998ad63a621f279e29b8462cf409809e59cc323bf64a61833b89bf",
+    "33a77736795a16766d976b9f7aea5fdbcac84487c60d90c37bd163fc5669e755",
+    "79928e5d3a99fc9503c7cc306179c1dbb7fde892a04a4704a24d2e6ec472f918",
+    "791cf5d773ecada561ecaec9b040753c8b1e8b9acf7e3cfc0716571e548707ba",
+    "40488b8ec43ad384dd6dab977b5fe224b5e95e633267dab4aa6407d7b324e66e",
+    "862c2d2fd743ea33dc3f2bd343a306e8aa9e05b9de8ebbff6a169f263b6bb863",
+    "c16e7c6771e31281871f592203927750f7a1e117eca0ba815fafc529c5a26ac3",
+    "8e0ce90bb5cf98d3c3f4d6994020fd7128428c56b1a7fe6d4c831a1df92cbe3f",
+    "1953a0a2435a863175908468b63ce55abd452c4b1dedfd295b9323ea709e37cd"
+  ],
+  "finished_at": "2026-11-13T07:11:48.742617+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

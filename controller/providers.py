@@ -33,7 +33,7 @@ class MockModelProvider:
     model_id = None
 
     async def propose_candidates(self, *, scenario_id: str, target_id: str) -> ProviderResult:
-        if scenario_id != "access-control" or target_id != "lab-web":
+        if scenario_id not in {"access-control", "access-control-http"} or target_id != "lab-web":
             return ProviderResult(candidates=[], usage=ModelUsage())
         return ProviderResult(
             candidates=[
@@ -66,7 +66,7 @@ class OpenAIModelProvider:
             raise RuntimeError("OPENAI_API_KEY is required for provider=openai")
         if not self.model_id:
             raise RuntimeError("OPENAI_MODEL must be explicitly configured for provider=openai")
-        if scenario_id != "access-control" or target_id != "lab-web":
+        if scenario_id not in {"access-control", "access-control-http"} or target_id != "lab-web":
             raise ValueError("openai provider is limited to access-control on lab-web")
         from agents import Agent, Runner, set_tracing_disabled
 

@@ -1,0 +1,39 @@
+{
+  "role": "target",
+  "action": "backup",
+  "ok": true,
+  "started_at": "2026-11-06T13:28:54.077946+00:00",
+  "backup_directory": "/home/ubuntu/securityaiagent-operator-vm-state-20261106/private",
+  "protected_files": 30,
+  "databases": [
+    {
+      "file": "target.sqlite3",
+      "quick_check": "ok",
+      "tables": 4
+    },
+    {
+      "file": "vm-target-fixed.sqlite3",
+      "quick_check": "ok",
+      "tables": 4
+    },
+    {
+      "file": "vm-target-live-vulnerable.sqlite3",
+      "quick_check": "ok",
+      "tables": 4
+    },
+    {
+      "file": "vm-target-vulnerable.sqlite3",
+      "quick_check": "ok",
+      "tables": 4
+    },
+    {
+      "file": "vm-target.sqlite3",
+      "quick_check": "ok",
+      "tables": 4
+    }
+  ],
+  "original_listener_present": false,
+  "code_backup": true,
+  "workspace_backup": true,
+  "finished_at": "2026-11-06T13:28:55.721525+00:00"
+}

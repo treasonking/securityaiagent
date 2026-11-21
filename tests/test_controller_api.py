@@ -283,6 +283,7 @@ def test_queued_run_can_be_cancelled_before_execution(tmp_path, monkeypatch):
 def test_authenticated_offline_verification_import_updates_report(tmp_path):
     correlated_service, _ = make_service(tmp_path, "vulnerable")
     service = ToolService(
+        registry=correlated_service.registry,
         policies=correlated_service.policies,
         accounts=correlated_service.accounts,
         limits=correlated_service.limits,

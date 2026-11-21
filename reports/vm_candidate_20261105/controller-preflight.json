@@ -1,0 +1,10 @@
+{
+  "role": "controller",
+  "action": "preflight",
+  "ok": true,
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "baseline_created": true,
+  "protected_files": 132,
+  "backup_directory": "/home/ubuntu/securityaiagent/verification_tmp/candidate_vm_20261105/private",
+  "configuration_valid": true
+}

@@ -1,0 +1,30 @@
+{
+  "role": "target",
+  "action": "baseline-start",
+  "ok": true,
+  "started_at": "2026-11-07T07:01:39.020131+00:00",
+  "service": {
+    "launcher_pid": 4167,
+    "listener": {
+      "pid": 4170,
+      "cwd": "/home/ubuntu/securityaiagent",
+      "args": [
+        "/home/ubuntu/securityaiagent/.venv/bin/python",
+        "-m",
+        "uvicorn",
+        "target.app:app",
+        "--host",
+        "10.78.0.30",
+        "--port",
+        "8080"
+      ],
+      "start_ticks": "76498"
+    }
+  },
+  "health": {
+    "status_code": 200,
+    "status": "ok",
+    "path": "/health"
+  },
+  "finished_at": "2026-11-07T07:01:41.380969+00:00"
+}

@@ -1,0 +1,173 @@
+{
+  "job": {
+    "action": "plan",
+    "commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+    "expected": "2120841ae8dcf341352bb03b1e076d0367980363",
+    "sequence": "a85f0e62715f441b9b6c9469f4f7c543"
+  },
+  "receipt": {
+    "role": "target",
+    "sequence": "a85f0e62715f441b9b6c9469f4f7c543",
+    "exit_code": 0
+  },
+  "result": {
+    "role": "target",
+    "action": "plan",
+    "ok": true,
+    "time": 1794474077.924665,
+    "plan": {
+      "schema": "vm-deployment-v1",
+      "id": "65804f167fa949919b667f0df2196aed",
+      "role": "target",
+      "commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+      "before": {
+        "role": "target",
+        "commit": "2120841ae8dcf341352bb03b1e076d0367980363",
+        "checkout": "/home/ubuntu/securityaiagent-deployments/releases/7c6a5729e910425cb28a36653d47e54a",
+        "environment_reference": "/home/ubuntu/securityaiagent-deployments/releases/7c6a5729e910425cb28a36653d47e54a/.env.target",
+        "environment_sha256": "a63382b36661237b7ec58465559cc8288b14aafb1df1f25fb41060b188e70d3c",
+        "setting_names": [
+          "LAB_ADMIN_PASSWORD",
+          "LAB_USER_A_PASSWORD",
+          "LAB_USER_B_PASSWORD",
+          "TARGET_API_STYLE",
+          "TARGET_DATABASE_PATH",
+          "TARGET_MODE"
+        ],
+        "runtime_references": {
+          "TARGET_DATABASE_PATH": "/home/ubuntu/securityaiagent-deployments/releases/7c6a5729e910425cb28a36653d47e54a/data/vm-target-live-vulnerable.sqlite3"
+        },
+        "runtime_config_hashes": {
+          "operator.worker.env.example": "ad3aa79ec7d2aa72dd3002070b6996fa61be92fa53c8bdd5d17d8fbb9f5dd11a",
+          "targets.json": "6c5036ca829816b9eba01f0a34e984bf06510d9a01e20da3618f5e9eb637807f",
+          "targets.operator.json": "4b7d9b3c8cdd173a87497fe562abec9d3238c5d8f0ffbbca2511d86facb690ef",
+          "targets.records.json": "624a71949993cdb5dca357e8cff11a7e2d47cdacb92dbb09f149a3332a6417a3",
+          "worker_accounts.example.json": "873aaafb8849c661bb85d527272984a3215af0130926788035d1788188b583f9"
+        },
+        "preserved_config_hashes": {},
+        "launcher": "service_config",
+        "listener": {
+          "pid": 4195,
+          "start_ticks": "227502",
+          "checkout": "/home/ubuntu/securityaiagent-deployments/releases/7c6a5729e910425cb28a36653d47e54a",
+          "module": "target.app:app"
+        },
+        "network": {
+          "interfaces": [
+            {
+              "name": "lo",
+              "mac": "00:00:00:00:00:00",
+              "addresses": [
+                [
+                  "inet",
+                  "127.0.0.1",
+                  8
+                ],
+                [
+                  "inet6",
+                  "::1",
+                  128
+                ]
+              ]
+            },
+            {
+              "name": "enp0s3",
+              "mac": "08:00:27:62:c2:a5",
+              "addresses": [
+                [
+                  "inet",
+                  "10.78.0.30",
+                  24
+                ]
+              ]
+            }
+          ],
+          "routes": [
+            {
+              "dst": "10.78.0.0/24",
+              "dev": "enp0s3",
+              "protocol": "kernel",
+              "scope": "link",
+              "prefsrc": "10.78.0.30",
+              "metric": 100,
+              "flags": []
+            },
+            {
+              "type": "local",
+              "dst": "10.78.0.30",
+              "dev": "enp0s3",
+              "table": "local",
+              "protocol": "kernel",
+              "scope": "host",
+              "prefsrc": "10.78.0.30",
+              "flags": []
+            },
+            {
+              "type": "broadcast",
+              "dst": "10.78.0.255",
+              "dev": "enp0s3",
+              "table": "local",
+              "protocol": "kernel",
+              "scope": "link",
+              "prefsrc": "10.78.0.30",
+              "flags": []
+            },
+            {
+              "type": "local",
+              "dst": "127.0.0.0/8",
+              "dev": "lo",
+              "table": "local",
+              "protocol": "kernel",
+              "scope": "host",
+              "prefsrc": "127.0.0.1",
+              "flags": []
+            },
+            {
+              "type": "local",
+              "dst": "127.0.0.1",
+              "dev": "lo",
+              "table": "local",
+              "protocol": "kernel",
+              "scope": "host",
+              "prefsrc": "127.0.0.1",
+              "flags": []
+            },
+            {
+              "type": "broadcast",
+              "dst": "127.255.255.255",
+              "dev": "lo",
+              "table": "local",
+              "protocol": "kernel",
+              "scope": "link",
+              "prefsrc": "127.0.0.1",
+              "flags": []
+            },
+            {
+              "type": "local",
+              "dst": "::1",
+              "dev": "lo",
+              "table": "local",
+              "protocol": "kernel",
+              "metric": 0,
+              "flags": [],
+              "pref": "medium"
+            }
+          ],
+          "firewall": {
+            "iptables-save": "f5b44519b6972c4b3b72d8024e3cab16d06ef5b49cefb7adb4278780f4bbdccd",
+            "ip6tables-save": "a8c1e82573b3b0eeb53f0980dfb83d6262fdf5f6da668291c3cd55bbd03e501c"
+          },
+          "no_default_route_required": true
+        }
+      },
+      "checkout": "/home/ubuntu/securityaiagent-deployments/releases/65804f167fa949919b667f0df2196aed",
+      "created_at": 1794474078.8085427,
+      "new_environment_sha256": "a37eae21bb4b9bbe980a82f1fe9c6f99100f916ee1107636f95be0669e2e484b",
+      "new_preserved_config_hashes": {},
+      "frontend_hashes": {},
+      "version_change": false,
+      "data_strategy": "private consistent copy; originals untouched; rollback retains new data separately",
+      "plan_sha256": "b5247a1213f677aa6cf2aee66175ef463bf6127ebddb62610d791f8ddfddc22c"
+    }
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "schema_version": "operator-plan-v1",
+  "plan_id": "opplan_3cb335ee06f04ec3b7f8f40fc8a8ea96",
+  "created_at": 1794035092,
+  "expires_at": 1794035392,
+  "candidate_id": "55575ccb0fb727ddbf0ec58f6562f93f3c449167b593cb460b648d6d1e6ade41",
+  "source_sha256": "7c1d566ddabeac94d551e9f92fa8c7ccb3ee949f8890c3e331c68657082e7aae",
+  "registry_sha256": "1ff19088a0aacb2e0aa8eff5fc2b459a47792193883886537108692162df0a9e",
+  "worker_origin": "http://10.77.0.20:9000",
+  "policy": {
+    "contract_version": "operator-resource-v1",
+    "target_id": "lab-web",
+    "scenario_id": "operator-resource-http",
+    "registry_sha256": "1ff19088a0aacb2e0aa8eff5fc2b459a47792193883886537108692162df0a9e",
+    "origin": "http://10.78.0.30:8080",
+    "adapter": {
+      "contract_version": "operator-resource-v1",
+      "adapter_id": "operator-json-tickets",
+      "routes": {
+        "login_path": "/session",
+        "me_path": "/me",
+        "detail_path": "/tickets/{resource_id}"
+      },
+      "accounts": {
+        "user_a": {
+          "username": "alice_17",
+          "password_env": "LAB_USER_A_PASSWORD"
+        },
+        "user_b": {
+          "username": "bob_2048",
+          "password_env": "LAB_USER_B_PASSWORD"
+        }
+      },
+      "login_user_field": "username",
+      "login_password_field": "password",
+      "auth_mode": "cookie",
+      "cookie_name": "session_key",
+      "token_field": null,
+      "principal_field": "user.id",
+      "resource_id_field": "id",
+      "owner_field": "owner",
+      "visibility_field": "private",
+      "private_value": true,
+      "public_value": false,
+      "proof_field": "memo",
+      "denial_status": 404,
+      "denial_field": "error.code",
+      "denial_value": "denied"
+    },
+    "accounts": {
+      "user_a": {
+        "principal_id": "alice-17",
+        "resource_id": "95a8a830-f123-4f62-b38b-004d428ecab1",
+        "proof_env": "OPERATOR_PROOF_A"
+      },
+      "user_b": {
+        "principal_id": "2048",
+        "resource_id": "ticket_2048",
+        "proof_env": "OPERATOR_PROOF_B"
+      }
+    },
+    "proof_commitments": {
+      "user_a": "b8c475002f417f1b0bfbd7898dc67ad489c6dc95a7e769857f045e918adf85f3",
+      "user_b": "7894e4abb54eec66807afcc6648fd5ce646ed018ed92163d55f099e4f0ca49b8"
+    },
+    "scope_policy": {
+      "profile_id": "operator-prepared-resources",
+      "revision": 1,
+      "snapshot_sha256": "4022028635b5dac5918814f2848892e04037c856577f3ad5cd31722130324922",
+      "effective_limits": {
+        "max_requests": 11,
+        "max_tool_calls": 12,
+        "timeout_seconds": 5.0,
+        "run_timeout_seconds": 180.0,
+        "max_response_bytes": 65536,
+        "requests_per_second": 2.0,
+        "max_concurrency": 1,
+        "max_runs": 100,
+        "state_ttl_seconds": 600.0
+      }
+    }
+  },
+  "sequence": [
+    {
+      "account_ref": "user-a",
+      "operation": "login",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "login",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "identity",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "identity",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "95a8a830-f123-4f62-b38b-004d428ecab1"
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "resource",
+      "resource_id": "ticket_2048"
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "ticket_2048"
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "resource",
+      "resource_id": "ticket_2048"
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "resource",
+      "resource_id": "95a8a830-f123-4f62-b38b-004d428ecab1"
+    },
+    {
+      "account_ref": "user-a",
+      "operation": "identity",
+      "resource_id": null
+    },
+    {
+      "account_ref": "user-b",
+      "operation": "identity",
+      "resource_id": null
+    }
+  ],
+  "provider": "mock",
+  "transport": "mcp",
+  "expected_http_requests": 11,
+  "expected_tool_calls": 12,
+  "verification_status": "NOT_EXECUTED",
+  "plan_sha256": "1b1fcf3aac8f2cfc1bc15ad466550ed8f0e9549f228b51ae06d5abfe4caa732c"
+}

@@ -1,0 +1,63 @@
+{
+  "base_commit": "4f637f58142b967aca0986d2ffc83b537ce9c4db",
+  "executed_commit": "ef505eff010b0ed96d83057a2a0cf3dfb680242c",
+  "classification": "internal white-box adapter applicability; not blind or external evaluation",
+  "production_engine_contract_verifier_changes": false,
+  "production_registry_changes": false,
+  "normal_tcp_cases": 8,
+  "negative_tcp_cases": 8,
+  "all_cases_passed": true,
+  "issued_plans": 16,
+  "claimed_plans": 14,
+  "stored_runs_replayed": 14,
+  "policy_rejections_without_run": 2,
+  "target_requests_normal": 11,
+  "tool_calls_normal": 12,
+  "evidence_normal": 11,
+  "preview_target_requests_all_cases": 0,
+  "secrets_checked": 114,
+  "secret_matches": 0,
+  "local_tests": {
+    "focused_passed": 26,
+    "full_command": ".\\.venv\\Scripts\\python.exe -m pytest",
+    "full_passed": 799,
+    "warnings": 20,
+    "elapsed_seconds": 257.72,
+    "exit_code": 0
+  },
+  "frontend": {
+    "command": "npm run build",
+    "working_directory": "frontend",
+    "exit_code": 0,
+    "modules": 18,
+    "build_ms": 593
+  },
+  "actual_vm_actions": false,
+  "external_service_actions": false,
+  "model_api_calls": 0,
+  "browser_validation": false,
+  "main_merged": false,
+  "preservation": {
+    "previous_reports_unchanged": true,
+    "existing_env_db_untouched": true,
+    "vm_firewall_shares_untouched": true
+  },
+  "limitations": [
+    "Single implementer-known JSON API; not blind/generalization evaluation",
+    "Cookie-only negative TCP matrix",
+    "Policy change rejected by REST lookup before run; no MCP tool call in those two cases",
+    "No new prelogin race injection for this API",
+    "Existing v1 literal routes/selectors/IDs/proof and one-direction fixed flow remain",
+    "No VM/UI/live model/external website validation"
+  ],
+  "input_byte_preservation": {
+    "files": [
+      "validation/independent_api/openapi.bearer.json",
+      "validation/independent_api/openapi.cookie.json",
+      "validation/independent_api/registry.cookie.json"
+    ],
+    "observed": "Executed working-tree CRLF; initial Git blob normalized to LF",
+    "resolution": "Final commit preserves executed bytes with -text; no semantic or execution-logic changes",
+    "recorded_execution_digests_rewritten": false
+  }
+}

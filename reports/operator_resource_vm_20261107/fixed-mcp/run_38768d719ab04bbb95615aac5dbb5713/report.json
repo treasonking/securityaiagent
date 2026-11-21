@@ -1,0 +1,50 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_38768d719ab04bbb95615aac5dbb5713",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "mcp",
+  "started_at": "2026-11-07T07:05:12.771353+00:00",
+  "status": "COMPLETED",
+  "verdict": "BLOCKED_BY_ACCESS_CONTROL",
+  "reason_code": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "4022028635b5dac5918814f2848892e04037c856577f3ad5cd31722130324922",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 2.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "limits_used": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_ids": [
+    "b177d9207ff5e1fefe50b9d90b28c92feadfcd35eccc05d9383a9a3d80829b88",
+    "6d7e32c71ceeb9046a91f55415e2c01e02f0deedf837ed6d2c1c4f9db64a626e",
+    "be6505803b9a993d69eb496fe3a9075877477820d5d02ba8645f593e9d614a80",
+    "b5c781086d3ae8ea173be5a648ef926c3dc5dae4410bc005f1f6b47b5753b6cb",
+    "a6d9e32153dbbe66beccbe8acb085301f79dc48aa95076e51bba17060195bff8",
+    "5492fa82300c7e9cc5ff799f2ddff8145be98eecc29d506d23ee9276b2de74b0",
+    "847733425be4895504d9c3e628813594cd7acdbba2c6cb91ad102ea788a70568",
+    "f268d2a1abf76c8c80eb1c0efcc84a650e2677072eea8681df5756b3b7a3ab38",
+    "4c9d0a0713076f234ebd0729b20a7b1db8e377b9efade6c45ffd92781fce7b26",
+    "4faa20761c14a3c4d4a98816736d6a5165330481db142bafc3c4b5f77c818c45",
+    "91830d30fc1728f632a8ca57eada19c9a2ae1e80a9b3a85ba8439e4e40544402"
+  ],
+  "finished_at": "2026-11-07T07:05:19.529615+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

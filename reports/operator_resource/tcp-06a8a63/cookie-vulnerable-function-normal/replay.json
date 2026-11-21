@@ -1,0 +1,7 @@
+{
+  "verdict": "VULNERABLE",
+  "reason_code": "CROSS_ACCOUNT_PRIVATE_PROOF",
+  "run_id": "run_5c413526c9f04a2f84d59fc3b6465b8b",
+  "verdict_matches": true,
+  "evidence_count": 11
+}

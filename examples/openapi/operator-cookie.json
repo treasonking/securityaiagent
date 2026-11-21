@@ -1,0 +1,184 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Independent ticket API",
+    "version": "1"
+  },
+  "components": {
+    "securitySchemes": {
+      "auth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session_key"
+      }
+    }
+  },
+  "security": [
+    {
+      "auth": []
+    }
+  ],
+  "paths": {
+    "/session": {
+      "post": {
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "test response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "test response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "user"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tickets/{resource_id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "resource_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,128}$",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "test response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "owner": {
+                      "type": "string"
+                    },
+                    "private": {
+                      "type": "boolean"
+                    },
+                    "memo": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "owner",
+                    "private",
+                    "memo"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "test response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

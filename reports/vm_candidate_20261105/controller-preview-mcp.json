@@ -1,0 +1,13 @@
+{
+  "role": "controller",
+  "action": "preview",
+  "ok": true,
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "transport": "mcp",
+  "exit_code": 0,
+  "plan_file": "mcp-plan-b4475b32.json",
+  "plan_id": "plan_246cecf502c54c1aae2c26f674373ce5",
+  "plan_sha256": "cf45e81976235d341fc0e526c5530bee1b418bf54e273f26fdc216e994932a1b",
+  "created_at": 1793811745,
+  "expires_at": 1793812045
+}

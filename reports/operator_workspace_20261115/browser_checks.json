@@ -1,0 +1,40 @@
+{
+  "method": "real IAB browser UI; actual Controller/Worker TCP; Target domain TLS; code-only test resolver",
+  "function_vulnerable_run": "run_5668df00b4a744fabae19bfa388420fe",
+  "mcp_fixed_run": "run_bbfd081a81e14cc58a70b4c857396e98",
+  "readiness_preview_target_tcp_tls_http_delta": 0,
+  "each_run_http_tools_evidence": [
+    11,
+    12,
+    11
+  ],
+  "reload_existing_run_recovered": true,
+  "history_existing_result_reopened": true,
+  "policy_changed_plan_id": "opplan_4e2d84490cc8419f80a2db79f9179975",
+  "policy_changed_digest": "3948bc9248d1cdc07c3e24239939ebcd13c6a204f63c83dc6b05316edbfcf9e8",
+  "policy_change_ui_message": "Worker 정책이 바뀌었습니다. 새 preview가 필요합니다.",
+  "policy_change_target_delta": 0,
+  "policy_change_run_created": false,
+  "actual_browser_download_sha256": {
+    "md": "dc462976f14d5e1840a0cb07592c71c6107bc5c7c4d5003ab4c4ab75ea3910fa",
+    "json": "1d6ecc2fb146a0c8aea810a68645d0ca6c207b614a7befad0d2fb677320f5bd4"
+  },
+  "download_evidence_ids_checked": 11,
+  "download_placeholder_checked": true,
+  "legacy_chat_navigation": true,
+  "details_initially_collapsed": true,
+  "expanded_http_and_connection_items": [
+    11,
+    11
+  ],
+  "expanded_details_run_button_rect": {
+    "top": 715,
+    "bottom": 769,
+    "viewport_height": 794
+  },
+  "notes": [
+    "Narrow default browser viewport used; added minmax/min-width wrapping CSS afterward; final CSS build tested, not a second browser E2E.",
+    "Browser ran a dirty implementation worktree based on 8aff74f. Retained exact source hashes; no claim that the browser ran a clean final commit.",
+    "Initial browser helper shutdown hit Windows SQLite handle cleanup error after exporting sanitized results. Exact test-only directory was removed after process exit. Added test-helper collection and regression; subsequent command completed automatic cleanup."
+  ]
+}

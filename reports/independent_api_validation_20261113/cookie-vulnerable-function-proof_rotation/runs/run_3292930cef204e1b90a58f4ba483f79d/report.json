@@ -1,0 +1,50 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_3292930cef204e1b90a58f4ba483f79d",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "function",
+  "started_at": "2026-11-13T07:11:59.182434+00:00",
+  "status": "COMPLETED",
+  "verdict": "INCONCLUSIVE",
+  "reason_code": "OWNER_RESOURCE_PROOF_UNPROVEN",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "local-project-attachments",
+    "revision": 1,
+    "snapshot_sha256": "873eeb83c98e72d2aa4c400c06ed589843bee604243c6457c1f40b1d1269b6b3",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "limits_used": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_ids": [
+    "f1368d084b6460863b793fd34755669f58d5a84ef484f8ea7797503b04a1ba9d",
+    "288f497ccaa8362cd4019d6187263007cc18e511ca739288d41439c8fb98d6f5",
+    "fd49ebed5014a00aa5ca7d3fd4ad6b6b9540ef5d187999a0613e7abb59020540",
+    "b33f36aef85fc94d8f1df884dc675db908f18d430b69a7af54f3a1d1c01f67b1",
+    "c8409a34720700b2303fc7ef224855b90fff5015c9bca0b819e7493b0fee4b50",
+    "22a6975dd454bdea88a2c02b5e54cefc81cc24bfb0b42bd5af99b810460b823a",
+    "f7ae66db80ee6aad21ae682b92b6eff298ed446306b1b947c1315e74fff8c1fd",
+    "9275d5ff08f959fe4b249b436ca2028fc1ed0bc09841082192c149c8a687ddd7",
+    "be182b27ae10dafdff9c79afbe94b934000cce9a03312911b72b4b3321a04237",
+    "cc242fba5b0e7e038be1f84d9b5c103b30a7f8c16f7a98bb74314c8902a8d021",
+    "3831b95f2dd8cde67d9bdf640ddf1db96a2ef709cb67aabff0b1052696d96363"
+  ],
+  "finished_at": "2026-11-13T07:12:00.176203+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

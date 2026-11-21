@@ -1,0 +1,8 @@
+{
+  "role": "controller",
+  "action": "start",
+  "ok": true,
+  "head": "ef25892aafd4c0dc243d45d95cbe6ce6118c978d",
+  "launcher_pid": 4161,
+  "listener_ready": true
+}

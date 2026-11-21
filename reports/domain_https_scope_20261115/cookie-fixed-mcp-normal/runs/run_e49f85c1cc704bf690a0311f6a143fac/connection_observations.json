@@ -1,0 +1,189 @@
+[
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  },
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  },
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  },
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  },
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  },
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  },
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  },
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  },
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  },
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  },
+  {
+    "version": "domain-connection-v1",
+    "origin": "https://attachments.securityai.test:62504",
+    "dns_results": [
+      "127.0.0.1"
+    ],
+    "selected_ip": "127.0.0.1",
+    "peer_ip": "127.0.0.1",
+    "peer_port": 62504,
+    "peer_verified": true,
+    "tls_server_name": "attachments.securityai.test",
+    "stage": "complete",
+    "reason_code": null,
+    "tcp_attempts": 1,
+    "tls_attempts": 1,
+    "http_response_received": true
+  }
+]

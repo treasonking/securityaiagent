@@ -17,7 +17,7 @@ class LoginRequest(BaseModel):
     password: str
 
 
-def create_app(store: TargetStore | None = None) -> FastAPI:
+def create_app(store: TargetStore | None = None, *, api_style: str | None = None) -> FastAPI:
     default_database = Path(__file__).resolve().parents[1] / "data" / "target.sqlite3"
     target_store = store or TargetStore(
         Path(os.getenv("TARGET_DATABASE_PATH", str(default_database))),
@@ -28,6 +28,12 @@ def create_app(store: TargetStore | None = None) -> FastAPI:
             "admin": os.getenv("LAB_ADMIN_PASSWORD") or "local-admin-password",
         },
     )
+    style = api_style or os.getenv("TARGET_API_STYLE", "documents")
+    if style == "records":
+        from target.records import create_records_app
+        return create_records_app(target_store)
+    if style != "documents":
+        raise ValueError("TARGET_API_STYLE must be documents or records")
     app = FastAPI(title="SecurityLab synthetic target", docs_url=None, redoc_url=None)
     app.state.store = target_store
 
@@ -75,6 +81,7 @@ def create_app(store: TargetStore | None = None) -> FastAPI:
 
     @app.get("/documents")
     async def list_documents(
+        response: Response,
         lab_session: str | None = Cookie(default=None),
         x_securitylab_run: str = Header(default="untracked"),
         x_securitylab_request: str = Header(default="untracked"),
@@ -91,7 +98,8 @@ def create_app(store: TargetStore | None = None) -> FastAPI:
         )
         if account is None:
             raise HTTPException(status_code=401, detail="session missing or expired")
-        return {"documents": target_store.list_documents(account)}
+        response.headers["X-SecurityLab-Account"] = account.account_id
+        return {"account_id": account.account_id, "documents": target_store.list_documents(account)}
 
     @app.get("/documents/{document_id}")
     async def fetch_document(
@@ -123,10 +131,10 @@ def create_app(store: TargetStore | None = None) -> FastAPI:
             marker=marker,
         )
         if document is None:
-            raise HTTPException(status_code=status, detail="document not found")
+            raise HTTPException(status_code=status, detail="document not found", headers={"X-SecurityLab-Account": account.account_id})
         from fastapi.responses import JSONResponse
 
-        return JSONResponse(document, status_code=status)
+        return JSONResponse(document, status_code=status, headers={"X-SecurityLab-Account": account.account_id})
 
     @app.post("/logout")
     async def logout(response: Response, lab_session: str | None = Cookie(default=None)) -> dict[str, str]:

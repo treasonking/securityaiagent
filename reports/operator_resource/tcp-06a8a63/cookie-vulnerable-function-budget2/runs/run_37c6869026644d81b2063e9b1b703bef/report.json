@@ -1,0 +1,41 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_37c6869026644d81b2063e9b1b703bef",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "function",
+  "started_at": "2026-11-05T18:47:24.104661+00:00",
+  "status": "FAILED",
+  "verdict": "INCONCLUSIVE",
+  "reason_code": "SCOPE_LIMIT_EXCEEDED",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "2d6ab6fb9bbaa3d404367d386282d8a485f101aa9566b2cde06671469bc7a9d7",
+    "effective_limits": {
+      "max_requests": 2,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "limits_used": {
+    "http_requests": 2,
+    "tool_calls": 3
+  },
+  "evidence_ids": [
+    "115c3d57bcae57aeddceaa44a0302e632c40977b3d36c3edc08cbce7894727f2",
+    "128ffecf61922eb3be6f7287a4d5e190c4b26595a07bfe80cb3d67d3a4e0a626"
+  ],
+  "finished_at": "2026-11-05T18:47:24.306661+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}

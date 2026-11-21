@@ -1,0 +1,68 @@
+{
+  "profiles": [
+    {
+      "profile_id": "attachments",
+      "name": "\ud504\ub85c\uc81d\ud2b8 \ucca8\ubd80\ud30c\uc77c \u00b7 \ub4f1\ub85d \ud504\ub85c\ud544",
+      "ready": true,
+      "transports": [
+        "function",
+        "mcp"
+      ],
+      "target_contacted": false,
+      "basis": "Worker \uc815\ucc45 \uc870\ud68c; Target \uc5f0\uacb0 \uc131\uacf5\uc744 \ud655\uc778\ud55c \uc0c1\ud0dc\uac00 \uc544\ub2d9\ub2c8\ub2e4.",
+      "policy": {
+        "target_id": "lab-web",
+        "origin": "https://attachments.securityai.test:56292",
+        "scenario_id": "operator-resource-http",
+        "contract_version": "operator-resource-v1",
+        "auth_mode": "cookie",
+        "provider": "mock",
+        "accounts": [
+          {
+            "alias": "user-a",
+            "resource_id": "attachment_M4s8"
+          },
+          {
+            "alias": "user-b",
+            "resource_id": "attachment_N9t2"
+          }
+        ],
+        "scope_policy": {
+          "profile_id": "local-project-attachments",
+          "revision": 1,
+          "snapshot_sha256": "9e4612cf7efe67b94c84939ff5fd9f8f82d8032d1749e38f6eeed806147af18f",
+          "effective_limits": {
+            "max_requests": 11,
+            "max_tool_calls": 12,
+            "timeout_seconds": 5.0,
+            "run_timeout_seconds": 180.0,
+            "max_response_bytes": 65536,
+            "requests_per_second": 1000.0,
+            "max_concurrency": 1,
+            "max_runs": 100,
+            "state_ttl_seconds": 600.0
+          },
+          "tls": {
+            "verification": "dedicated-ca-dns-san-v1",
+            "ca_bundle_sha256": "43363b26d11e9b04cab7bd28bc1bbd21c2a628254ffc721c17ed7dbc9524e69d",
+            "context_ca_sha256": "574b8074b895748016abdea7095e71af2c8f58b639897fb6633b4ebf41542cab",
+            "minimum_version": "TLSv1.2"
+          },
+          "domain": {
+            "version": "domain-network-v1",
+            "allowed_ip_ranges": [
+              "127.0.0.1/32"
+            ],
+            "allow_non_global": true,
+            "resolver": "system-a-aaaa-all-v1",
+            "connection": "numeric-peer-checked-per-request-v1",
+            "hostname": "attachments.securityai.test",
+            "port": 56292
+          }
+        }
+      }
+    }
+  ],
+  "configured": true,
+  "message": null
+}

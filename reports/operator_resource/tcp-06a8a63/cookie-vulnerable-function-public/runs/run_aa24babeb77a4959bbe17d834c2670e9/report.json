@@ -1,0 +1,50 @@
+{
+  "schema_version": "operator-report-v1",
+  "run_id": "run_aa24babeb77a4959bbe17d834c2670e9",
+  "scenario_id": "operator-resource-http",
+  "target_id": "lab-web",
+  "provider_mode": "mock",
+  "tool_transport": "function",
+  "started_at": "2026-11-05T18:47:26.648663+00:00",
+  "status": "COMPLETED",
+  "verdict": "INCONCLUSIVE",
+  "reason_code": "OWNER_RESOURCE_PROOF_UNPROVEN",
+  "verification_basis": "operator_http_observation",
+  "scope_policy": {
+    "profile_id": "operator-prepared-resources",
+    "revision": 1,
+    "snapshot_sha256": "fea98668944f3f9033ecb5139668c949e3459c400f5cf0a485248509c29ff5f3",
+    "effective_limits": {
+      "max_requests": 11,
+      "max_tool_calls": 12,
+      "timeout_seconds": 5.0,
+      "run_timeout_seconds": 180.0,
+      "max_response_bytes": 65536,
+      "requests_per_second": 1000.0,
+      "max_concurrency": 1,
+      "max_runs": 100,
+      "state_ttl_seconds": 600.0
+    }
+  },
+  "limits_used": {
+    "http_requests": 11,
+    "tool_calls": 12
+  },
+  "evidence_ids": [
+    "f880d51c8084b274848796f014e308b1a9fd595aabbf8d81e1eea094753c9dc7",
+    "ee37d7a448e88406551e7e48ae627abac3368826d5eebe81131fc53b2b7ae57f",
+    "b866fd1db136da1ed1162bbe7c62c0f7823514596160badb5e6759db12f1b179",
+    "1d7470b648d3dc98e7ba4521f27943e82a0d5f4d3ae166626263896666563acc",
+    "4b6bb2f24dcbc6cf7aa1976f0c953c7baae005886eebb7a14d0aa3159076f6fa",
+    "fddede5f48177f074d414d20b96c782557b6a362cfe8d081633bfb7c8bf68866",
+    "4aa2516c7046b8190bdc37a107ee526b2cc9e39165543b4d35d60428d316a7d0",
+    "99ed82d36d1036668e402e2b7190921a6b9d8a3c1b250d68dd12cd1a75e6b97d",
+    "75164d6b34367f1647ba9ad9b753fa665eb6a1be4ab0a40ac67aa42ddca5fb12",
+    "ced0311fd59fc2037018b9eaf456e92ab5bb8ba3cfe76975252b6bc7c718af1d",
+    "fe2d02825a7db47c99ad158c70159ad76af530cdf28bc493e35a68fd475f1941"
+  ],
+  "finished_at": "2026-11-05T18:47:27.355658+00:00",
+  "warnings": [
+    "Only the registered operator-prepared resources and this observation time. Local contract/evidence files are not signed."
+  ]
+}
