@@ -19,6 +19,7 @@ function Policy({ value }: { value: api.Policy }) {
 }
 
 export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => void; onLogout: () => void }) {
+  const [savedOnly,setSavedOnly] = useState<boolean | null>(null);
   const [profiles,setProfiles] = useState<api.Profile[]>([]);
   const [selected,setSelected] = useState('');
   const [transport,setTransport] = useState('function');
@@ -80,7 +81,12 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
     api.profiles().then(async value => {
       if(!live) return;
       setProfiles(value.profiles);setSelected(value.profiles[0]?.profile_id || '');setNotice(value.message || '');
-      if(value.configured) {
+      setSavedOnly(Boolean(value.saved_results_only));
+      if (value.saved_results_only) {
+        setRuns((await api.runs()).runs);
+        const previous = sessionStorage.getItem('operator-run');
+        if (previous) await openResult(previous);
+      } else if(value.configured) {
         await history();
         const previous=sessionStorage.getItem('operator-plan');
         if(previous) await recover(previous,true);
@@ -114,16 +120,18 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
   }
 
   return <main className="operator-shell">
-    <header className="operator-header"><div><p className="eyebrow">OPERATOR WORKSPACE</p><h1>검사 워크스페이스</h1><p>등록 프로필 → 계획 확인 → 실행 → 근거와 재현 보고서</p></div><nav><button onClick={onChat}>기존 시나리오·채팅</button><button onClick={onLogout}>로그아웃</button></nav></header>
+    <header className="operator-header"><div><p className="eyebrow">OPERATOR WORKSPACE</p><h1>검사 워크스페이스</h1><p>{savedOnly ? '저장된 합성 기록, 새 검사 아님' : '등록 프로필 → 계획 확인 → 실행 → 근거와 재현 보고서'}</p></div><nav>{savedOnly === false && <button onClick={onChat}>기존 시나리오·채팅</button>}<button onClick={onLogout}>로그아웃</button></nav></header>
     <div className="operator-body">
-      <aside className="operator-sidebar"><h2>등록 대상</h2><label>준비된 프로필<select aria-label="검사 프로필" value={selected} disabled={busy} onChange={e=>{setSelected(e.target.value);activePlan.current="";sessionStorage.removeItem("operator-plan");setPlan(null);setConfirmed(false);setUncertain(false);}}>{profiles.map(p=><option key={p.profile_id} value={p.profile_id}>{p.name}</option>)}</select></label>
+      <aside className="operator-sidebar">{savedOnly === false && <><h2>등록 대상</h2><label>준비된 프로필<select aria-label="검사 프로필" value={selected} disabled={busy} onChange={e=>{setSelected(e.target.value);activePlan.current="";sessionStorage.removeItem("operator-plan");setPlan(null);setConfirmed(false);setUncertain(false);}}>{profiles.map(p=><option key={p.profile_id} value={p.profile_id}>{p.name}</option>)}</select></label>
         <label>연결 방식<select aria-label="연결 방식" value={transport} disabled={busy} onChange={e=>{setTransport(e.target.value);activePlan.current="";sessionStorage.removeItem("operator-plan");setPlan(null);setConfirmed(false);setUncertain(false);}}><option value="function">function</option><option value="mcp">MCP</option></select></label>
         <p className="operator-note">서버 측 등록만 허용합니다. 준비 상태 조회는 Worker 정책 조회이며 Target 로그인·접속 성공 확인이 아닙니다.</p>
         {notice && <p>{notice}</p>}{profile && <p className={profile.ready?'operator-ready':'error'}>{profile.ready?'설정 준비됨 · Target 미접속':profile.message}</p>}
         <h2>최근 제출</h2><div className="operator-history">{jobs.map(j=><button key={j.plan_id} disabled={busy} onClick={()=>{setConfirmed(false);void recover(j.plan_id,true);}}>{statusLabel(j.status)} · {j.plan_id.slice(-8)}<small>{j.run_id?.slice(-8) || '실행 전'}</small></button>)}</div>
+        </>}
         <h2>저장된 검사</h2><div className="operator-history">{runs.map(r=><SavedRunButton key={r.run_id} run={r} onOpen={openResult}/>)}</div>
       </aside>
       <section className="operator-content" aria-label="계획과 결과">
+        {savedOnly && !result && !refreshError && <p>저장된 검사를 선택해 근거를 확인하세요. VULNERABLE 사례에서 제보 초안을 검토할 수 있습니다.</p>}
         {error && <p className="error" role="alert">{error}</p>}{refreshError && <p className="warning" role="alert">{refreshError}</p>}
         {!plan && profile?.policy && <><h2>준비 상태와 적용 정책</h2><Policy value={profile.policy}/></>}
         {plan && <section><div className="operator-section-heading"><h2>계획 검토</h2><span>{plan.transport} · mock · 예상 HTTP {plan.expected_http_requests} / 도구 {plan.expected_tool_calls}</span></div>
@@ -142,6 +150,6 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
         </section>}
       </section>
     </div>
-    <footer className="operator-actions"><button disabled={busy || !profile?.ready} onClick={makePreview}>새 계획 preview</button><label><input type="checkbox" checked={confirmed} disabled={!plan || Boolean(plan.job) || uncertain || busy} onChange={e=>setConfirmed(e.target.checked)}/> 표시된 계정·리소스·요청 순서와 현재 계획 digest를 확인했습니다.</label><button className="operator-primary" disabled={!canExecute({plan,confirmed,busy,uncertain,now})} onClick={run}>확인한 계획 실행</button><button onClick={()=>void recover()}>기존 상태 조회</button></footer>
+    {savedOnly === false && <footer className="operator-actions"><button disabled={busy || !profile?.ready} onClick={makePreview}>새 계획 preview</button><label><input type="checkbox" checked={confirmed} disabled={!plan || Boolean(plan.job) || uncertain || busy} onChange={e=>setConfirmed(e.target.checked)}/> 표시된 계정·리소스·요청 순서와 현재 계획 digest를 확인했습니다.</label><button className="operator-primary" disabled={!canExecute({plan,confirmed,busy,uncertain,now})} onClick={run}>확인한 계획 실행</button><button onClick={()=>void recover()}>기존 상태 조회</button></footer>}
   </main>;
 }
