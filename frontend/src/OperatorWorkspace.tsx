@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ResultHeading, SavedRunButton } from './current-verdict.js';
 import DisclosureDraft from './DisclosureDraft';
 import * as api from './operator-api';
-import { canExecute, statusLabel, terminal } from './operator-state.js';
+import { canExecute, restoreSavedSelection, statusLabel, terminal } from './operator-state.js';
 
 function Policy({ value }: { value: api.Policy }) {
   const s = value.scope_policy;
@@ -34,7 +34,7 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
   const [refreshError,setRefreshError] = useState('');
   const [notice,setNotice] = useState('');
   const [now,setNow] = useState(Date.now());
-  const active = useRef('');
+  const active = useRef(0);
   const activePlan = useRef('');
   const planIdentity = useRef('');
   const inFlight = useRef(false);
@@ -44,19 +44,28 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
     const [j,r] = await Promise.all([api.jobs(),api.runs()]);
     setJobs(j.jobs); setRuns(r.runs);
   }
-  async function openResult(id: string) {
-    active.current=id;
+  async function openResult(id: string, savedReview = savedOnly === true) {
+    const request = ++active.current;
     setResult(null);
     sessionStorage.setItem('operator-run',id);
-    try { const r=await api.result(id); if(active.current===id) { setResult(r);setRefreshError(''); } }
+    try { const r=await api.result(id); if(active.current===request) { setResult(r);setRefreshError(''); } }
     catch (cause) {
-      if (active.current !== id) return;
+      if (active.current !== request) return;
       setResult(null);
       if (cause instanceof api.OperatorError && cause.code === 'SAVED_INPUT_UNREADABLE') {
         setRefreshError(cause.message);
-        await history().catch(() => setRuns([]));
+        if (savedReview) {
+          try {
+            const listing = await api.runs();
+            if (active.current === request) setRuns(listing.runs);
+          } catch { /* Keep the last successful list and the evidence read error. */ }
+        } else {
+          await history().catch(() => setRuns([]));
+        }
       } else {
-        setRefreshError('결과 갱신에 실패했습니다. 기존 상태를 다시 조회하세요.');
+        setRefreshError(savedReview
+          ? '검사 결과를 불러오지 못했습니다. 저장된 검사 목록에서 같은 항목을 다시 선택해 주세요.'
+          : '결과 갱신에 실패했습니다. 기존 상태를 다시 조회하세요.');
       }
     }
   }
@@ -83,9 +92,15 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
       setProfiles(value.profiles);setSelected(value.profiles[0]?.profile_id || '');setNotice(value.message || '');
       setSavedOnly(Boolean(value.saved_results_only));
       if (value.saved_results_only) {
-        setRuns((await api.runs()).runs);
-        const previous = sessionStorage.getItem('operator-run');
-        if (previous) await openResult(previous);
+        let listing;
+        try { listing = await api.runs(); }
+        catch {
+          if (live) setError('저장된 검사 목록을 불러오지 못했습니다. 페이지를 새로고침해 다시 조회하세요.');
+          return;
+        }
+        if (!live) return;
+        setRuns(listing.runs);
+        await restoreSavedSelection(listing.runs, sessionStorage, id => openResult(id, true));
       } else if(value.configured) {
         await history();
         const previous=sessionStorage.getItem('operator-plan');
@@ -94,7 +109,7 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
       }
     }).catch(() => live && setError('준비 상태를 조회하지 못했습니다. 인증과 Controller 연결을 확인하세요.'));
     const clock=window.setInterval(() => setNow(Date.now()),1000);
-    return () => { live=false;window.clearInterval(clock);active.current='';activePlan.current=''; };
+    return () => { live=false;window.clearInterval(clock);active.current++;activePlan.current=''; };
   },[]);
   useEffect(() => {
     if(!plan?.job || terminal.has(plan.job.status)) return;
@@ -105,7 +120,7 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
 
   async function makePreview() {
     if(inFlight.current) return;
-    inFlight.current=true;setBusy(true);setConfirmed(false);setError('');setUncertain(false);setResult(null);active.current='';activePlan.current='';
+    inFlight.current=true;setBusy(true);setConfirmed(false);setError('');setUncertain(false);setResult(null);active.current++;activePlan.current='';
     try { const p=await api.preview(selected,transport);activePlan.current=p.plan_id;acceptPlan(p);sessionStorage.setItem('operator-plan',p.plan_id); }
     catch(cause) { setPlan(null);setError(cause instanceof Error ? cause.message : 'preview 실패'); }
     finally { inFlight.current=false;setBusy(false); }
@@ -131,7 +146,7 @@ export default function OperatorWorkspace({ onChat, onLogout }: { onChat: () => 
         <h2>저장된 검사</h2><div className="operator-history">{runs.map(r=><SavedRunButton key={r.run_id} run={r} onOpen={openResult}/>)}</div>
       </aside>
       <section className="operator-content" aria-label="계획과 결과">
-        {savedOnly && !result && !refreshError && <p>저장된 검사를 선택해 근거를 확인하세요. VULNERABLE 사례에서 제보 초안을 검토할 수 있습니다.</p>}
+        {savedOnly && runs.length > 0 && !result && !refreshError && <p>저장된 검사를 선택해 근거를 확인하세요. VULNERABLE 사례에서 제보 초안을 검토할 수 있습니다.</p>}
         {error && <p className="error" role="alert">{error}</p>}{refreshError && <p className="warning" role="alert">{refreshError}</p>}
         {!plan && profile?.policy && <><h2>준비 상태와 적용 정책</h2><Policy value={profile.policy}/></>}
         {plan && <section><div className="operator-section-heading"><h2>계획 검토</h2><span>{plan.transport} · mock · 예상 HTTP {plan.expected_http_requests} / 도구 {plan.expected_tool_calls}</span></div>
