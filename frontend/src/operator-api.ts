@@ -20,7 +20,7 @@ async function request<T>(path: string, body?: object): Promise<T> {
   }
   return response.json();
 }
-export const profiles = () => request<{ profiles: Profile[]; configured: boolean; message?: string }>('/profiles');
+export const profiles = () => request<{ profiles: Profile[]; configured: boolean; saved_results_only?: boolean; message?: string }>('/profiles');
 export const preview = (profile_id: string, transport: string) => request<Plan>('/preview', { profile_id, transport });
 export const getPlan = (id: string) => request<Plan>(`/plans/${encodeURIComponent(id)}`);
 export const execute = (p: Plan) => request<Job>(`/plans/${encodeURIComponent(p.plan_id)}/run`, { plan_sha256: p.plan_sha256, confirmed: true });

@@ -22,7 +22,7 @@ class DraftConfirmation(FrozenModel):
     confirmed: Literal[True]
 
 
-def attach_workspace(app,workspace,owner,write_owner):
+def attach_workspace(app,workspace,owner,write_owner,*,saved_results_only=False):
     router=APIRouter(prefix='/api/operator',dependencies=[Depends(owner)])
     def require():
         if workspace is None: raise WorkspaceError('WORKSPACE_NOT_CONFIGURED',503)
@@ -41,6 +41,8 @@ def attach_workspace(app,workspace,owner,write_owner):
 
     @router.get('/profiles')
     async def profiles():
+        if saved_results_only:
+            return {'profiles': [], 'configured': False, 'saved_results_only': True}
         if workspace is None:
             return {'profiles':[],'configured':False,'message':diagnostic('WORKSPACE_NOT_CONFIGURED')}
         return await call(workspace.readiness)

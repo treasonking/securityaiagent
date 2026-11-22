@@ -47,6 +47,7 @@ class AppSettings:
     model_max_calls: int = 8
     openai_configured: bool = False
     offline_import_token: str | None = None
+    saved_results_only: bool = False
 
 
 class SessionRequest(BaseModel):
@@ -137,6 +138,7 @@ def create_app(
         return owner_id
 
     async def write_owner(
+        request: Request,
         sl_session: str | None = Cookie(default=None),
         x_csrf_token: str | None = Header(default=None),
     ) -> str:
@@ -145,6 +147,10 @@ def create_app(
             raise HTTPException(status_code=401, detail="local session required")
         if not signer.validate_csrf(sl_session or "", x_csrf_token):
             raise HTTPException(status_code=403, detail="CSRF validation failed")
+        if settings.saved_results_only and request.scope["route"].path not in {
+            "/api/session", "/api/operator/runs/{run_id}/disclosure-draft",
+        }:
+            raise HTTPException(status_code=403, detail="Saved-results demo is read-only")
         return owner_id
 
     @app.post("/api/session")
@@ -384,7 +390,7 @@ def create_app(
         return {"events": repo.list_events(run_id)}
 
     from controller.workspace_api import attach_workspace
-    attach_workspace(app,workspace,owner,write_owner)
+    attach_workspace(app,workspace,owner,write_owner,saved_results_only=settings.saved_results_only)
     frontend_dist = Path(__file__).resolve().parents[1] / "frontend" / "dist"
     if frontend_dist.exists():
         app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")

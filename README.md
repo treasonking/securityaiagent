@@ -1,5 +1,29 @@
 # SecurityLab AI v1
 
+## 저장 결과 검토 데모 · Windows PowerShell
+
+VM이나 API 키 없이 **저장된 합성 기록** 두 건을 기존 검사 워크스페이스에서 열 수 있다. 데모는 원본에서 확인한 JSON 세 개씩만 임시 폴더에 복사한다. 로그인 세션용 DB도 그 폴더에 만든다.
+
+**최초 준비** — 이 브랜치를 받은 저장소 루트에서 Python 3.12와 Node.js 22로 한 번 실행한다. 이미 이 저장소의 가상환경을 준비했다면 첫 줄은 생략한다.
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-full.lock
+npm ci --prefix frontend
+npm --prefix frontend run build
+```
+
+**평소 실행** — 같은 디렉터리에서 아래 한 줄을 실행한다.
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.review_saved_results
+```
+
+1. PowerShell의 숨김 입력란에 이번 실행에서만 쓸 영문·숫자 키(16~128자)를 정한다. 키를 명령줄에 넣을 필요는 없다.
+2. [로컬 데모 열기](http://127.0.0.1:8765/)에서 같은 키로 로그인한다. **저장된 검사**에서 사례를 선택하고 **HTTP 증거**를 펼쳐 근거를 읽는다.
+3. **VULNERABLE** 사례는 **제보 초안 검토 → 내부 초안 미리보기**에서 근거와 범위를 확인하고 체크한 뒤 Markdown을 내려받는다. **BLOCKED_BY_ACCESS_CONTROL** 사례를 열면 당시 차단 근거와 초안 발급 제외 사유를 볼 수 있다.
+4. 종료할 때는 데모를 실행한 PowerShell에서 **Ctrl+C**를 누른다. 포트와 임시 데이터가 정리된다. 다음 실행 때 새 키로 로그인한다. 포트가 이미 사용 중이면 실행기는 시작 오류를 표시한다.
+
 SecurityLab AI는 사용자가 소유한 로컬 합성 사이트에서 등록된 접근 통제 시나리오를 재현하고, 모델의 후보 판단과 증거 검증기의 확정 판정을 분리하는 독립 실험용 애플리케이션이다. 현재 구조는 범용 모의해킹 에이전트가 아니라 **고정 시나리오 검증기 + 선택적 LLM 후보 생성기**다. 자유문은 URL·대상·도구·실행 순서를 바꾸지 않는다.
 
 `access-control`은 기존 서버 로그 대조 경로이며 로그가 없으면 `INCONCLUSIVE`다. 새 `access-control-http`는 `lab-web`의 두 실습 계정과 명시적인 합성 private canary 구조를 사용하는 HTTP 전용 경로다. 독립 세션, 소유자 목록·상세, 교차 요청, 소유자/요청자 재조회를 검증하며 target DB·로그·모드나 모델 의견으로 판정하지 않는다. 보고서의 `verification_basis`로 두 경로를 구분한다. 일반 HTML 의미 비교나 임의 외부 사이트 테스트는 지원하지 않는다.

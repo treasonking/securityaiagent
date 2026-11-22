@@ -1,7 +1,6 @@
 """Local UI/API integration environment; reuses the independent attachment API."""
 from contextlib import contextmanager
 from pathlib import Path
-import gc
 import secrets
 import socket
 
@@ -63,7 +62,3 @@ def workspace_lab(root):
                         certificate=material['public'])
             finally:
                 context.__exit__(None,None,None)
-                # sqlite3 transaction contexts in the legacy repository do not
-                # close connections. Collect their unreachable cycles only after
-                # the temporary Controller has stopped, before Windows removal.
-                gc.collect()
