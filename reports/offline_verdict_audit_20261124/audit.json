@@ -1,0 +1,251 @@
+{
+  "archive": "independent_api_validation_20261113",
+  "passed": true,
+  "summary": {
+    "expected_runs": 14,
+    "evaluated_runs": 14,
+    "pre_run_rejections": 2,
+    "unevaluable": 0,
+    "verdict_mismatches": 0,
+    "wrongly_allowed": 0,
+    "wrongly_denied": 0
+  },
+  "confusion": {
+    "VULNERABLE": {
+      "VULNERABLE": 4,
+      "BLOCKED_BY_ACCESS_CONTROL": 0,
+      "INCONCLUSIVE": 0
+    },
+    "BLOCKED_BY_ACCESS_CONTROL": {
+      "VULNERABLE": 0,
+      "BLOCKED_BY_ACCESS_CONTROL": 4,
+      "INCONCLUSIVE": 0
+    },
+    "INCONCLUSIVE": {
+      "VULNERABLE": 0,
+      "BLOCKED_BY_ACCESS_CONTROL": 0,
+      "INCONCLUSIVE": 6
+    }
+  },
+  "runs": [
+    {
+      "case": "cookie-vulnerable-function-normal",
+      "run_id": "run_e573a6e9ec6d4823a48fe554e6b0790f",
+      "expected": "VULNERABLE",
+      "current": "VULNERABLE",
+      "matches": true,
+      "preview": true,
+      "expected_preview": true,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "preview_reason": null
+    },
+    {
+      "case": "cookie-vulnerable-mcp-normal",
+      "run_id": "run_dbefb5f2540c4196ac78b5f0e2d078d2",
+      "expected": "VULNERABLE",
+      "current": "VULNERABLE",
+      "matches": true,
+      "preview": true,
+      "expected_preview": true,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "preview_reason": null
+    },
+    {
+      "case": "cookie-fixed-function-normal",
+      "run_id": "run_2225a84485d0462c825509cadf2307ab",
+      "expected": "BLOCKED_BY_ACCESS_CONTROL",
+      "current": "BLOCKED_BY_ACCESS_CONTROL",
+      "matches": true,
+      "preview": false,
+      "expected_preview": false,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "preview_reason": "DRAFT_BLOCKED"
+    },
+    {
+      "case": "cookie-fixed-mcp-normal",
+      "run_id": "run_667fc9ce63844e42bc86c1f2add3ee3b",
+      "expected": "BLOCKED_BY_ACCESS_CONTROL",
+      "current": "BLOCKED_BY_ACCESS_CONTROL",
+      "matches": true,
+      "preview": false,
+      "expected_preview": false,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "preview_reason": "DRAFT_BLOCKED"
+    },
+    {
+      "case": "bearer-vulnerable-function-normal",
+      "run_id": "run_de78f7dabf324047b5dec034bd009ccb",
+      "expected": "VULNERABLE",
+      "current": "VULNERABLE",
+      "matches": true,
+      "preview": true,
+      "expected_preview": true,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "preview_reason": null
+    },
+    {
+      "case": "bearer-vulnerable-mcp-normal",
+      "run_id": "run_28c1231c512d49729b6e68134e7ac651",
+      "expected": "VULNERABLE",
+      "current": "VULNERABLE",
+      "matches": true,
+      "preview": true,
+      "expected_preview": true,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "CROSS_ACCOUNT_PRIVATE_PROOF",
+      "preview_reason": null
+    },
+    {
+      "case": "bearer-fixed-function-normal",
+      "run_id": "run_7ea8324f1c244efe8519971fdb8de25c",
+      "expected": "BLOCKED_BY_ACCESS_CONTROL",
+      "current": "BLOCKED_BY_ACCESS_CONTROL",
+      "matches": true,
+      "preview": false,
+      "expected_preview": false,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "preview_reason": "DRAFT_BLOCKED"
+    },
+    {
+      "case": "bearer-fixed-mcp-normal",
+      "run_id": "run_fa9b469dafc84ed8b201771c16fc59b9",
+      "expected": "BLOCKED_BY_ACCESS_CONTROL",
+      "current": "BLOCKED_BY_ACCESS_CONTROL",
+      "matches": true,
+      "preview": false,
+      "expected_preview": false,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "EXPLICIT_DENIAL_WITH_STABLE_CONTROLS",
+      "preview_reason": "DRAFT_BLOCKED"
+    },
+    {
+      "case": "cookie-vulnerable-function-budget2",
+      "run_id": "run_9b50338a506d48fab19e3e49a0776729",
+      "expected": "INCONCLUSIVE",
+      "current": "INCONCLUSIVE",
+      "matches": true,
+      "preview": false,
+      "expected_preview": false,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "INCOMPLETE_WORKFLOW",
+      "preview_reason": "DRAFT_NOT_COMPLETED"
+    },
+    {
+      "case": "cookie-vulnerable-mcp-budget2",
+      "run_id": "run_52125d5aecdf49699bf41847f3815bb4",
+      "expected": "INCONCLUSIVE",
+      "current": "INCONCLUSIVE",
+      "matches": true,
+      "preview": false,
+      "expected_preview": false,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "INCOMPLETE_WORKFLOW",
+      "preview_reason": "DRAFT_NOT_COMPLETED"
+    },
+    {
+      "case": "cookie-vulnerable-function-owner_mismatch",
+      "run_id": "run_6c7d0b49bfa0460ba0a7ae6e042a401e",
+      "expected": "INCONCLUSIVE",
+      "current": "INCONCLUSIVE",
+      "matches": true,
+      "preview": false,
+      "expected_preview": false,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "OWNER_RESOURCE_PROOF_UNPROVEN",
+      "preview_reason": "DRAFT_UNCONFIRMED"
+    },
+    {
+      "case": "cookie-vulnerable-mcp-owner_mismatch",
+      "run_id": "run_470a5d786e46457eb820e80403e7191c",
+      "expected": "INCONCLUSIVE",
+      "current": "INCONCLUSIVE",
+      "matches": true,
+      "preview": false,
+      "expected_preview": false,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "OWNER_RESOURCE_PROOF_UNPROVEN",
+      "preview_reason": "DRAFT_UNCONFIRMED"
+    },
+    {
+      "case": "cookie-vulnerable-function-proof_rotation",
+      "run_id": "run_3292930cef204e1b90a58f4ba483f79d",
+      "expected": "INCONCLUSIVE",
+      "current": "INCONCLUSIVE",
+      "matches": true,
+      "preview": false,
+      "expected_preview": false,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "OWNER_RESOURCE_PROOF_UNPROVEN",
+      "preview_reason": "DRAFT_UNCONFIRMED"
+    },
+    {
+      "case": "cookie-vulnerable-mcp-proof_rotation",
+      "run_id": "run_23d2ca0cba5e4f5c9f862c9e24f6cfa9",
+      "expected": "INCONCLUSIVE",
+      "current": "INCONCLUSIVE",
+      "matches": true,
+      "preview": false,
+      "expected_preview": false,
+      "input_error": null,
+      "state": "consistent",
+      "conclusion_reason": "OWNER_RESOURCE_PROOF_UNPROVEN",
+      "preview_reason": "DRAFT_UNCONFIRMED"
+    }
+  ],
+  "pre_run": [
+    {
+      "case": "cookie-vulnerable-function-policy_change",
+      "run_id": null,
+      "expected": null,
+      "current": null,
+      "matches": null,
+      "preview": null,
+      "expected_preview": null,
+      "input_error": null,
+      "pre_run_reason": "WORKER_POLICY_CHANGED"
+    },
+    {
+      "case": "cookie-vulnerable-mcp-policy_change",
+      "run_id": null,
+      "expected": null,
+      "current": null,
+      "matches": null,
+      "preview": null,
+      "expected_preview": null,
+      "input_error": null,
+      "pre_run_reason": "WORKER_POLICY_CHANGED"
+    }
+  ],
+  "omission": {
+    "case": "cookie-vulnerable-function-normal",
+    "run_id": "run_e573a6e9ec6d4823a48fe554e6b0790f",
+    "passed": true,
+    "before": 11,
+    "after": 10,
+    "current": "INCONCLUSIVE",
+    "state": "withheld",
+    "conclusion_reason": "REPORT_CONTRACT_MISMATCH",
+    "preview": false,
+    "preview_reason": "DRAFT_UNCONFIRMED"
+  },
+  "input_errors": []
+}
