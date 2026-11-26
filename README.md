@@ -12,6 +12,19 @@
 
 [사례별 결과표](reports/offline_verdict_audit_20261124/README.md) · [정제 JSON](reports/offline_verdict_audit_20261124/audit.json)
 
+## 수동 관찰 노트 · Windows PowerShell
+
+준비된 저장소 루트에서 첫 줄을 한 번 실행한다. 생성된 `%LOCALAPPDATA%\SecurityAI\PrivateNotes\first.json`을 로컬 편집기로 작성한 뒤 두 번째 줄로 검토한다.
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.manual_observation init "$env:LOCALAPPDATA\SecurityAI\PrivateNotes\first.json" --policy-memo "$env:USERPROFILE\Downloads\SecurityAI_First_Bounty_Policy_Review_20261125.md"
+.\.venv\Scripts\python.exe -m scripts.manual_observation review "$env:LOCALAPPDATA\SecurityAI\PrivateNotes\first.json"
+```
+
+노트 경로는 본인만 접근할 수 있는 저장소 밖의 로컬 폴더로 바꿀 수 있다. 기존 파일에 `init`을 다시 실행하면 파일을 보존하고 종료 코드 1을 반환한다. `--policy-memo`는 선택 사항이다. 기존 선정 메모 형식에서 읽은 프로그램명, 공식 정책 링크, 확인일은 사람이 확인한다. 메모가 없거나 형식을 인식하지 못한 항목은 빈칸이다.
+
+허용 자산, 관찰 시각·시간대, 소유 여부(`own_test_data`에 `true`·`false`·미기록 `null`), 기대 동작과 직접 본 동작을 적는다. 확인한 영향과 그 직접 근거는 별개 항목이다. 영향을 모르면 두 칸을 비워 두고 `unconfirmed`에 남은 의문을 적는다. `review`는 기록한 내용을 **현재 터미널에 표시**하고 빈 항목을 열거한다. 정상 동작도 그대로 기록할 수 있다. 빈칸은 종료 코드 0인 검토 결과이며, 이 명령은 취약점이나 제보 적격성을 판정하지 않는다.
+
 ## 저장 결과 검토 데모 · Windows PowerShell
 
 VM이나 API 키 없이 **저장된 합성 기록** 두 건을 기존 검사 워크스페이스에서 열 수 있다. 데모는 원본에서 확인한 JSON 세 개씩만 임시 폴더에 복사한다. 로그인 세션용 DB도 그 폴더에 만든다.
