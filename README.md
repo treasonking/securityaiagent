@@ -1,5 +1,17 @@
 # SecurityLab AI v1
 
+## 저장 결과 감사 · 오프라인 CLI
+
+저장소 루트에서 Python 의존성을 준비한 뒤 아래 명령을 실행한다. 기본 출력은 사례별 Markdown 표다. JSON이 필요하면 끝에 `--format json`을 붙인다.
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.audit_saved_verdicts
+```
+
+2026-11-13 독립 API 합성 기록 16행을 대상으로 한다. 저장 run 14건은 보관된 입력의 SHA-256을 대조한 임시 사본에서 현재 워크스페이스 결론과 초안 미리보기 허용 여부를 확인한다. 기대 판정은 `matrix.json`의 `expected_verdict`에서 읽는다. 실행 전 정책 거절은 별도로 표시하며, 취약 사례 사본에서 증거 한 건을 제거하는 부정 검증도 수행한다. 입력 오류, 판정·미리보기 기대 불일치 또는 부정 검증 실패 시 종료 코드는 1이다.
+
+[사례별 결과표](reports/offline_verdict_audit_20261124/README.md) · [정제 JSON](reports/offline_verdict_audit_20261124/audit.json)
+
 ## 수동 관찰 노트 · Windows PowerShell
 
 준비된 저장소 루트에서 첫 줄을 한 번 실행한다. 생성된 `%LOCALAPPDATA%\SecurityAI\PrivateNotes\first.json`을 로컬 편집기로 작성한 뒤 두 번째 줄로 검토한다.
